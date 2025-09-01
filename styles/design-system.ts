@@ -1,0 +1,136 @@
+export const designSystem = {
+  colors: {
+    primary: {
+      50: '#F5F3FF',
+      100: '#EDE9FE',
+      200: '#DDD6FE',
+      300: '#C4B5FD',
+      400: '#A78BFA',
+      500: '#8B5CF6',
+      600: '#7C3AED',
+      700: '#6D28D9',
+      800: '#5B21B6',
+      900: '#4C1D95',
+    },
+    sage: {
+      50: '#ECFDF5',
+      100: '#D1FAE5',
+      200: '#A7F3D0',
+      300: '#6EE7B7',
+      400: '#34D399',
+      500: '#10B981',
+      600: '#059669',
+      700: '#047857',
+      800: '#065F46',
+      900: '#064E3B',
+    },
+    gray: {
+      50: '#F9FAFB',
+      100: '#F3F4F6',
+      200: '#E5E7EB',
+      300: '#D1D5DB',
+      400: '#9CA3AF',
+      500: '#6B7280',
+      600: '#4B5563',
+      700: '#374151',
+      800: '#1F2937',
+      900: '#111827',
+    },
+    accent: {
+      coral: '#F97316',
+      sky: '#0EA5E9',
+      rose: '#F43F5E',
+      amber: '#F59E0B',
+    },
+    functional: {
+      success: '#10B981',
+      warning: '#F59E0B',
+      error: '#EF4444',
+      info: '#3B82F6',
+    },
+    background: {
+      primary: '#FFFFFF',
+      secondary: '#F9FAFB',
+      tertiary: '#F3F4F6',
+      elevated: '#FFFFFF',
+      dark: {
+        primary: '#111827',
+        elevated: '#1F2937',
+        secondary: '#374151',
+      },
+    },
+  },
+  typography: {
+    fontFamily: {
+      primary: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      display: 'SF Pro Display, Inter, sans-serif',
+      mono: 'JetBrains Mono, "SF Mono", Monaco, monospace',
+    },
+    weights: {
+      light: 300,
+      regular: 400,
+      medium: 500,
+      semibold: 600,
+      bold: 700,
+    },
+    sizes: {
+      display: {
+        large: { size: '32px', lineHeight: '40px', weight: 700, tracking: '-0.02em' },
+        medium: { size: '28px', lineHeight: '36px', weight: 600, tracking: '-0.01em' },
+      },
+      headline: {
+        large: { size: '24px', lineHeight: '32px', weight: 600, tracking: '0em' },
+        medium: { size: '20px', lineHeight: '28px', weight: 500, tracking: '0em' },
+      },
+      title: {
+        large: { size: '18px', lineHeight: '24px', weight: 500, tracking: '0.01em' },
+        medium: { size: '16px', lineHeight: '24px', weight: 500, tracking: '0.01em' },
+      },
+      body: {
+        large: { size: '16px', lineHeight: '24px', weight: 400, tracking: '0em' },
+        medium: { size: '14px', lineHeight: '20px', weight: 400, tracking: '0.01em' },
+        small: { size: '12px', lineHeight: '16px', weight: 400, tracking: '0.02em' },
+      },
+      label: {
+        large: { size: '14px', lineHeight: '20px', weight: 500, tracking: '0.01em' },
+      },
+    },
+  },
+  spacing: {
+    micro: '4px',
+    small: '8px',
+    medium: '16px',
+    large: '24px',
+    xl: '32px',
+    '2xl': '48px',
+    '3xl': '64px',
+  },
+  borderRadius: {
+    sm: '4px',
+    md: '8px',
+    lg: '12px',
+    xl: '16px',
+    full: '9999px',
+  },
+  shadows: {
+    sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+    md: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+    lg: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+    xl: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+  },
+  transitions: {
+    fast: '150ms ease-in-out',
+    base: '200ms ease-out',
+    slow: '300ms ease-out',
+    spring: '300ms cubic-bezier(0.2, 0.8, 0.2, 1)',
+  },
+  breakpoints: {
+    sm: '640px',
+    md: '768px',
+    lg: '1024px',
+    xl: '1280px',
+    '2xl': '1536px',
+  },
+} as const;
+
+export type DesignSystem = typeof designSystem;

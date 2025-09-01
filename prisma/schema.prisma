@@ -1,0 +1,29 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model QuizRun {
+  id        String        @id @default(cuid())
+  sessionId String
+  quizSlug  String
+  createdAt DateTime      @default(now())
+  answers   QuizAnswer[]
+  total     Int
+  bandLabel String
+
+  @@index([sessionId, createdAt(sort: Desc)])
+  @@index([quizSlug, createdAt(sort: Desc)])
+}
+
+model QuizAnswer {
+  id       String   @id @default(cuid())
+  runId    String
+  run      QuizRun  @relation(fields: [runId], references: [id], onDelete: Cascade)
+  question String
+  value    Int
+}
