@@ -1,93 +1,105 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { Mail, Shield } from 'lucide-react';
 
 export default function AdminLoginPage() {
-  const [password, setPassword] = useState('');
-  const [show, setShow] = useState(false);
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const { data: session, status } = useSession();
   const router = useRouter();
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  useEffect(() => {
+    if (session?.user?.email === process.env.NEXT_PUBLIC_OWNER_EMAIL) {
+      router.push('/admin');
+    }
+  }, [session, router]);
+
+  const handleGoogleSignIn = async () => {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('/api/admin/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
+      const result = await signIn('google', { 
+        callbackUrl: '/admin',
+        redirect: false 
       });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        setError(j?.error || 'Login failed');
-      } else {
-        router.push('/admin');
+      if (result?.error) {
+        setError('Authentication failed. Please try again.');
       }
-    } catch (e: any) {
-      setError(e?.message || 'Login failed');
+    } catch (err) {
+      setError('Authentication failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4">
-      <Card className="w-full max-w-md shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-2xl">Admin Login</CardTitle>
-          <CardDescription>Enter the admin password to continue.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={submit} className="space-y-4">
-            {/* Password field */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-              <div className="relative">
-                <input
-                  type={show ? 'text' : 'password'}
-                  className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 pr-10 text-sm placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
-                  placeholder="Enter admin password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoFocus
-                />
-                <button
-                  type="button"
-                  onClick={() => setShow((s) => !s)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700"
-                  aria-label={show ? 'Hide password' : 'Show password'}
-                >
-                  {show ? '🙈' : '👁️'}
-                </button>
-              </div>
-            </div>
+  if (status === 'loading') {
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center px-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
+  return (
+    <div className="min-h-[80vh] flex items-center justify-center px-4 bg-gradient-to-br from-purple-50 to-blue-50">
+      <Card className="w-full max-w-md shadow-xl border-0">
+        <CardHeader className="text-center pb-2">
+          <div className="w-16 h-16 bg-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Shield className="w-8 h-8 text-white" />
+          </div>
+          <CardTitle className="text-2xl font-bold text-gray-900">Admin Access</CardTitle>
+          <CardDescription className="text-gray-600">
+            Secure access for MyBeing platform owner
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-2">
+          <div className="space-y-4">
             {/* Error state */}
             {error && (
-              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                {error}
+              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-red-500 rounded-full flex-shrink-0"></div>
+                  {error}
+                </div>
               </div>
             )}
 
-            {/* Submit */}
+            {/* Google Sign In */}
             <Button
-              type="submit"
-              disabled={loading || !password}
-              className="w-full bg-brand-600 hover:bg-brand-700 text-white"
+              onClick={handleGoogleSignIn}
+              disabled={loading}
+              className="w-full bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 shadow-sm"
             >
-              {loading ? 'Signing in…' : 'Sign in'}
+              <Mail className="w-5 h-5 mr-3" />
+              {loading ? 'Authenticating...' : 'Sign in with Google'}
             </Button>
-          </form>
 
-          {/* Help text */}
-          <p className="mt-4 text-center text-xs text-gray-500">
-            Access is restricted to the owner. Password is configured via <code>.env.local</code>.
-          </p>
+            {/* Security notice */}
+            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+              <div className="flex items-start gap-3">
+                <Shield className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-sm font-semibold text-blue-900 mb-1">Security Notice</h4>
+                  <p className="text-xs text-blue-800">
+                    Access is restricted to the platform owner only. Your identity will be verified through secure authentication.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Help text */}
+            <p className="text-center text-xs text-gray-500">
+              Only the configured owner email can access the admin panel.
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>

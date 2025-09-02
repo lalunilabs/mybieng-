@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { motion } from 'framer-motion';
+import { Brain, Clock, RotateCcw, ArrowRight } from 'lucide-react';
 
 type Props = {
   slug: string;
@@ -8,55 +10,71 @@ type Props = {
   description: string;
 };
 
+const quizIcons = ['🧠', '🎯', '💭', '🔍', '⚡', '🌟', '🎨', '🔮'];
+
 export default function QuizCard({ slug, title, description }: Props) {
+  const randomIcon = quizIcons[Math.floor(Math.random() * quizIcons.length)];
+  
   return (
-    <Card variant="elevated" hover className="group h-full flex flex-col transition-all duration-300 hover:scale-[1.02] hover:shadow-glow">
-      <CardHeader className="pb-4">
-        <div className="flex items-start justify-between mb-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-primary to-purple-600 rounded-2xl flex items-center justify-center text-white text-xl group-hover:scale-110 transition-transform duration-300 shadow-soft">
-            🧠
-          </div>
-          <div className="px-3 py-1 bg-primary/10 text-primary text-xs font-medium rounded-full border border-primary/20">
-            Assessment
-          </div>
-        </div>
-        
-        <CardTitle className="text-xl font-bold text-foreground group-hover:text-primary transition-colors duration-200 leading-tight">
-          {title}
-        </CardTitle>
-      </CardHeader>
-      
-      <CardContent className="flex-1 flex flex-col">
-        <p className="text-muted-foreground leading-relaxed mb-6 flex-1">
-          {description}
-        </p>
-        
-        <div className="space-y-4">
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <div className="flex items-center">
-              <span className="mr-2">⏱️</span>
-              <span>5-15 min</span>
+    <motion.div
+      whileHover={{ y: -8, scale: 1.02 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+    >
+      <Link href={`/quizzes/${slug}`} className="block group">
+        <Card variant="elevated" className="h-full overflow-hidden border-2 border-foreground/5 bg-white shadow-brutal hover:shadow-brutal-lg transition-all duration-300">
+          {/* Header with gradient background */}
+          <div className="relative h-32 bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-indigo-500/10 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-400/20 to-pink-400/20" />
+            <div className="absolute top-4 left-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center text-white text-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                {randomIcon}
+              </div>
             </div>
-            <div className="flex items-center">
-              <span className="mr-2">🔄</span>
-              <span>Retakeable</span>
+            <div className="absolute top-4 right-4">
+              <span className="px-3 py-1 bg-white/90 backdrop-blur-sm text-purple-700 text-xs font-semibold rounded-full border border-purple-200 shadow-sm">
+                Assessment
+              </span>
             </div>
+            {/* Floating elements */}
+            <div className="absolute bottom-2 right-6 w-8 h-8 bg-white/20 rounded-full" />
+            <div className="absolute bottom-6 right-2 w-4 h-4 bg-white/30 rounded-full" />
           </div>
           
-          <Link href={`/quizzes/${slug}`} className="block">
-            <Button 
-              variant="gradient" 
-              size="lg" 
-              className="w-full group-hover:shadow-glow-lg transition-all duration-300"
-            >
-              <span className="mr-2">Start Quiz</span>
-              <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </Button>
-          </Link>
-        </div>
-      </CardContent>
-    </Card>
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl font-bold text-foreground group-hover:text-purple-600 transition-colors duration-200 leading-tight">
+              {title}
+            </CardTitle>
+          </CardHeader>
+          
+          <CardContent className="flex-1 flex flex-col">
+            <p className="text-muted-foreground leading-relaxed mb-6 flex-1 line-clamp-3">
+              {description}
+            </p>
+            
+            <div className="space-y-4">
+              <div className="flex items-center justify-between text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Clock className="w-4 h-4" />
+                  <span>5-15 min</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <RotateCcw className="w-4 h-4" />
+                  <span>Retakeable</span>
+                </div>
+              </div>
+              
+              <Button 
+                variant="gradient" 
+                size="lg" 
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 group-hover:shadow-glow-lg transition-all duration-300"
+              >
+                <span className="mr-2">Start Quiz</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </Link>
+    </motion.div>
   );
 }

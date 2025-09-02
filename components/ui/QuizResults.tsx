@@ -3,6 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/Button';
 import { Progress } from '@/components/ui/Progress';
 import { AIChat } from '@/components/ui/AIChat';
+import { motion } from 'framer-motion';
+import { Trophy, Target, Calendar, Lightbulb, Share2, RotateCcw, ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 
 interface QuizResultsProps {
@@ -30,101 +32,182 @@ export function QuizResults({
   const [showAIChat, setShowAIChat] = useState(false);
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      {/* Results Header */}
-      <Card className="text-center">
-        <CardHeader>
-          <CardTitle className="text-3xl mb-2">Assessment Complete</CardTitle>
-          <p className="text-lg text-gray-600">
-            {quizTitle}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50 py-12">
+      <div className="max-w-4xl mx-auto px-6 space-y-8">
+        {/* Celebration Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="text-center"
+        >
+          <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl">
+            <Trophy className="w-10 h-10 text-white" />
+          </div>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Assessment Complete! 🎉
+          </h1>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            You've completed the <strong>{quizTitle}</strong>. Here are your personalized insights.
           </p>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            <div>
-              <div className="text-5xl font-bold text-purple-600 mb-2">
-                {score}
+        </motion.div>
+
+        {/* Score Card */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+        >
+          <Card variant="elevated" className="text-center overflow-hidden border-2 border-purple-100 shadow-brutal">
+            <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 p-8">
+              <div className="space-y-6">
+                <div>
+                  <div className="text-6xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
+                    {score}
+                  </div>
+                  <p className="text-lg text-gray-600">
+                    out of {maxScore} points
+                  </p>
+                </div>
+                
+                <div className="w-full max-w-md mx-auto">
+                  <Progress value={percentage} className="h-4 shadow-inner" />
+                  <p className="text-sm text-gray-500 mt-3 font-medium">
+                    {percentage}% Score
+                  </p>
+                </div>
               </div>
-              <p className="text-lg text-gray-600">
-                out of {maxScore} points
-              </p>
             </div>
-            
-            <div className="w-full max-w-xs mx-auto">
-              <Progress value={percentage} className="h-3" />
-              <p className="text-sm text-gray-500 mt-2">
-                {percentage}% completion
+          </Card>
+        </motion.div>
+
+        {/* Results Band */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+        >
+          <Card variant="elevated" className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50 shadow-brutal">
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center">
+                  <Target className="w-5 h-5 text-white" />
+                </div>
+                <CardTitle className="text-2xl text-purple-900">{band.label}</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-purple-800 text-lg leading-relaxed">
+                {band.advice}
               </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-      {/* Results Band */}
-      <Card className="border-purple-200 bg-purple-50">
-        <CardHeader>
-          <CardTitle className="text-purple-900">{band.label}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-purple-800 text-lg leading-relaxed">
-            {band.advice}
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Action Steps */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Your Next Steps</CardTitle>
-          <p className="text-gray-600">
-            Based on your responses, here are specific actions to consider
-          </p>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <h4 className="font-semibold text-gray-900 mb-2">This Week</h4>
-              <p className="text-gray-700">
-                {getWeeklyAction(band.label, score)}
+        {/* Action Steps */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+        >
+          <Card variant="elevated" className="shadow-brutal">
+            <CardHeader>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center">
+                  <Calendar className="w-5 h-5 text-white" />
+                </div>
+                <CardTitle className="text-2xl">Your Action Plan</CardTitle>
+              </div>
+              <p className="text-gray-600">
+                Personalized steps based on your assessment results
               </p>
-            </div>
-            
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <h4 className="font-semibold text-gray-900 mb-2">This Month</h4>
-              <p className="text-gray-700">
-                {getMonthlyAction(band.label, score)}
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="p-6 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl border border-blue-200">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-2xl">🏃</span>
+                    <h4 className="font-bold text-blue-900">This Week</h4>
+                  </div>
+                  <p className="text-blue-800 leading-relaxed">
+                    {getWeeklyAction(band.label, score)}
+                  </p>
+                </div>
+                
+                <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border border-green-200">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-2xl">🎯</span>
+                    <h4 className="font-bold text-green-900">This Month</h4>
+                  </div>
+                  <p className="text-green-800 leading-relaxed">
+                    {getMonthlyAction(band.label, score)}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Detailed Insights */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.8 }}
+        >
+          <Card variant="elevated" className="shadow-brutal">
+            <CardHeader>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 bg-yellow-500 rounded-xl flex items-center justify-center">
+                  <Lightbulb className="w-5 h-5 text-white" />
+                </div>
+                <CardTitle className="text-2xl">Key Insights</CardTitle>
+              </div>
+              <p className="text-gray-600">
+                Patterns discovered from your responses
               </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {generateInsights(answers, band.label)}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-      {/* Detailed Insights */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Detailed Insights</CardTitle>
-          <p className="text-gray-600">
-            Patterns from your responses
-          </p>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {generateInsights(answers, band.label)}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Actions */}
-      <div className="flex gap-4 justify-center">
-        <Button onClick={onRetake} variant="outline">
-          Retake Assessment
-        </Button>
-        <Button onClick={onShare} variant="secondary">
-          Share Results
-        </Button>
-        <Button>
-          Explore Next Assessment
-        </Button>
+        {/* Actions */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 1.0 }}
+          className="flex flex-col sm:flex-row gap-4 justify-center"
+        >
+          <Button 
+            onClick={onRetake} 
+            variant="outline" 
+            size="lg"
+            className="group"
+          >
+            <RotateCcw className="w-4 h-4 mr-2 group-hover:rotate-180 transition-transform duration-300" />
+            Retake Assessment
+          </Button>
+          <Button 
+            onClick={onShare} 
+            variant="secondary" 
+            size="lg"
+            className="group"
+          >
+            <Share2 className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
+            Share Results
+          </Button>
+          <Button 
+            variant="gradient" 
+            size="lg"
+            className="group shadow-glow hover:shadow-glow-lg"
+          >
+            <span className="mr-2">Explore More Quizzes</span>
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
+          </Button>
+        </motion.div>
       </div>
     </div>
   );
@@ -176,11 +259,14 @@ function generateInsights(answers: Record<string, any>, bandLabel: string): Reac
   
   if (highScores.length > 0) {
     insights.push(
-      <div key="high-patterns" className="p-4 border-l-4 border-purple-500 bg-purple-50">
-        <h5 className="font-semibold text-purple-900 mb-1">Strong Patterns</h5>
-        <p className="text-purple-800 text-sm">
+      <div key="high-patterns" className="p-6 rounded-2xl bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200">
+        <div className="flex items-center gap-3 mb-3">
+          <span className="text-2xl">🔥</span>
+          <h5 className="font-bold text-purple-900">Strong Patterns</h5>
+        </div>
+        <p className="text-purple-800 leading-relaxed">
           Your responses indicate particularly strong patterns in {highScores.length} areas. 
-          These are worth exploring further as they represent consistent behaviors or beliefs.
+          These represent consistent behaviors or beliefs worth exploring further.
         </p>
       </div>
     );
@@ -188,10 +274,13 @@ function generateInsights(answers: Record<string, any>, bandLabel: string): Reac
   
   if (lowScores.length > 0) {
     insights.push(
-      <div key="low-patterns" className="p-4 border-l-4 border-green-500 bg-green-50">
-        <h5 className="font-semibold text-green-900 mb-1">Areas of Strength</h5>
-        <p className="text-green-800 text-sm">
-          You show low scores in {lowScores.length} areas, suggesting these may be 
+      <div key="low-patterns" className="p-6 rounded-2xl bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200">
+        <div className="flex items-center gap-3 mb-3">
+          <span className="text-2xl">✨</span>
+          <h5 className="font-bold text-green-900">Areas of Strength</h5>
+        </div>
+        <p className="text-green-800 leading-relaxed">
+          You show balanced responses in {lowScores.length} areas, suggesting these may be 
           strengths or areas where you have good alignment.
         </p>
       </div>
@@ -199,9 +288,12 @@ function generateInsights(answers: Record<string, any>, bandLabel: string): Reac
   }
   
   insights.push(
-    <div key="next-steps" className="p-4 border-l-4 border-gray-400 bg-gray-50">
-      <h5 className="font-semibold text-gray-900 mb-1">Recommended Focus</h5>
-      <p className="text-gray-800 text-sm">
+    <div key="next-steps" className="p-6 rounded-2xl bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200">
+      <div className="flex items-center gap-3 mb-3">
+        <span className="text-2xl">🎯</span>
+        <h5 className="font-bold text-blue-900">Recommended Focus</h5>
+      </div>
+      <p className="text-blue-800 leading-relaxed">
         Based on your {bandLabel.toLowerCase()} results, focus on implementing the weekly 
         and monthly actions provided above. Track your progress and adjust as needed.
       </p>

@@ -4,10 +4,6 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock, User, Brain, Sparkles, Search, Lightbulb, BookOpen } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Navbar } from '@/components/layout/Navbar';
 
 export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -36,8 +32,6 @@ export default function SignUpPage() {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-yellow-50 to-purple-100 relative overflow-hidden">
       {/* Background gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-purple-400/20 via-yellow-300/30 to-purple-500/20" />
-      
-      <Navbar />
       
       <div className="pt-24 pb-12 px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="max-w-6xl mx-auto">
