@@ -1,4 +1,5 @@
 import { loadAllArticles } from '@/lib/content';
+import { fallbackBlogs } from '@/lib/fallbackData';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import Container from '@/components/Container';
@@ -14,8 +15,8 @@ function BlogContent() {
     .filter(article => article.published !== false)
     .sort((a, b) => b.publishedAt.getTime() - a.publishedAt.getTime());
 
-  const featuredPost = articles[0];
-  const recentPosts = articles.slice(1, 7);
+  const featuredPost = fallbackBlogs[0];
+  const recentPosts = fallbackBlogs.slice(1);
 
   return (
     <ErrorBoundary>

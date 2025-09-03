@@ -6,17 +6,17 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const includeUnpublished = searchParams.get('includeUnpublished') === 'true';
     
-    const quizzes = await DatabaseService.getAllQuizzes(includeUnpublished);
+    const blogs = await DatabaseService.getAllBlogs(includeUnpublished);
     
     return NextResponse.json({
       success: true,
-      data: quizzes,
-      count: quizzes.length
+      data: blogs,
+      count: blogs.length
     });
   } catch (error) {
-    console.error('Error fetching quizzes:', error);
+    console.error('Error fetching blogs:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch quizzes' },
+      { success: false, error: 'Failed to fetch blogs' },
       { status: 500 }
     );
   }
@@ -27,32 +27,34 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     
     // Validate required fields
-    const { title, slug, description, questions, scoring_bands, author_id } = body;
-    if (!title || !slug || !description || !questions || !scoring_bands || !author_id) {
+    const { title, slug, excerpt, content, author_id } = body;
+    if (!title || !slug || !excerpt || !content || !author_id) {
       return NextResponse.json(
         { success: false, error: 'Missing required fields' },
         { status: 400 }
       );
     }
     
-    const quiz = await DatabaseService.createQuiz({
+    const blog = await DatabaseService.createBlog({
       title,
       slug,
-      description,
-      questions,
-      scoring_bands,
+      excerpt,
+      content,
+      image_url: body.image_url,
+      tags: body.tags || [],
       published: body.published || false,
+      published_at: body.published ? new Date().toISOString() : undefined,
       author_id
     });
     
     return NextResponse.json({
       success: true,
-      data: quiz
+      data: blog
     });
   } catch (error) {
-    console.error('Error creating quiz:', error);
+    console.error('Error creating blog:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to create quiz' },
+      { success: false, error: 'Failed to create blog' },
       { status: 500 }
     );
   }

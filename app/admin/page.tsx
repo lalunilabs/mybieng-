@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { VersionInfo } from '@/components/VersionInfo';
 import { requireAdmin } from '@/lib/adminAuth';
 import AdminNav from '@/components/admin/AdminNav';
+import StatusCheck from '@/components/StatusCheck';
 
 export const dynamic = 'force-dynamic';
 
@@ -116,6 +117,11 @@ export default async function AdminPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* System Status */}
+          <div className="mt-6">
+            <StatusCheck />
+          </div>
 
           {/* Version Information */}
           <div className="mt-6">

@@ -1,4 +1,4 @@
-import { quizzes } from '@/data/quizzes';
+import { fallbackQuizzes } from '@/lib/fallbackData';
 import QuizCard from '@/components/QuizCard';
 import Container from '@/components/Container';
 import { PageLoader } from '@/components/ui/PageLoader';
@@ -8,7 +8,7 @@ import { Brain, Users, TrendingUp } from 'lucide-react';
 import { Suspense } from 'react';
 
 function QuizzesContent() {
-  const publishedQuizzes = quizzes.filter(q => q.published !== false);
+  const publishedQuizzes = fallbackQuizzes.filter(q => q.published !== false);
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50 py-12 relative overflow-hidden">
@@ -57,8 +57,8 @@ function QuizzesContent() {
             </div>
 
             {/* Quiz Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-              {publishedQuizzes.map((quiz, index) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {fallbackQuizzes.map((quiz, index) => (
                 <div 
                   key={quiz.slug} 
                   className="animate-scale-in" 
