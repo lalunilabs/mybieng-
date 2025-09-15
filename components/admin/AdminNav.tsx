@@ -2,16 +2,18 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function AdminNav() {
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const logout = async () => {
     setLoading(true);
     try {
       await fetch('/api/admin/logout', { method: 'POST' });
     } finally {
-      window.location.href = '/admin/login';
+      router.push('/admin/login');
     }
   };
 

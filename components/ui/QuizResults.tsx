@@ -1,3 +1,4 @@
+'use client';
 import { QuizBand } from '@/data/quizzes';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -182,6 +183,15 @@ export function QuizResults({
           className="flex flex-col sm:flex-row gap-4 justify-center"
         >
           <Button 
+            onClick={() => setShowAIChat((v) => !v)} 
+            variant="gradient" 
+            size="lg"
+            className="group shadow-glow hover:shadow-glow-lg"
+          >
+            <span className="mr-2">{showAIChat ? 'Hide AI Assistant' : 'Ask AI about my results'}</span>
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
+          </Button>
+          <Button 
             onClick={onRetake} 
             variant="outline" 
             size="lg"
@@ -208,6 +218,30 @@ export function QuizResults({
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
           </Button>
         </motion.div>
+
+        {showAIChat && (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 1.1 }}
+          >
+            <div className="mt-8">
+              <AIChat
+                quizTitle={quizTitle}
+                quizResults={{
+                  score,
+                  maxScore,
+                  band: {
+                    label: band.label,
+                    description: band.advice,
+                    advice: band.advice,
+                  },
+                  answers,
+                }}
+              />
+            </div>
+          </motion.div>
+        )}
       </div>
     </div>
   );

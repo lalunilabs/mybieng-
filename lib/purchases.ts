@@ -1,5 +1,5 @@
 // In-memory purchases store and helpers for quiz access
-import { getQuizPriceForSubscriber, isUserPremium, markDiscountedQuizUsed } from '@/lib/subscription';
+import { getQuizPriceForSubscriber, isUserPremium, markDiscountedQuizUsed, canUseFreeQuiz, markFreeQuizUsed } from '@/lib/subscription';
 import { loadQuizBySlug } from '@/lib/content';
 
 export interface QuizPurchase {
@@ -110,6 +110,11 @@ export function purchaseQuiz(email: string, slug: string) {
   // Track discounted quota usage only when a discounted (non-free) purchase happens
   if (subscriberPrice !== null && subscriberPrice > 0 && subscriberPrice < basePrice) {
     markDiscountedQuizUsed(email);
+  }
+
+  // Track free quiz allowance usage when a paid quiz becomes free for a subscriber
+  if (isPaid && finalPrice === 0 && canUseFreeQuiz(email, basePrice)) {
+    markFreeQuizUsed(email);
   }
 
   // Free (shouldn't happen for paid quizzes unless plan grants free access), but support it

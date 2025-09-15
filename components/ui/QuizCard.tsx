@@ -27,21 +27,21 @@ export function QuizCard({
   const isInProgress = progress > 0 && progress < 100;
 
   return (
-    <Card hover className="overflow-hidden">
-      <div className="bg-gradient-to-r from-purple-500 to-purple-600 h-2" />
+    <Card hover className="overflow-hidden border border-lilac-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
+      <div className="bg-gradient-to-r from-lilac-400 to-lilac-300 h-2 rounded-t-2xl" />
       
-      <CardHeader>
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-purple-600 bg-purple-50 px-3 py-1 rounded-full">
+      <CardHeader className="pb-4">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-xs font-semibold text-lilac-700 bg-lilac-100 px-2.5 py-1 rounded-full">
             {category}
           </span>
-          <span className="text-sm text-gray-500">
-            {duration} • {questions} questions
+          <span className="text-xs text-gray-500">
+            {duration} • {questions} Qs
           </span>
         </div>
         
-        <CardTitle className="text-xl mb-2">{title}</CardTitle>
-        <CardDescription className="text-gray-600">
+        <CardTitle className="text-lg font-bold text-gray-900 mb-2">{title}</CardTitle>
+        <CardDescription className="text-sm text-gray-600">
           {description}
         </CardDescription>
       </CardHeader>
@@ -50,25 +50,25 @@ export function QuizCard({
         {isInProgress && (
           <div className="mb-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-700">Progress</span>
-              <span className="text-sm text-gray-500">{progress}%</span>
+              <span className="text-xs font-medium text-gray-700">Progress</span>
+              <span className="text-xs text-gray-500">{progress}%</span>
             </div>
-            <Progress value={progress} className="h-2" />
+            <Progress value={progress} variant="premium" size="sm" />
           </div>
         )}
 
-        <div className="flex gap-3">
+        <div className="flex gap-2">
           {isInProgress ? (
-            <Button onClick={onContinue} className="flex-1">
-              Continue Assessment
+            <Button onClick={onContinue} variant="premium" size="md" className="flex-1 text-sm font-medium rounded-xl">
+              Continue
             </Button>
           ) : isCompleted ? (
-            <Button onClick={onStart} variant="outline" className="flex-1">
-              Retake Assessment
+            <Button onClick={onStart} variant="outline" size="md" className="flex-1 text-sm font-medium rounded-xl border-2">
+              Retake
             </Button>
           ) : (
-            <Button onClick={onStart} className="flex-1">
-              Start Assessment
+            <Button onClick={onStart} variant="premium" size="md" className="flex-1 text-sm font-medium rounded-xl">
+              Start
             </Button>
           )}
         </div>

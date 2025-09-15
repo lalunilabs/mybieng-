@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { BookOpen, ListChecks, FlaskConical, Users, TrendingUp, Sparkles, Brain, Search, Lightbulb, BookOpenCheck, Mail, MessageCircle, Star, ArrowRight, Play, CheckCircle, Zap } from 'lucide-react';
 import { StaggerContainer, StaggerItem } from '@/components/ui/PageTransition';
@@ -13,6 +14,7 @@ import { quizzes } from '@/data/quizzes';
 import { blogs } from '@/data/blogs';
 
 export default function Home() {
+  const router = useRouter();
   // Calculate dynamic counts
   const publishedQuizzes = quizzes.filter(quiz => quiz.published).length;
   const publishedBlogs = blogs.filter(blog => blog.published).length;
@@ -21,7 +23,7 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-yellow-50 to-purple-100">
       
       {/* Hero Section */}
-      <section className="pt-24 pb-20 px-6 relative overflow-hidden">
+      <section className="pb-20 px-6 relative overflow-hidden">
         {/* Background gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-purple-400/20 via-yellow-300/30 to-purple-500/20" />
         
@@ -434,7 +436,7 @@ export default function Home() {
                   glow 
                   tilt
                   variant="gradient"
-                  onClick={() => window.location.href = `/quiz/${quiz.slug}`}
+                  onClick={() => router.push(`/quizzes/${quiz.slug}`)}
                 >
                 <div className="flex items-start justify-between mb-6">
                   <div className="bg-purple-100 p-3 rounded-xl group-hover:bg-purple-200 transition-colors">
@@ -504,7 +506,7 @@ export default function Home() {
                   icon={<ArrowRight className="w-4 h-4" />}
                   asChild
                 >
-                  <Link href={`/quiz/${quiz.slug}`}>
+                  <Link href={`/quizzes/${quiz.slug}`}>
                     Start Assessment
                   </Link>
                 </EnhancedButton>

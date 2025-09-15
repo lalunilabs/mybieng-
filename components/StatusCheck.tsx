@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react';
@@ -13,6 +14,7 @@ interface StatusItem {
 }
 
 export default function StatusCheck() {
+  const router = useRouter();
   const [statuses, setStatuses] = useState<StatusItem[]>([
     { name: 'Development Server', status: 'checking', message: 'Checking server status...' },
     { name: 'API Endpoints', status: 'checking', message: 'Testing API connectivity...' },
@@ -161,7 +163,7 @@ export default function StatusCheck() {
           <Button 
             variant="outline" 
             className="border-purple-600 text-black hover:bg-yellow-50"
-            onClick={() => window.location.reload()}
+            onClick={() => router.refresh()}
           >
             Reload Page
           </Button>

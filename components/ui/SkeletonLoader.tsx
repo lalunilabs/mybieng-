@@ -2,7 +2,24 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
+
+function Skeleton({
+  className,
+  variant,
+  lines,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement> & {
+  variant?: 'text' | 'circular' | 'rectangular' | 'card';
+  lines?: number;
+}) {
+  return (
+    <div
+      className={cn("animate-pulse rounded-md bg-muted", className)}
+      {...props}
+    />
+  )
+}
 
 interface SkeletonProps {
   className?: string;

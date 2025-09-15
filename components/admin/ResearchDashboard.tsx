@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getResearchAnalytics, getQuizInsights, exportResearchData } from '@/lib/research';
 import type { ResearchAnalytics } from '@/lib/research';
 
 export function ResearchDashboard() {
@@ -9,33 +8,93 @@ export function ResearchDashboard() {
   const [selectedQuiz, setSelectedQuiz] = useState<string>('');
   const [quizInsights, setQuizInsights] = useState<any>(null);
   const [exportFormat, setExportFormat] = useState<'json' | 'csv'>('json');
+  const [timeRange, setTimeRange] = useState<'24h' | '7d' | '30d' | '90d' | 'all'>('all');
 
   useEffect(() => {
-    // Load research analytics
-    const data = getResearchAnalytics();
-    setAnalytics(data);
-  }, []);
+    // Load research analytics from admin API (DB-backed)
+    (async () => {
+      try {
+        const res = await fetch(`/api/admin/research/analytics?timeRange=${timeRange}`);
+        if (res.ok) {
+          const j = await res.json();
+          setAnalytics(j);
+        }
+      } catch {}
+    })();
+  }, [timeRange]);
 
-  const handleQuizSelect = (quizSlug: string) => {
+  const handleQuizSelect = async (quizSlug: string) => {
     setSelectedQuiz(quizSlug);
-    const insights = getQuizInsights(quizSlug);
-    setQuizInsights(insights);
+    try {
+      const res = await fetch(`/api/admin/research/quiz/${encodeURIComponent(quizSlug)}/insights?timeRange=${timeRange}`);
+      if (res.ok) {
+        const j = await res.json();
+        setQuizInsights(j);
+      }
+    } catch {}
   };
 
-  const handleExport = () => {
-    const data = exportResearchData(exportFormat);
-    const blob = new Blob([data], { 
-      type: exportFormat === 'json' ? 'application/json' : 'text/csv' 
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `research-data-${new Date().toISOString().split('T')[0]}.${exportFormat}`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  const handleExport = async () => {
+    try {
+      const res = await fetch(`/api/admin/research/export?format=${exportFormat}&timeRange=${timeRange}`);
+      if (!res.ok) return;
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `research-data-${new Date().toISOString().split('T')[0]}.${exportFormat}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {}
   };
+
+  const handlePerQuizExport = async (format: 'json' | 'csv') => {
+    if (!selectedQuiz) return;
+    try {
+      const res = await fetch(`/api/admin/research/quiz/${encodeURIComponent(selectedQuiz)}/export?format=${format}&timeRange=${timeRange}`);
+      if (!res.ok) return;
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${selectedQuiz}-research-${new Date().toISOString().split('T')[0]}.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {}
+  };
+
+  const handleDownloadReport = async () => {
+    if (!selectedQuiz) return;
+    try {
+      const res = await fetch(`/api/admin/research/quiz/${encodeURIComponent(selectedQuiz)}/report?timeRange=${timeRange}`);
+      if (!res.ok) return;
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${selectedQuiz}-research-report-${new Date().toISOString().split('T')[0]}.md`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {}
+  };
+
+  useEffect(() => {
+    if (selectedQuiz) {
+      (async () => {
+        try {
+          const res = await fetch(`/api/admin/research/quiz/${encodeURIComponent(selectedQuiz)}/insights?timeRange=${timeRange}`);
+          if (res.ok) setQuizInsights(await res.json());
+        } catch {}
+      })();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeRange]);
 
   if (!analytics) {
     return (
@@ -54,6 +113,18 @@ export function ResearchDashboard() {
           <p className="text-gray-600">Anonymous data analysis for quiz improvement</p>
         </div>
         <div className="flex items-center space-x-3">
+          <select
+            value={timeRange}
+            onChange={(e) => setTimeRange(e.target.value as any)}
+            className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+            aria-label="Time range"
+          >
+            <option value="24h">Last 24h</option>
+            <option value="7d">Last 7d</option>
+            <option value="30d">Last 30d</option>
+            <option value="90d">Last 90d</option>
+            <option value="all">All time</option>
+          </select>
           <select
             value={exportFormat}
             onChange={(e) => setExportFormat(e.target.value as 'json' | 'csv')}
@@ -154,6 +225,20 @@ export function ResearchDashboard() {
                     Selected
                   </span>
                 )}
+                <a
+                  href={`/quizzes/${quizSlug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-blue-600 hover:underline"
+                >
+                  View
+                </a>
+                <a
+                  href={`/admin/quizzes?slug=${encodeURIComponent(quizSlug)}`}
+                  className="text-xs text-gray-700 hover:underline"
+                >
+                  Edit
+                </a>
               </div>
               <div className="flex items-center space-x-3">
                 <span className="text-sm text-gray-600">{count} responses</span>
@@ -172,9 +257,58 @@ export function ResearchDashboard() {
       {/* Quiz Insights */}
       {quizInsights && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Insights: {selectedQuiz.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-3">
+            <span>Insights: {selectedQuiz.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
+            <a
+              href={`/quizzes/${selectedQuiz}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-blue-600 hover:underline"
+            >
+              View page
+            </a>
+            <a
+              href={`/admin/quizzes?slug=${encodeURIComponent(selectedQuiz)}`}
+              className="text-xs text-gray-700 hover:underline"
+            >
+              Edit in Admin
+            </a>
           </h3>
+          <div className="flex flex-wrap items-center gap-3 mb-6">
+            <span className="text-sm text-gray-600">Time Range:</span>
+            <select
+              value={timeRange}
+              onChange={(e) => setTimeRange(e.target.value as any)}
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+            >
+              <option value="24h">Last 24h</option>
+              <option value="7d">Last 7d</option>
+              <option value="30d">Last 30d</option>
+              <option value="90d">Last 90d</option>
+              <option value="all">All time</option>
+            </select>
+
+            <div className="ml-auto flex items-center gap-2">
+              <button
+                onClick={() => handlePerQuizExport('json')}
+                className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-md text-sm"
+              >
+                Export Selected (JSON)
+              </button>
+              <button
+                onClick={() => handlePerQuizExport('csv')}
+                className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-md text-sm"
+              >
+                Export Selected (CSV)
+              </button>
+              <button
+                onClick={handleDownloadReport}
+                className="px-3 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-md text-sm"
+              >
+                Download Report (.md)
+              </button>
+            </div>
+          </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>

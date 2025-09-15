@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { QuizQuestion as Question } from '@/data/quizzes';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -147,9 +148,35 @@ export function QuizQuestion({ question, questionNumber, totalQuestions, value, 
         <CardTitle className="text-2xl leading-relaxed text-foreground">
           {question.text}
         </CardTitle>
+        {question.imageUrl && (
+          <div className="mt-3 relative w-full h-64">
+            <Image
+              src={question.imageUrl}
+              alt="Question illustration"
+              fill
+              sizes="(max-width: 768px) 100vw, 768px"
+              className="rounded-xl border object-cover"
+              priority={false}
+            />
+          </div>
+        )}
       </CardHeader>
       <CardContent className="pt-2">
         {renderQuestionInput()}
+        {(question as any).attachments?.length ? (
+          <div className="mt-4">
+            <div className="text-sm font-medium text-muted-foreground mb-2">Resources</div>
+            <ul className="list-disc list-inside space-y-1 text-sm">
+              {(question as any).attachments.map((att: any, idx: number) => (
+                <li key={idx}>
+                  <a href={att.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                    {att.label || att.url}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
       </CardContent>
     </Card>
   );

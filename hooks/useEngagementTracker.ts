@@ -2,6 +2,14 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
+// Newsletter prompt config
+const PROMPT_DELAY_MS = 600000; // 10 minutes
+const SNOOZE_DAYS = 14; // Biweekly
+const MS_IN_DAY = 24 * 60 * 60 * 1000;
+const LAST_PROMPT_KEY = 'newsletter-last-prompt-at';
+const LEGACY_SHOWN_KEY = 'newsletter-modal-shown';
+const SUBSCRIBED_KEY = 'newsletter-subscribed';
+
 interface EngagementData {
   startTime: number;
   pageViews: number;
@@ -65,27 +73,49 @@ export function useEngagementTracker() {
 
   // Newsletter modal trigger (10 minutes = 600,000ms)
   useEffect(() => {
-    const hasShownModal = localStorage.getItem('newsletter-modal-shown');
-    const hasSubscribed = localStorage.getItem('newsletter-subscribed');
-    
-    if (hasShownModal || hasSubscribed) return;
+    try {
+      // Respect subscription state
+      const hasSubscribed = localStorage.getItem(SUBSCRIBED_KEY) === 'true';
+      if (hasSubscribed) return;
 
-    const timer = setTimeout(() => {
-      if (engagement.hasScrolled && engagement.hasInteracted) {
-        setShowNewsletterModal(true);
-        localStorage.setItem('newsletter-modal-shown', 'true');
+      // Migrate legacy one-time flag to timestamp-based system
+      const legacyShown = localStorage.getItem(LEGACY_SHOWN_KEY);
+      const existingLastPrompt = localStorage.getItem(LAST_PROMPT_KEY);
+      if (legacyShown && !existingLastPrompt) {
+        localStorage.setItem(LAST_PROMPT_KEY, String(Date.now()));
+        localStorage.removeItem(LEGACY_SHOWN_KEY);
       }
-    }, 600000); // 10 minutes
 
-    return () => clearTimeout(timer);
+      const lastPromptAt = parseInt(localStorage.getItem(LAST_PROMPT_KEY) || '0', 10);
+      const now = Date.now();
+      const eligible = !lastPromptAt || (now - lastPromptAt) >= (SNOOZE_DAYS * MS_IN_DAY);
+      if (!eligible) return;
+
+      if (!(engagement.hasScrolled && engagement.hasInteracted)) return;
+
+      const timer = setTimeout(() => {
+        setShowNewsletterModal(true);
+        try {
+          localStorage.setItem(LAST_PROMPT_KEY, String(Date.now()));
+        } catch {}
+      }, PROMPT_DELAY_MS);
+
+      return () => clearTimeout(timer);
+    } catch {
+      // If localStorage is unavailable, fail silently
+    }
   }, [engagement.hasScrolled, engagement.hasInteracted]);
 
   const closeNewsletterModal = useCallback(() => {
+    try {
+      // Snooze reminders for 14 days from dismissal
+      localStorage.setItem(LAST_PROMPT_KEY, String(Date.now()));
+    } catch {}
     setShowNewsletterModal(false);
   }, []);
 
   const markSubscribed = useCallback(() => {
-    localStorage.setItem('newsletter-subscribed', 'true');
+    localStorage.setItem(SUBSCRIBED_KEY, 'true');
     setShowNewsletterModal(false);
   }, []);
 

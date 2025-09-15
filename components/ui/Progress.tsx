@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 interface ProgressProps extends HTMLAttributes<HTMLDivElement> {
   value?: number;
   max?: number;
-  variant?: 'default' | 'gradient' | 'animated';
+  variant?: 'default' | 'gradient' | 'animated' | 'premium';
   size?: 'sm' | 'md' | 'lg';
   showValue?: boolean;
 }
@@ -14,15 +14,16 @@ const Progress = forwardRef<HTMLDivElement, ProgressProps>(
     const percentage = Math.min(Math.max((value / max) * 100, 0), 100);
     
     const variants = {
-      default: 'bg-primary',
-      gradient: 'bg-gradient-to-r from-primary to-purple-600',
-      animated: 'bg-gradient-to-r from-primary via-purple-500 to-primary bg-[length:200%_100%] animate-shimmer'
+      default: 'bg-gray-200',
+      gradient: 'bg-gradient-to-r from-lilac-400 to-lilac-300',
+      animated: 'bg-gradient-to-r from-lilac-400 via-lilac-300 to-lilac-400 bg-[length:200%_100%] animate-shimmer',
+      premium: 'bg-gradient-to-r from-lilac-400 to-lilac-300'
     };
 
     const sizes = {
-      sm: 'h-1',
-      md: 'h-2',
-      lg: 'h-3'
+      sm: 'h-1.5',
+      md: 'h-2.5',
+      lg: 'h-3.5'
     };
 
     return (
@@ -30,7 +31,7 @@ const Progress = forwardRef<HTMLDivElement, ProgressProps>(
         <div
           ref={ref}
           className={cn(
-            'relative w-full overflow-hidden rounded-full bg-secondary/50',
+            'relative w-full overflow-hidden rounded-full bg-gray-100',
             sizes[size],
             className
           )}
@@ -38,25 +39,33 @@ const Progress = forwardRef<HTMLDivElement, ProgressProps>(
         >
           <div
             className={cn(
-              'h-full transition-all duration-500 ease-out rounded-full',
+              'h-full transition-all duration-700 ease-out rounded-full',
               variants[variant],
               percentage > 0 && 'shadow-sm'
             )}
             style={{ width: `${percentage}%` }}
           />
           
-          {/* Shimmer effect for completed portion */}
+          {/* Glow effect for premium variant */}
+          {variant === 'premium' && percentage > 0 && (
+            <div
+              className="absolute top-0 left-0 h-full bg-gradient-to-r from-lilac-300 to-lilac-200 opacity-30 blur-sm"
+              style={{ width: `${percentage}%` }}
+            />
+          )}
+          
+          {/* Shimmer effect for animated variant */}
           {variant === 'animated' && percentage > 0 && (
             <div
-              className="absolute top-0 left-0 h-full bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer"
+              className="absolute top-0 left-0 h-full bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"
               style={{ width: `${percentage}%` }}
             />
           )}
         </div>
         
         {showValue && (
-          <div className="flex justify-between items-center mt-1 text-xs text-muted-foreground">
-            <span>{Math.round(percentage)}%</span>
+          <div className="flex justify-between items-center mt-2 text-xs text-gray-600">
+            <span className="font-medium">{Math.round(percentage)}%</span>
             <span>{value} / {max}</span>
           </div>
         )}

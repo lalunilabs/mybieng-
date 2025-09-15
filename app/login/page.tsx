@@ -4,6 +4,9 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock, Brain } from 'lucide-react';
+import { Label } from '@/components/ui/Label';
+import { Input } from '@/components/shadcn/input';
+import { Button } from '@/components/ui/Button';
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -28,7 +31,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-white">
       
-      <div className="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+      <div className="pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -49,19 +52,17 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Email Field */}
               <div>
-                <label htmlFor="email" className="text-sm font-medium text-gray-700 mb-2 block">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input
+                <Label htmlFor="email">Email Address</Label>
+                <div className="relative mt-1">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+                  <Input
                     id="email"
                     name="email"
                     type="email"
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all"
+                    className="pl-10 h-12 rounded-lg focus-visible:ring-brand-500"
                     placeholder="Enter your email"
                   />
                 </div>
@@ -69,25 +70,23 @@ export default function LoginPage() {
 
               {/* Password Field */}
               <div>
-                <label htmlFor="password" className="text-sm font-medium text-gray-700 mb-2 block">
-                  Password
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input
+                <Label htmlFor="password">Password</Label>
+                <div className="relative mt-1">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+                  <Input
                     id="password"
                     name="password"
                     type={showPassword ? 'text' : 'password'}
                     required
                     value={formData.password}
                     onChange={handleChange}
-                    className="w-full pl-10 pr-10 h-12 border border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all"
+                    className="pl-10 pr-10 h-12 rounded-lg focus-visible:ring-brand-500"
                     placeholder="Enter your password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -102,12 +101,9 @@ export default function LoginPage() {
               </div>
 
               {/* Submit Button */}
-              <button
-                type="submit"
-                className="w-full h-12 bg-purple-600 hover:bg-purple-700 text-white font-semibold text-lg rounded-lg transition-colors"
-              >
+              <Button type="submit" className="w-full h-12 bg-purple-600 hover:bg-purple-700 text-white font-semibold text-lg rounded-lg">
                 Sign In
-              </button>
+              </Button>
             </form>
 
             {/* Divider */}

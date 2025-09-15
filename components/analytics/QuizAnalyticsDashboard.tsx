@@ -59,8 +59,8 @@ export function QuizAnalyticsDashboard({ quizSlug }: { quizSlug?: string }) {
       try {
         setIsLoading(true);
         const url = quizSlug 
-          ? `/api/research/quiz/${quizSlug}?range=${timeRange}`
-          : `/api/research/analytics?range=${timeRange}`;
+          ? `/api/admin/research/quiz/${quizSlug}?timeRange=${timeRange}`
+          : `/api/admin/research/analytics?timeRange=${timeRange}`;
         
         const response = await fetch(url);
         const data = await response.json();

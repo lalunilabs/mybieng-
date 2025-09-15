@@ -1,11 +1,31 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import type { ImgHTMLAttributes } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
+import { PRICING } from '@/lib/constants';
+import { trackBlogView, trackBlogLike, trackBlogReadProgress } from '@/lib/analytics/gtag';
+import { trackSubscription } from '@/lib/analytics/gtag';
 import { Blog } from '@/data/blogs';
+import PrimaryCTA from '@/components/ui/PrimaryCTA';
 
 interface ClassicBlogReaderProps {
   blog: Blog;
+}
+
+interface ArticleAccessResponse {
+  exists?: boolean;
+  hasAccess: boolean;
+  isPaid: boolean;
+  basePrice: number;
+  finalPrice: number;
+  isSubscriber: boolean;
+  purchased: boolean;
+  error?: string;
 }
 
 export function ClassicBlogReader({ blog }: ClassicBlogReaderProps) {
@@ -13,6 +33,18 @@ export function ClassicBlogReader({ blog }: ClassicBlogReaderProps) {
   const [isLiked, setIsLiked] = useState(false);
   const [likes, setLikes] = useState(blog.likes || 0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [userEmail, setUserEmail] = useState<string>('');
+  const [articleAccess, setArticleAccess] = useState<ArticleAccessResponse | null>(null);
+  const [showPaywall, setShowPaywall] = useState(false);
+  const router = useRouter();
+
+  // Load cached email if present
+  useEffect(() => {
+    try {
+      const cached = localStorage.getItem('mybeing_email');
+      if (cached) setUserEmail(cached);
+    } catch {}
+  }, []);
 
   useEffect(() => {
     // Check subscription status
@@ -21,23 +53,64 @@ export function ClassicBlogReader({ blog }: ClassicBlogReaderProps) {
       .then(data => setUserSubscription(data))
       .catch(() => setUserSubscription({ isPremium: false }));
 
-    // Check like status
-    fetch(`/api/blogs/${blog.id}/like-status`)
-      .then(res => res.json())
-      .then(data => setIsLiked(data.isLiked))
-      .catch(() => {});
-  }, [blog.id]);
+    // Check like status (only when we have an email)
+    if (userEmail) {
+      fetch(`/api/blog/like-status?email=${encodeURIComponent(userEmail)}&articleId=${encodeURIComponent(blog.id)}`)
+        .then(res => res.json())
+        .then(data => setIsLiked(!!data.isLiked))
+        .catch(() => {});
+    } else {
+      setIsLiked(false);
+    }
+    // Check article access for premium articles
+    if (blog.isPremium) {
+      const params = new URLSearchParams({ slug: blog.slug });
+      if (userEmail) params.set('email', userEmail);
+      fetch(`/api/article/access?${params.toString()}`)
+        .then(res => res.json())
+        .then(data => setArticleAccess(data))
+        .catch(() => setArticleAccess({ hasAccess: false, isPaid: true, basePrice: blog.price || 0, finalPrice: blog.price || 0, isSubscriber: false, purchased: false }));
+    } else {
+      setArticleAccess({ hasAccess: true, isPaid: false, basePrice: 0, finalPrice: 0, isSubscriber: false, purchased: false });
+    }
+  }, [blog.id, blog.slug, blog.isPremium, blog.price, userEmail]);
+
+  useEffect(() => {
+    if (!blog.isPremium) {
+      setShowPaywall(false);
+      return;
+    }
+    if (articleAccess) {
+      setShowPaywall(!articleAccess.hasAccess);
+      return;
+    }
+    setShowPaywall(true);
+  }, [blog.isPremium, articleAccess]);
 
   const handleLike = async () => {
     try {
-      const response = await fetch(`/api/blogs/${blog.id}/like`, {
+      let email = userEmail;
+      if (!email) {
+        email = prompt('Enter your email to like this article:') || '';
+        if (!email) return;
+        try { localStorage.setItem('mybeing_email', email); } catch {}
+        setUserEmail(email);
+      }
+
+      const action = isLiked ? 'unlike' : 'like';
+      const response = await fetch('/api/blog/like', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, articleId: blog.id, action })
       });
       
       if (response.ok) {
-        const data = await response.json();
-        setIsLiked(data.isLiked);
-        setLikes(data.likes);
+        setIsLiked(!isLiked);
+        setLikes(prev => isLiked ? prev - 1 : prev + 1);
+        // Track blog like event only on like
+        if (action === 'like') {
+          try { trackBlogLike(blog.slug); } catch {}
+        }
       }
     } catch (error) {
       console.error('Failed to like article:', error);
@@ -45,20 +118,50 @@ export function ClassicBlogReader({ blog }: ClassicBlogReaderProps) {
   };
 
   const handlePlayAudio = () => {
-    setIsPlaying(!isPlaying);
-    // Audio implementation would go here
+    // Allow audio for subscribers or if article access has been granted (purchase/unlock)
+    if (userSubscription?.isPremium || articleAccess?.hasAccess) {
+      setIsPlaying(!isPlaying);
+      // Audio implementation would go here
+    } else {
+      setShowPaywall(true);
+    }
   };
 
   const handleSubscribe = () => {
-    window.location.href = '/subscribe';
+    // Track subscription intent
+    trackSubscription('premium', PRICING.MONTHLY_USD);
+    router.push('/subscribe');
   };
 
-  const handlePurchaseArticle = () => {
-    window.location.href = `/purchase/article/${blog.id}`;
+  const handlePurchaseArticle = async () => {
+    // Ensure we have an email
+    let email = userEmail;
+    if (!email) {
+      email = prompt('Enter your email to purchase this article:') || '';
+      if (!email) return;
+      try { localStorage.setItem('mybeing_email', email); } catch {}
+      setUserEmail(email);
+    }
+    try {
+      const res = await fetch('/api/article/purchase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, slug: blog.slug }),
+      });
+      if (res.ok) {
+        const params = new URLSearchParams({ slug: blog.slug, email });
+        const accessRes = await fetch(`/api/article/access?${params.toString()}`);
+        const accessJson: ArticleAccessResponse = await accessRes.json();
+        setArticleAccess(accessJson);
+        setShowPaywall(!accessJson.hasAccess);
+      }
+    } catch (e) {
+      console.error('Article purchase failed', e);
+    }
   };
 
-  // Show paywall for premium content
-  if (blog.isPremium && !userSubscription?.isPremium) {
+  // Show paywall for premium content if access not granted
+  if (showPaywall && blog.isPremium) {
     return (
       <div className="min-h-screen bg-white">
         <article className="max-w-4xl mx-auto px-6 py-20">
@@ -88,7 +191,7 @@ export function ClassicBlogReader({ blog }: ClassicBlogReaderProps) {
                   </div>
                   <h3 className="text-2xl font-serif text-black mb-4">Premium Monthly</h3>
                   <div className="text-4xl font-serif text-black mb-6">
-                    $32<span className="text-xl text-gray-600 font-sans">/month</span>
+                    {'$'}{PRICING.MONTHLY_USD}<span className="text-xl text-gray-600 font-sans">/month</span>
                   </div>
                   
                   <ul className="text-gray-700 space-y-3 mb-8 text-left max-w-sm mx-auto">
@@ -98,11 +201,11 @@ export function ClassicBlogReader({ blog }: ClassicBlogReaderProps) {
                     </li>
                     <li className="flex items-center">
                       <span className="mr-3 text-gray-400">✓</span> 
-                      2 premium articles/month
+                      3 premium articles/month
                     </li>
                     <li className="flex items-center">
                       <span className="mr-3 text-gray-400">✓</span> 
-                      Related quizzes included
+                      2 free quizzes/month (≤ $50 value each)
                     </li>
                     <li className="flex items-center">
                       <span className="mr-3 text-gray-400">✓</span> 
@@ -110,12 +213,15 @@ export function ClassicBlogReader({ blog }: ClassicBlogReaderProps) {
                     </li>
                   </ul>
                   
-                  <Button 
+                  <PrimaryCTA 
                     onClick={handleSubscribe}
+                    surface="classic_article_paywall"
+                    eventName="subscribe_click"
+                    variant="secondary"
                     className="w-full bg-black text-white hover:bg-gray-800 py-4 text-lg font-medium"
                   >
                     Subscribe Now
-                  </Button>
+                  </PrimaryCTA>
                 </div>
               </div>
 
@@ -126,7 +232,7 @@ export function ClassicBlogReader({ blog }: ClassicBlogReaderProps) {
                     <span className="text-gray-600 text-2xl">📖</span>
                   </div>
                   <h3 className="text-2xl font-serif text-black mb-4">Single Article</h3>
-                  <div className="text-4xl font-serif text-black mb-6">${blog.price}</div>
+                  <div className="text-4xl font-serif text-black mb-6">${articleAccess?.finalPrice ?? blog.price}</div>
                   
                   <ul className="text-gray-700 space-y-3 mb-8 text-left max-w-sm mx-auto">
                     <li className="flex items-center">
@@ -143,18 +249,21 @@ export function ClassicBlogReader({ blog }: ClassicBlogReaderProps) {
                     </li>
                   </ul>
                   
-                  <Button 
+                  <PrimaryCTA 
                     onClick={handlePurchaseArticle}
+                    surface="classic_article_paywall"
+                    eventName="purchase_click"
+                    variant="outline"
                     className="w-full border border-gray-300 text-gray-700 hover:bg-gray-50 py-4 text-lg font-medium"
                   >
                     Purchase Article
-                  </Button>
+                  </PrimaryCTA>
                 </div>
               </div>
             </div>
 
             <p className="text-sm text-gray-600 text-center">
-              Secure payment • Cancel anytime • 30-day guarantee
+              Private by default • Cancel anytime • No right/wrong answers
             </p>
           </div>
         </article>
@@ -233,9 +342,16 @@ export function ClassicBlogReader({ blog }: ClassicBlogReaderProps) {
         {/* Article Content */}
         <div className="mb-16">
           <div className="prose prose-lg sm:prose-xl max-w-none">
-            <div className="whitespace-pre-line text-gray-800 leading-relaxed font-light tracking-normal text-lg sm:text-xl">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}
+              components={{
+                img: (props: ImgHTMLAttributes<HTMLImageElement>) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img {...props} alt={(props.alt as string) || ''} className="rounded-md" />
+                ),
+              }}
+            >
               {blog.content}
-            </div>
+            </ReactMarkdown>
           </div>
         </div>
 
@@ -253,7 +369,7 @@ export function ClassicBlogReader({ blog }: ClassicBlogReaderProps) {
             <div>
               <div className="space-y-6">
                 {blog.relatedQuizzes.map(quizSlug => (
-                  <a key={quizSlug} href={`/quizzes/${quizSlug}/classic`} className="block group">
+                  <Link key={quizSlug} href={`/quizzes/${quizSlug}/classic`} className="block group">
                     <div className="p-6 border border-gray-200 hover:border-black transition-colors duration-200">
                       <div className="flex items-center justify-between">
                         <div>
@@ -267,7 +383,7 @@ export function ClassicBlogReader({ blog }: ClassicBlogReaderProps) {
                         <span className="text-2xl text-gray-400 group-hover:text-black transition-colors">→</span>
                       </div>
                     </div>
-                  </a>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -287,10 +403,11 @@ export function ClassicBlogReader({ blog }: ClassicBlogReaderProps) {
               onClick={handleSubscribe} 
               className="bg-black text-white hover:bg-gray-800 px-12 py-4 text-lg font-medium"
             >
-              Subscribe for $32/month
+              Subscribe for {'$'}{PRICING.MONTHLY_USD}/month
             </Button>
           </div>
         )}
+
       </article>
     </div>
   );

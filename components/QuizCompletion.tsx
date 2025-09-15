@@ -1,209 +1,398 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
+import { Label } from '@/components/ui/Label';
+import { Input } from '@/components/shadcn/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Progress } from '@/components/ui/Progress';
+import { QuizBand, getBandForScore } from '@/data/quizzes';
+import { Mail, CheckCircle, BarChart3, MessageCircle, ExternalLink, Sparkles } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { QuizReportModal } from '@/components/QuizReportModal';
+import PrimaryCTA from '@/components/ui/PrimaryCTA';
 
 interface QuizCompletionProps {
-  quizSlug: string;
+  sessionId: string;
+  quizId: string;
   quizTitle: string;
-  responses: Array<{
+  quizSlug?: string;
+  responses: Record<string, any> | Array<{
     questionId: string;
-    questionText: string;
     answer: string | number;
+    questionText: string;
     questionType: 'multiple-choice' | 'scale' | 'text';
   }>;
+  score: number;
+  maxScore: number;
+  onComplete?: () => void;
 }
 
-export function QuizCompletion({ quizSlug, quizTitle, responses }: QuizCompletionProps) {
+export function QuizCompletion({
+  sessionId,
+  quizId,
+  quizTitle,
+  quizSlug: initialQuizSlug,
+  responses: initialResponses,
+  score,
+  maxScore,
+  onComplete
+}: QuizCompletionProps) {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isComplete, setIsComplete] = useState(false);
-  const [chatSessionId, setChatSessionId] = useState<string | null>(null);
-  const [quickResults, setQuickResults] = useState<any>(null);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [band, setBand] = useState<QuizBand | null>(null);
+  const [showDetailedReport, setShowDetailedReport] = useState(false);
+  const [quizSlug, setQuizSlug] = useState(initialQuizSlug || quizId);
+  const [responses, setResponses] = useState<Array<{
+    questionId: string;
+    answer: string | number;
+    questionText: string;
+    questionType: 'multiple-choice' | 'scale' | 'text';
+  }>>(Array.isArray(initialResponses) ? initialResponses : []);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const router = useRouter();
+  const { data: session } = useSession();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  useEffect(() => {
+    // Determine the band based on score
+    const calculatedBand = getBandForScore(score, maxScore);
+    setBand(calculatedBand);
+    
+    // If responses is a simple object, we need to convert it
+    if (!Array.isArray(initialResponses) && quizId) {
+      // For now, we'll just set an empty array since we don't have the question texts
+      // In a real implementation, we would fetch the quiz details to get question texts
+      setResponses([]);
+    }
+  }, [score, maxScore, quizId, initialResponses]);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!email.trim() || isSubmitting) return;
-
     setIsSubmitting(true);
-
+    
     try {
+      // Submit quiz results
       const response = await fetch('/api/quiz/complete', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
-          quizSlug,
+          sessionId,
+          quizId,
           responses,
-          userEmail: email
-        })
+          score,
+        }),
       });
 
-      const data = await response.json();
+      if (!response.ok) {
+        throw new Error('Failed to submit quiz');
+      }
 
-      if (data.success) {
-        setIsComplete(true);
-        setChatSessionId(data.chatSessionId);
-        setQuickResults(data.analysis);
-      } else {
-        alert('Error: ' + data.error);
+      // If email provided, send results
+      if (email) {
+        const emailResponse = await fetch('/api/quiz/email-results', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email,
+            quizId,
+            quizTitle,
+            score,
+            maxScore,
+            band: band?.label,
+          }),
+        });
+
+        if (!emailResponse.ok) {
+          throw new Error('Failed to send email');
+        }
+      }
+
+      setIsSubmitted(true);
+      
+      // For anonymous users, show the report modal immediately after submission
+      if (!session) {
+        setShowReportModal(true);
       }
     } catch (error) {
-      alert('Failed to submit quiz. Please try again.');
+      console.error('Error submitting quiz:', error);
+      // Handle error
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (isComplete) {
+  const handleEmailReport = async (email: string) => {
+    try {
+      const emailResponse = await fetch('/api/quiz/email-results', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          quizId,
+          quizTitle,
+          score,
+          maxScore,
+          band: band?.label,
+        }),
+      });
+
+      if (!emailResponse.ok) {
+        throw new Error('Failed to send email');
+      }
+      
+      setIsSubmitted(true);
+    } catch (error) {
+      console.error('Error sending email:', error);
+    }
+  };
+
+  // For logged-in users, redirect to dashboard to see their report
+  if (session && band) {
+    router.push('/dashboard');
+    return null;
+  }
+
+  if (showDetailedReport && band) {
     return (
-      <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg border border-gray-200 p-8">
-        <div className="text-center mb-6">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-2xl">✅</span>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50 py-8">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">Your {quizTitle} Report</h1>
+            <Button 
+              onClick={() => session ? router.push('/dashboard') : setShowDetailedReport(false)}
+              variant="outline"
+            >
+              {session ? 'Back to Dashboard' : 'Back to Results'}
+            </Button>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Quiz Complete!</h2>
-          <p className="text-gray-600">
-            Your detailed results have been sent to <strong>{email}</strong>
-          </p>
-        </div>
-
-        {quickResults && (
-          <div className="bg-brand-50 border border-brand-200 rounded-lg p-6 mb-6">
-            <h3 className="font-semibold text-brand-900 mb-2">Quick Results</h3>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-lg font-medium text-brand-800">{quickResults.band}</p>
-                <p className="text-sm text-brand-600">{quickResults.bandDescription}</p>
+          
+          <Card className="mb-8">
+            <CardContent className="p-8">
+              <div className="text-center mb-8">
+                <div className="w-24 h-24 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <BarChart3 className="w-12 h-12 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Quiz Complete!</h2>
+                <p className="text-gray-600 mb-6">Here's your personalized report with insights and recommendations.</p>
+                
+                <div className="flex flex-wrap justify-center gap-8 mb-8">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-purple-600">{score}</div>
+                    <div className="text-gray-600">Your Score</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-pink-600">{Math.round((score / maxScore) * 100)}%</div>
+                    <div className="text-gray-600">Percentile</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-blue-600">{band.label}</div>
+                    <div className="text-gray-600">Category</div>
+                  </div>
+                </div>
               </div>
-              <div className="text-right">
-                <p className="text-2xl font-bold text-brand-700">{quickResults.score}</p>
-                <p className="text-xs text-brand-500">Score</p>
+              
+              <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 mb-8 border border-purple-200">
+                <h3 className="text-xl font-bold text-purple-900 mb-4">What This Means</h3>
+                <p className="text-purple-800 mb-4">{band?.advice}</p>
               </div>
-            </div>
-          </div>
-        )}
-
-        <div className="space-y-4">
-          <div className="bg-gray-50 rounded-lg p-4">
-            <h4 className="font-medium text-gray-900 mb-2">📧 Check Your Email</h4>
-            <p className="text-sm text-gray-600">
-              Your comprehensive analysis, insights, and personalized recommendations 
-              have been sent to your email address.
-            </p>
-          </div>
-
-          {chatSessionId && (
-            <div className="bg-purple-50 rounded-lg p-4">
-              <h4 className="font-medium text-purple-900 mb-2">🤖 AI Chat Available</h4>
-              <p className="text-sm text-purple-700 mb-3">
-                Have questions about your results? Chat with our AI for deeper insights.
-              </p>
-              <a href={`/chat/${chatSessionId}`}>
-                <Button className="w-full">
-                  Start AI Chat Session
+              
+              <div className="flex flex-wrap justify-center gap-4">
+                <Button 
+                  onClick={() => session ? router.push('/dashboard') : router.push('/')}
+                  variant="gradient"
+                >
+                  {session ? 'View All Reports' : 'Take Another Quiz'}
                 </Button>
-              </a>
-            </div>
-          )}
-
-          <div className="flex space-x-3 pt-4">
-            <a href="/quizzes" className="flex-1">
-              <Button variant="outline" className="w-full">
-                Take Another Quiz
-              </Button>
-            </a>
-            <a href="/blog" className="flex-1">
-              <Button variant="outline" className="w-full">
-                Read Our Blog
-              </Button>
-            </a>
-          </div>
-        </div>
-
-        <div className="mt-6 pt-6 border-t border-gray-200 text-center">
-          <p className="text-xs text-gray-500">
-            🔒 Your privacy matters: We don't store your responses on our servers. 
-            All analysis is done in real-time and sent directly to your email.
-          </p>
+                <Button 
+                  variant="outline" 
+                  onClick={() => router.push(`/quizzes/${quizSlug}`)}
+                >
+                  Retake Quiz
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MessageCircle className="w-5 h-5" />
+                Want Deeper Insights?
+              </CardTitle>
+              <CardDescription>
+                Continue your journey with personalized guidance
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col sm:flex-row gap-4 items-center">
+                <p className="flex-grow text-gray-700">
+                  Explore your results in depth with our AI-powered insights session.
+                </p>
+                <PrimaryCTA
+                  variant="uiverse"
+                  className="whitespace-nowrap"
+                  onClick={() => {
+                    const params = new URLSearchParams({
+                      quizId: String(quizSlug),
+                      band: String(band?.label || ''),
+                      score: String(score),
+                      maxScore: String(maxScore),
+                    });
+                    router.push(`/chat/${sessionId}?${params.toString()}`);
+                  }}
+                >
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  Start AI Session
+                </PrimaryCTA>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg border border-gray-200 p-8">
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Get Your Results</h2>
-        <p className="text-gray-600">
-          Enter your email to receive your personalized {quizTitle} analysis
-        </p>
+    <>
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-12 px-4">
+        <div className="max-w-2xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="text-center"
+          >
+            <div className="w-24 h-24 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl">
+              <CheckCircle className="w-12 h-12 text-white" />
+            </div>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Quiz Complete!</h1>
+            <p className="text-lg text-gray-600 mb-10 max-w-xl mx-auto">
+              Great job completing the {quizTitle}. Here's a quick summary of your results.
+            </p>
+            
+            <Card className="mb-8 bg-gradient-to-br from-white to-purple-50 border-2 border-purple-200 shadow-lg rounded-2xl overflow-hidden">
+              <CardContent className="p-6 md:p-8">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+                  <div className="text-center bg-gradient-to-br from-purple-50 to-white rounded-xl p-4 border border-purple-100">
+                    <div className="text-3xl font-bold text-purple-600 mb-1">{score}</div>
+                    <div className="text-sm text-gray-600">Your Score</div>
+                  </div>
+                  <div className="text-center bg-gradient-to-br from-indigo-50 to-white rounded-xl p-4 border border-indigo-100">
+                    <div className="text-3xl font-bold text-indigo-600 mb-1">{Math.round((score / maxScore) * 100)}%</div>
+                    <div className="text-sm text-gray-600">Percentile</div>
+                  </div>
+                  {band && (
+                    <div className="text-center bg-gradient-to-br from-pink-50 to-white rounded-xl p-4 border border-pink-100">
+                      <div className="text-3xl font-bold text-pink-600 mb-1">{band.label}</div>
+                      <div className="text-sm text-gray-600">Category</div>
+                    </div>
+                  )}
+                </div>
+                
+                {band && (
+                  <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-6 mb-6 border border-purple-200">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Sparkles className="w-5 h-5 text-purple-600" />
+                      <h3 className="text-lg font-bold text-purple-900">What This Means</h3>
+                    </div>
+                    <p className="text-purple-800">{band.advice}</p>
+                  </div>
+                )}
+                
+                <Button 
+                  onClick={() => setShowDetailedReport(true)}
+                  variant="gradient"
+                  className="rounded-xl py-2.5 font-medium px-6"
+                >
+                  <BarChart3 className="w-5 h-5 mr-2" />
+                  View Detailed Report
+                </Button>
+              </CardContent>
+            </Card>
+            
+            {!session && (
+              <Card className="mb-8 bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 rounded-2xl overflow-hidden">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-blue-900">
+                    <Mail className="w-5 h-5" />
+                    Get Your Results
+                  </CardTitle>
+                  <CardDescription className="text-blue-800">
+                    Enter your email to receive a detailed report with personalized insights and recommendations.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email" className="text-blue-900">Email Address</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="your.email@example.com"
+                        className="h-12 px-4 rounded-xl focus-visible:ring-brand-500"
+                        required
+                      />
+                    </div>
+                    
+                    <Button 
+                      type="submit" 
+                      disabled={isSubmitting || isSubmitted}
+                      variant="gradient"
+                      className="w-full rounded-xl py-2.5 font-medium"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+                          Sending...
+                        </>
+                      ) : isSubmitted ? (
+                        <>
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Report Sent!
+                        </>
+                      ) : (
+                        <>
+                          <Mail className="w-4 h-4 mr-2" />
+                          Email My Detailed Report
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            )}
+          </motion.div>
+        </div>
       </div>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-            Email Address
-          </label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="your@email.com"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-            required
-            disabled={isSubmitting}
-          />
-          <p className="mt-2 text-xs text-gray-500">
-            We'll send your detailed analysis and insights to this email address
-          </p>
-        </div>
-
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h4 className="font-medium text-blue-900 mb-2">What You'll Receive:</h4>
-          <ul className="text-sm text-blue-800 space-y-1">
-            <li>• Personalized analysis of your response patterns</li>
-            <li>• Actionable insights and recommendations</li>
-            <li>• Specific next steps for personal growth</li>
-            <li>• Access to AI chat for deeper exploration</li>
-          </ul>
-        </div>
-
-        <Button 
-          type="submit" 
-          className="w-full" 
-          disabled={!email.trim() || isSubmitting}
-        >
-          {isSubmitting ? (
-            <span className="flex items-center justify-center">
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-              Analyzing Your Responses...
-            </span>
-          ) : (
-            'Get My Results'
-          )}
-        </Button>
-      </form>
-
-      <div className="mt-6 pt-6 border-t border-gray-200">
-        <div className="flex items-center justify-center space-x-4 text-xs text-gray-500">
-          <span className="flex items-center">
-            <span className="mr-1">🔒</span>
-            Privacy Protected
-          </span>
-          <span className="flex items-center">
-            <span className="mr-1">📧</span>
-            Email Only
-          </span>
-          <span className="flex items-center">
-            <span className="mr-1">🤖</span>
-            AI Insights
-          </span>
-        </div>
-        <p className="text-center text-xs text-gray-400 mt-2">
-          No account required • No data stored • Instant analysis
-        </p>
-      </div>
-    </div>
+      
+      {/* Report Modal for Anonymous Users */}
+      {band && (
+        <QuizReportModal
+          isOpen={showReportModal}
+          onClose={() => {
+            setShowReportModal(false);
+            router.push('/');
+          }}
+          score={score}
+          maxScore={maxScore}
+          band={band}
+          quizTitle={quizTitle}
+          quizSlug={quizSlug}
+          responses={responses}
+          onEmailReport={handleEmailReport}
+        />
+      )}
+    </>
   );
 }

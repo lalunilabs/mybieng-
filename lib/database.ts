@@ -1,14 +1,27 @@
 import { createClient } from '@supabase/supabase-js';
+import { fallbackBlogs, fallbackQuizzes } from '@/lib/fallbackData';
 
 // Database configuration
 const supabaseUrl = process.env.SUPABASE_URL!;
 const supabaseKey = process.env.SUPABASE_ANON_KEY!;
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+// Create Supabase client
+const supabase = createClient(
+  process.env.SUPABASE_URL || 'https://placeholder.supabase.co',
+  process.env.SUPABASE_ANON_KEY || 'placeholder-key'
+);
 
-// Database schema interfaces
-export interface DbBlogPost {
-  id: string;
+// Check if we have valid Supabase credentials
+const hasValidSupabaseCredentials = () => {
+  return process.env.SUPABASE_URL && 
+         process.env.SUPABASE_ANON_KEY && 
+         process.env.SUPABASE_URL !== 'https://your-project.supabase.co' &&
+         process.env.SUPABASE_ANON_KEY !== 'your-supabase-anon-key';
+};
+
+// Database types
+interface DbBlogPost {
+  id?: number;
   title: string;
   slug: string;
   excerpt: string;
@@ -61,6 +74,11 @@ export interface DbQuizResponse {
 export class DatabaseService {
   // Blog operations
   static async getAllBlogs(includeUnpublished = false) {
+    // Use fallback data if no valid Supabase credentials
+    if (!hasValidSupabaseCredentials()) {
+      return fallbackBlogs.filter(blog => includeUnpublished || blog.published);
+    }
+    
     let query = supabase.from('blog_posts').select('*');
     
     if (!includeUnpublished) {
@@ -74,11 +92,15 @@ export class DatabaseService {
   }
 
   static async getBlogBySlug(slug: string) {
+    // Use fallback data if no valid Supabase credentials
+    if (!hasValidSupabaseCredentials()) {
+      return fallbackBlogs.find(blog => blog.slug === slug) || null;
+    }
+    
     const { data, error } = await supabase
       .from('blog_posts')
       .select('*')
       .eq('slug', slug)
-      .eq('published', true)
       .single();
     
     if (error) throw error;
@@ -120,6 +142,11 @@ export class DatabaseService {
 
   // Quiz operations
   static async getAllQuizzes(includeUnpublished = false) {
+    // Use fallback data if no valid Supabase credentials
+    if (!hasValidSupabaseCredentials()) {
+      return fallbackQuizzes.filter(quiz => includeUnpublished || quiz.published);
+    }
+    
     let query = supabase.from('quizzes').select('*');
     
     if (!includeUnpublished) {
@@ -133,6 +160,11 @@ export class DatabaseService {
   }
 
   static async getQuizBySlug(slug: string) {
+    // Use fallback data if no valid Supabase credentials
+    if (!hasValidSupabaseCredentials()) {
+      return fallbackQuizzes.find(quiz => quiz.slug === slug && quiz.published) || null;
+    }
+    
     const { data, error } = await supabase
       .from('quizzes')
       .select('*')
@@ -179,13 +211,15 @@ export class DatabaseService {
 
   // Feedback operations
   static async getAllFeedback() {
-    const { data, error } = await supabase
-      .from('user_feedback')
-      .select('*')
-      .order('created_at', { ascending: false });
+    // Use fallback data if no valid Supabase credentials
+    if (!hasValidSupabaseCredentials()) {
+      return [];
+    }
+    
+    const { data, error } = await supabase.from('user_feedback').select('*').order('created_at', { ascending: false });
     
     if (error) throw error;
-    return data;
+    return data || [];
   }
 
   static async getFeedbackForQuiz(quizId: string) {
@@ -247,5 +281,110 @@ export class DatabaseService {
     
     if (error) throw error;
     return data;
+  }
+
+  // Newsletter methods
+  static async createNewsletterSubscription(data: { email: string; subscribed_at: string; active: boolean }) {
+    // Use fallback for demo (just return success)
+    if (!hasValidSupabaseCredentials()) {
+      return { id: Date.now().toString(), ...data };
+    }
+    
+    const { data: result, error } = await supabase
+      .from('newsletter_subscriptions')
+      .insert([data])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return result;
+  }
+
+  static async getNewsletterSubscriptionByEmail(email: string) {
+    // Use fallback for demo
+    if (!hasValidSupabaseCredentials()) {
+      return null;
+    }
+
+    const sanitized = email.toLowerCase().trim();
+    const { data, error } = await supabase
+      .from('newsletter_subscriptions')
+      .select('*')
+      .eq('email', sanitized)
+      .limit(1)
+      .maybeSingle();
+
+    if (error && error.code !== 'PGRST116') throw error; // ignore not found
+    return data || null;
+  }
+
+  static async upsertNewsletterSubscription(data: { email: string; subscribed_at?: string; active?: boolean }) {
+    // Use fallback for demo (just return provided object with id)
+    if (!hasValidSupabaseCredentials()) {
+      return { id: Date.now().toString(), subscribed_at: new Date().toISOString(), active: !!data.active, email: data.email };
+    }
+
+    const payload = {
+      email: data.email.toLowerCase().trim(),
+      subscribed_at: data.subscribed_at || new Date().toISOString(),
+      active: data.active ?? true,
+    };
+
+    const { data: result, error } = await supabase
+      .from('newsletter_subscriptions')
+      .upsert(payload, { onConflict: 'email' })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return result;
+  }
+
+  static async getNewsletterSubscriptions() {
+    // Use fallback for demo
+    if (!hasValidSupabaseCredentials()) {
+      return [];
+    }
+    
+    const { data, error } = await supabase
+      .from('newsletter_subscriptions')
+      .select('*')
+      .eq('active', true)
+      .order('subscribed_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  }
+
+  static async deactivateNewsletterSubscriptionByEmail(email: string) {
+    // Use fallback for demo
+    if (!hasValidSupabaseCredentials()) {
+      return true;
+    }
+
+    const sanitized = email.toLowerCase().trim();
+    const { error } = await supabase
+      .from('newsletter_subscriptions')
+      .update({ active: false })
+      .eq('email', sanitized);
+
+    if (error) throw error;
+    return true;
+  }
+
+  static async activateNewsletterSubscriptionByEmail(email: string) {
+    // Use fallback for demo
+    if (!hasValidSupabaseCredentials()) {
+      return true;
+    }
+
+    const sanitized = email.toLowerCase().trim();
+    const { error } = await supabase
+      .from('newsletter_subscriptions')
+      .update({ active: true, subscribed_at: new Date().toISOString() })
+      .eq('email', sanitized);
+
+    if (error) throw error;
+    return true;
   }
 }

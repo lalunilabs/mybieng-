@@ -2,6 +2,7 @@
 // This eliminates the need for user accounts and data storage
 
 import { QuizAnalysis } from './ai';
+import { signUnsubscribeToken, signConfirmToken } from './tokens';
 
 export interface EmailQuizResult {
   userEmail: string;
@@ -174,6 +175,137 @@ export async function sendQuizResults(result: EmailQuizResult): Promise<boolean>
     }
   } catch (error) {
     console.error('Failed to send quiz results email:', error);
+    return false;
+  }
+}
+
+export async function sendNewsletterWelcome(to: string): Promise<boolean> {
+  try {
+    const subject = 'Welcome to MyBeing — Let’s begin your self-discovery';
+    const token = signUnsubscribeToken(to);
+    const baseUrl = process.env.NEXT_PUBLIC_DOMAIN || process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    const unsubscribeUrl = `${baseUrl}/api/newsletter/unsubscribe?token=${encodeURIComponent(token)}`;
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to MyBeing</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #374151; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); color: white; padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 30px; }
+    .footer { text-align: center; color: #6b7280; font-size: 14px; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; }
+    .button { background: #7c3aed; color: white; padding: 12px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block; }
+  </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Welcome to MyBeing</h1>
+        <p style="margin-bottom:0;">Thanks for subscribing! You’ll get research-backed insights and new self-discovery quizzes.</p>
+      </div>
+      <p>Here’s what you can do next:</p>
+      <ul>
+        <li>Take a quiz to get personalized insights</li>
+        <li>Read the latest research-backed posts</li>
+        <li>Come back weekly to track changes over time</li>
+      </ul>
+      <p style="text-align:center;margin:28px 0;">
+        <a class="button" href="${baseUrl}/quizzes">Explore Quizzes</a>
+      </p>
+      <div class="footer">
+        <p>You’ll receive occasional updates only. Your privacy matters.</p>
+        <p style="font-size:12px; margin-top:8px;">If this wasn’t you or you no longer wish to receive emails, <a href="${unsubscribeUrl}" style="color:#6b21a8;">unsubscribe</a>.</p>
+      </div>
+    </div>
+  </body>
+  </html>
+`;
+    const text = `Welcome to MyBeing!
+
+Thanks for subscribing. You’ll receive research-backed insights and self-discovery quizzes.
+
+Get started: ${baseUrl}/quizzes
+Blog: ${baseUrl}/blog
+
+You’ll receive occasional updates. Your privacy matters.
+
+Unsubscribe: ${unsubscribeUrl}`;
+
+    if (emailConfig.provider === 'sendgrid') {
+      return await sendWithSendGrid(to, subject, html, text);
+    } else if (emailConfig.provider === 'mailgun') {
+      return await sendWithMailgun(to, subject, html, text);
+    } else if (emailConfig.provider === 'ses') {
+      return await sendWithSES(to, subject, html, text);
+    } else {
+      console.log('📧 [DEV MODE] Newsletter welcome email:', { to, subject });
+      return true;
+    }
+  } catch (error) {
+    console.error('Failed to send newsletter welcome email:', error);
+    return false;
+  }
+}
+
+export async function sendNewsletterConfirm(to: string): Promise<boolean> {
+  try {
+    const subject = 'Confirm your subscription to MyBeing';
+    const token = signConfirmToken(to);
+    const baseUrl = process.env.NEXT_PUBLIC_DOMAIN || process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    const confirmUrl = `${baseUrl}/api/newsletter/confirm?token=${encodeURIComponent(token)}`;
+    const unsubscribeToken = signUnsubscribeToken(to);
+    const unsubscribeUrl = `${baseUrl}/api/newsletter/unsubscribe?token=${encodeURIComponent(unsubscribeToken)}`;
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirm your subscription</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #374151; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); color: white; padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 30px; }
+    .footer { text-align: center; color: #6b7280; font-size: 14px; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; }
+    .button { background: #7c3aed; color: white; padding: 12px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block; }
+  </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Confirm your subscription</h1>
+        <p style="margin-bottom:0;">Please confirm to start receiving DID YOUR RESEARCH every 14 days.</p>
+      </div>
+      <p>Click the button below to confirm your email address:</p>
+      <p style="text-align:center;margin:28px 0;">
+        <a class="button" href="${confirmUrl}">Confirm Subscription</a>
+      </p>
+      <p>If you did not request this, you can safely ignore this email.</p>
+      <div class="footer">
+        <p>You’ll receive occasional updates only. Your privacy matters.</p>
+        <p style="font-size:12px; margin-top:8px;">No longer wish to receive emails? <a href="${unsubscribeUrl}" style="color:#6b21a8;">unsubscribe</a>.</p>
+      </div>
+    </div>
+  </body>
+  </html>
+`;
+    const text = `Confirm your subscription to MyBeing\n\nConfirm: ${confirmUrl}\n\nIf you did not request this, ignore this email.\n\nUnsubscribe: ${unsubscribeUrl}`;
+
+    if (emailConfig.provider === 'sendgrid') {
+      return await sendWithSendGrid(to, subject, html, text);
+    } else if (emailConfig.provider === 'mailgun') {
+      return await sendWithMailgun(to, subject, html, text);
+    } else if (emailConfig.provider === 'ses') {
+      return await sendWithSES(to, subject, html, text);
+    } else {
+      console.log('📧 [DEV MODE] Newsletter confirm email:', { to, subject });
+      return true;
+    }
+  } catch (error) {
+    console.error('Failed to send newsletter confirmation email:', error);
     return false;
   }
 }

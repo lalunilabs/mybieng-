@@ -1,8 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { useParams } from 'next/navigation';
-import { generateChatResponse } from '@/lib/ai';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useParams, useSearchParams } from 'next/navigation';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Send, Bot, User, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useAIChatTracking } from '@/components/analytics/AIChat';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -10,19 +14,45 @@ interface ChatMessage {
   timestamp: Date;
 }
 
+interface Message {
+  id: string;
+  content: string;
+  role: 'assistant' | 'user';
+  timestamp: Date;
+}
+
 export default function ChatSessionPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const sessionId = params.sessionId as string;
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [sessionData, setSessionData] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [questionCount, setQuestionCount] = useState(0);
+  const [sessionEnded, setSessionEnded] = useState(false);
+  const MAX_QUESTIONS = 6;
 
-  useEffect(() => {
-    // Load session data and initialize chat
-    initializeChat();
-  }, [sessionId]);
+  // Read quiz context (optional) from query params
+  const quizId = searchParams.get('quizId') || undefined;
+  const band = searchParams.get('band') || undefined;
+  const score = searchParams.get('score') || undefined;
+  const maxScore = searchParams.get('maxScore') || undefined;
+
+  // Build a lightweight context string for analytics
+  const context = useMemo(() => {
+    const parts: string[] = [];
+    if (quizId) parts.push(`quiz=${quizId}`);
+    if (band) parts.push(`band=${band}`);
+    if (score && maxScore) parts.push(`score=${score}/${maxScore}`);
+    return parts.join(' | ') || 'general';
+  }, [quizId, band, score, maxScore]);
+
+  // Initialize analytics tracking (tracks session start on mount)
+  const { trackMessage } = useAIChatTracking(sessionId, context);
+
+  // (initializeChat useEffect placed after initializeChat declaration)
 
   useEffect(() => {
     scrollToBottom();
@@ -32,15 +62,24 @@ export default function ChatSessionPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const initializeChat = async () => {
+  const initializeChat = useCallback(async () => {
     try {
       // In a real app, you'd fetch session data from your backend
       // For now, we'll simulate it
+      const contextLine = band && score && maxScore
+        ? `I see your result is "${band}" with a score of ${score}/${maxScore}.`
+        : undefined;
+
+      const welcomeText = [
+        "Hi! I'm here to help you understand your quiz results better.",
+        contextLine,
+        "You can ask up to 6 questions in this session. After that, I'll summarize with a simple, actionable plan for you.",
+        "What would you like to explore first?"
+      ].filter(Boolean).join('\n\n');
+
       const welcomeMessage: ChatMessage = {
         role: 'assistant',
-        content: `Hi! I'm here to help you understand your quiz results better. I have access to your analysis and can answer questions about your patterns, provide more detailed explanations, or suggest specific actions you can take.
-
-What would you like to explore about your results?`,
+        content: welcomeText,
         timestamp: new Date()
       };
       
@@ -48,20 +87,40 @@ What would you like to explore about your results?`,
     } catch (error) {
       console.error('Failed to initialize chat:', error);
     }
-  };
+  }, [band, score, maxScore]);
+
+  // Load session data and initialize chat (placed after initializeChat is declared)
+  useEffect(() => {
+    initializeChat();
+  }, [initializeChat]);
 
   const sendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
+    if (sessionEnded) {
+      // Graceful message when session limit reached
+      const limitMsg: ChatMessage = {
+        role: 'assistant',
+        content: 'You\'ve reached the 6-question limit for this session. You can start a new session from your report or dashboard anytime.',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, limitMsg]);
+      try { trackMessage('assistant'); } catch {}
+      return;
+    }
 
-    const userMessage: ChatMessage = {
-      role: 'user',
+    const userMessage: Message = {
+      id: Date.now().toString(),
       content: inputMessage,
+      role: 'user',
       timestamp: new Date()
     };
 
+    // Compute next question count and append user message
+    const newCount = (messages.filter(m => m.role === 'user').length) + 1;
     setMessages(prev => [...prev, userMessage]);
     setInputMessage('');
     setIsLoading(true);
+    try { trackMessage('user'); } catch {}
 
     try {
       // In a real app, you'd call your AI service with session context
@@ -77,18 +136,36 @@ What would you like to explore about your results?`,
 
       const data = await response.json();
       
-      const assistantMessage: ChatMessage = {
-        role: 'assistant',
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
         content: data.response || 'I apologize, but I encountered an error. Please try asking your question again.',
+        role: 'assistant',
         timestamp: new Date()
       };
 
+      // Append assistant reply
       setMessages(prev => [...prev, assistantMessage]);
+      try { trackMessage('assistant'); } catch {}
+      setQuestionCount(newCount);
+
+      // If this was the 6th question, provide a concise plan summary and end the session
+      if (newCount >= MAX_QUESTIONS) {
+        const plan: Message = {
+          id: (Date.now() + 2).toString(),
+          content: generateSimplePlan(band, score, maxScore),
+          role: 'assistant',
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, plan]);
+        try { trackMessage('assistant'); } catch {}
+        setSessionEnded(true);
+      }
     } catch (error) {
       console.error('Chat error:', error);
-      const errorMessage: ChatMessage = {
-        role: 'assistant',
+      const errorMessage: Message = {
+        id: (Date.now() + 3).toString(),
         content: 'I apologize, but I encountered an error. Please try asking your question again.',
+        role: 'assistant',
         timestamp: new Date()
       };
       setMessages(prev => [...prev, errorMessage]);
@@ -96,6 +173,30 @@ What would you like to explore about your results?`,
       setIsLoading(false);
     }
   };
+
+  function generateSimplePlan(band?: string, scoreStr?: string, maxStr?: string): string {
+    const scoreText = scoreStr && maxStr ? `Score: ${scoreStr}/${maxStr}.` : '';
+    const bandText = band ? `Band: ${band}.` : '';
+    // Minimal, research-backed plan with daily EMA micro-check-ins and weekly/monthly modules
+    return [
+      'Your 4-week plan',
+      '',
+      [bandText, scoreText].filter(Boolean).join(' '),
+      '',
+      'Daily (EMA micro-check-in):',
+      '- 2 minutes: note one situation, your reaction, and value alignment (yes/no).',
+      '',
+      'Weekly:',
+      '- Pick one small behavior to align better with a value (eg, honest conversation, screen cutoff).',
+      '- Do a 10-min reflection on patterns (justification, belief shift, selective evidence, identity protection, social reality).',
+      '',
+      'Monthly:',
+      '- Review your log. Identify 1–2 repeating patterns and one concrete next habit.',
+      '',
+      'Tip:',
+      'Use a “pause and reflect” cue when you notice instant justification. Ask: “What value matters here?”'
+    ].join('\n');
+  }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {

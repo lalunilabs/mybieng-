@@ -1,13 +1,18 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { BarChart3, PieChart, TrendingUp, Mail, BookOpen, ExternalLink, Download } from 'lucide-react';
+import { BarChart3, PieChart, TrendingUp, Mail, BookOpen, ExternalLink, Download, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import PrimaryCTA from '@/components/ui/PrimaryCTA';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { getBandForScore } from '@/data/quizzes';
+import { toast } from 'sonner';
 
 export default function ReportsPage() {
   const [selectedReport, setSelectedReport] = useState('cognitive-dissonance');
+  const router = useRouter();
 
   const reports = [
     {
@@ -35,6 +40,11 @@ export default function ReportsPage() {
       ]
     }
   ];
+
+  // Derive selected report convenience values
+  const selected = reports.find((r) => r.id === selectedReport);
+  const maxScore = 100;
+  const band = selected ? getBandForScore(selected.score, maxScore) : null;
 
   const readingMaterials = [
     {
@@ -71,10 +81,21 @@ export default function ReportsPage() {
     }
   ];
 
+  const base = process.env.NEXT_PUBLIC_DOMAIN || 'https://mybeing.in';
+  const breadcrumbsJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: `${base}/` },
+      { '@type': 'ListItem', position: 2, name: 'Reports', item: `${base}/reports` },
+    ],
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbsJsonLd) }} />
       
-      <div className="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+      <div className="pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <motion.div
@@ -119,13 +140,44 @@ export default function ReportsPage() {
                       <div className="flex justify-between items-center text-xs text-gray-500">
                         <span>Completed: {report.completedDate}</span>
                         <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded">
-                          Score: {report.score}%
+                          {(() => { const b = getBandForScore(report.score, 100); return `Summary: ${b ? b.label : '—'}`; })()}
                         </span>
                       </div>
                     </motion.div>
                   ))}
                 </CardContent>
               </Card>
+
+              {/* Actions for selected report */}
+              <div className="mt-4 flex flex-col sm:flex-row gap-3">
+                <PrimaryCTA
+                  href={`/reports/${selectedReport}?score=${selected?.score ?? 0}&maxScore=${maxScore}`}
+                  surface="reports_page"
+                  eventName="view_report_detail"
+                  variant="outline"
+                  className="flex-1"
+                >
+                  View full report
+                </PrimaryCTA>
+                <PrimaryCTA
+                  surface="reports_page"
+                  eventName="ask_ai_from_reports"
+                  className="flex-1"
+                  variant="uiverse"
+                  onClick={() => {
+                    const id = (globalThis as any)?.crypto?.randomUUID?.() || Math.random().toString(36).slice(2);
+                    const params = new URLSearchParams({
+                      quizId: selectedReport,
+                      score: String(selected?.score ?? 0),
+                      maxScore: String(maxScore),
+                      ...(band ? { band: band.label } : {}),
+                    });
+                    router.push(`/chat/${id}?${params.toString()}`);
+                  }}
+                >
+                  <MessageCircle className="w-4 h-4 mr-2" /> Ask AI about this
+                </PrimaryCTA>
+              </div>
             </div>
 
             {/* Chart Visualization */}
@@ -167,14 +219,43 @@ export default function ReportsPage() {
 
                   {/* Email Report Button */}
                   <div className="mt-6 flex gap-4">
-                    <Button className="bg-purple-600 hover:bg-purple-700">
+                    <PrimaryCTA 
+                      surface="reports_page" 
+                      eventName="email_report"
+                      onClick={async () => {
+                        try {
+                          const email = window.prompt('Enter your email to receive the detailed report');
+                          if (!email) return;
+                          const res = await fetch('/api/quiz/email-results', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              email,
+                              quizId: selectedReport,
+                              quizTitle: selected?.title || selectedReport,
+                              score: selected?.score ?? 0,
+                              maxScore: maxScore,
+                              band: band?.label,
+                            }),
+                          });
+                          if (res.ok) {
+                            toast.success('Detailed report will arrive by email shortly.');
+                          } else {
+                            const j = await res.json().catch(() => ({}));
+                            toast.error(j.error || 'Failed to queue email');
+                          }
+                        } catch (e) {
+                          toast.error('Network error. Please try again.');
+                        }
+                      }}
+                    >
                       <Mail className="w-4 h-4 mr-2" />
                       Email Detailed Report
-                    </Button>
-                    <Button variant="outline">
+                    </PrimaryCTA>
+                    <PrimaryCTA surface="reports_page" eventName="download_report" variant="outline">
                       <Download className="w-4 h-4 mr-2" />
                       Download PDF
-                    </Button>
+                    </PrimaryCTA>
                   </div>
                 </CardContent>
               </Card>
@@ -223,10 +304,10 @@ export default function ReportsPage() {
                         </div>
                       </div>
                       <p className="text-sm text-gray-600 mb-4">{material.description}</p>
-                      <Button variant="outline" size="sm" className="w-full">
+                      <PrimaryCTA href={material.link} surface="reports_resources" eventName="view_resource" variant="outline" size="sm" className="w-full">
                         <ExternalLink className="w-4 h-4 mr-2" />
                         View Resource
-                      </Button>
+                      </PrimaryCTA>
                     </motion.div>
                   ))}
                 </div>

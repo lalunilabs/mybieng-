@@ -4,6 +4,9 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock, User, Brain, Sparkles, Search, Lightbulb, BookOpen } from 'lucide-react';
+import { Label } from '@/components/ui/Label';
+import { Input } from '@/components/shadcn/input';
+import { Button } from '@/components/ui/Button';
 
 export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -33,7 +36,7 @@ export default function SignUpPage() {
       {/* Background gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-purple-400/20 via-yellow-300/30 to-purple-500/20" />
       
-      <div className="pt-24 pb-12 px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="pb-12 px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="max-w-6xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left Side - Inspired Visual */}
@@ -129,19 +132,17 @@ export default function SignUpPage() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {/* Name Field */}
                   <div>
-                    <label htmlFor="name" className="text-sm font-medium text-gray-700 mb-2 block">
-                      Full Name
-                    </label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                      <input
+                    <Label htmlFor="name">Full Name</Label>
+                    <div className="relative mt-1">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+                      <Input
                         id="name"
                         name="name"
                         type="text"
                         required
                         value={formData.name}
                         onChange={handleChange}
-                        className="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all"
+                        className="pl-10 h-12 rounded-lg focus-visible:ring-brand-500"
                         placeholder="Enter your full name"
                       />
                     </div>
@@ -149,19 +150,17 @@ export default function SignUpPage() {
 
                   {/* Email Field */}
                   <div>
-                    <label htmlFor="email" className="text-sm font-medium text-gray-700 mb-2 block">
-                      Email Address
-                    </label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                      <input
+                    <Label htmlFor="email">Email Address</Label>
+                    <div className="relative mt-1">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+                      <Input
                         id="email"
                         name="email"
                         type="email"
                         required
                         value={formData.email}
                         onChange={handleChange}
-                        className="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all"
+                        className="pl-10 h-12 rounded-lg focus-visible:ring-brand-500"
                         placeholder="Enter your email"
                       />
                     </div>
@@ -169,25 +168,23 @@ export default function SignUpPage() {
 
                   {/* Password Field */}
                   <div>
-                    <label htmlFor="password" className="text-sm font-medium text-gray-700 mb-2 block">
-                      Password
-                    </label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                      <input
+                    <Label htmlFor="password">Password</Label>
+                    <div className="relative mt-1">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+                      <Input
                         id="password"
                         name="password"
                         type={showPassword ? 'text' : 'password'}
                         required
                         value={formData.password}
                         onChange={handleChange}
-                        className="w-full pl-10 pr-10 h-12 border border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all"
+                        className="pl-10 pr-10 h-12 rounded-lg focus-visible:ring-brand-500"
                         placeholder="Create a password"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                       >
                         {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                       </button>
@@ -196,25 +193,23 @@ export default function SignUpPage() {
 
                   {/* Confirm Password Field */}
                   <div>
-                    <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700 mb-2 block">
-                      Confirm Password
-                    </label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                      <input
+                    <Label htmlFor="confirmPassword">Confirm Password</Label>
+                    <div className="relative mt-1">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+                      <Input
                         id="confirmPassword"
                         name="confirmPassword"
                         type={showConfirmPassword ? 'text' : 'password'}
                         required
                         value={formData.confirmPassword}
                         onChange={handleChange}
-                        className="w-full pl-10 pr-10 h-12 border border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all"
+                        className="pl-10 pr-10 h-12 rounded-lg focus-visible:ring-brand-500"
                         placeholder="Confirm your password"
                       />
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                       >
                         {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                       </button>
@@ -222,12 +217,9 @@ export default function SignUpPage() {
                   </div>
 
                   {/* Submit Button */}
-                  <button
-                    type="submit"
-                    className="w-full h-12 bg-purple-600 hover:bg-purple-700 text-white font-semibold text-lg rounded-lg transition-colors"
-                  >
+                  <Button type="submit" className="w-full h-12 bg-purple-600 hover:bg-purple-700 text-white font-semibold text-lg rounded-lg">
                     Create Account
-                  </button>
+                  </Button>
                 </form>
 
                 {/* Footer */}

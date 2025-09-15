@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Progress } from '@/components/ui/Progress';
 import { Quiz, QuizQuestion } from '@/data/quizzes';
+import { QuizCompletion } from '@/components/QuizCompletion';
 
 interface ClassicQuizFlowProps {
   quiz: Quiz;
@@ -15,6 +16,7 @@ export function ClassicQuizFlow({ quiz, onComplete }: ClassicQuizFlowProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [showResults, setShowResults] = useState(false);
+  const [score, setScore] = useState(0);
 
   const currentQuestion = quiz.questions[currentQuestionIndex];
   const progress = ((currentQuestionIndex + 1) / quiz.questions.length) * 100;
@@ -27,9 +29,10 @@ export function ClassicQuizFlow({ quiz, onComplete }: ClassicQuizFlowProps) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
       // Calculate score and show results
-      const score = calculateScore(newAnswers);
+      const calculatedScore = calculateScore(newAnswers);
+      setScore(calculatedScore);
       setShowResults(true);
-      onComplete(score, newAnswers);
+      onComplete(calculatedScore, newAnswers);
     }
   };
 
@@ -42,51 +45,17 @@ export function ClassicQuizFlow({ quiz, onComplete }: ClassicQuizFlowProps) {
     }, 0);
   };
 
-  const getScoreBand = (score: number) => {
-    return quiz.bands.find(band => score >= band.min && score <= band.max) || quiz.bands[0];
-  };
-
   if (showResults) {
-    const score = calculateScore(answers);
-    const band = getScoreBand(score);
-
     return (
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
-        <Card className="bg-white border border-gray-100 shadow-sm">
-          <CardHeader className="text-center border-b border-gray-100 py-8 px-6 sm:px-8">
-            <CardTitle className="text-2xl sm:text-3xl font-serif font-normal text-gray-900 mb-3 leading-tight">
-              Assessment Complete
-            </CardTitle>
-            <p className="text-gray-600 font-light text-base sm:text-lg">
-              {quiz.title}
-            </p>
-          </CardHeader>
-          
-          <CardContent className="p-6 sm:p-8">
-            <div className="text-center mb-10">
-              <div className="inline-flex items-center justify-center w-24 h-24 bg-gray-50 border border-gray-200 rounded-full mb-5">
-                <span className="text-3xl font-serif font-normal text-gray-900">{score}</span>
-              </div>
-              <h3 className="text-xl sm:text-2xl font-serif font-normal text-gray-900 mb-3">{band.label}</h3>
-            </div>
-
-            <div className="prose prose-lg max-w-none text-gray-700">
-              <p className="leading-relaxed font-light mb-0">
-                {band.advice}
-              </p>
-            </div>
-
-            <div className="mt-10 pt-8 border-t border-gray-100 text-center">
-              <Button 
-                onClick={() => window.location.href = '/dashboard'}
-                className="bg-gray-900 text-white hover:bg-gray-800 px-8 py-3 text-sm font-medium tracking-wide uppercase text-xs focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-colors duration-150"
-              >
-                View Dashboard
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <QuizCompletion 
+        sessionId="temp-session" 
+        quizId={quiz.slug} 
+        quizTitle={quiz.title} 
+        quizSlug={quiz.slug} 
+        score={score} 
+        maxScore={quiz.questions.length * 5} 
+        responses={answers} 
+      />
     );
   }
 

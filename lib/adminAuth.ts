@@ -1,29 +1,24 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import type { NextRequest } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from './auth';
 
-const ADMIN_COOKIE = 'admin_auth';
-const OWNER_EMAIL = process.env.OWNER_EMAIL;
+const ADMIN_COOKIE = 'admin_auth'; // legacy fallback
 
-export async function requireAdmin() {
-  const session = await getServerSession(authOptions);
-  
-  // Check if user is authenticated and is the owner
-  if (!session?.user?.email || session.user.email !== OWNER_EMAIL) {
+export function requireAdmin() {
+  // Owner-only gate: presence of signed admin_token (set by /api/admin/auth/login)
+  const cookieStore = cookies();
+  const token = cookieStore.get('admin_token')?.value;
+  if (!token) {
     redirect('/admin/login');
   }
 }
 
-export async function isOwner(email?: string | null): Promise<boolean> {
-  if (!email || !OWNER_EMAIL) return false;
-  return email === OWNER_EMAIL;
-}
-
 export function isAdminRequest(req: NextRequest): boolean {
-  const cookie = req.cookies.get(ADMIN_COOKIE)?.value;
-  return cookie === '1';
+  // Accept modern token or legacy boolean cookie
+  const token = req.cookies.get('admin_token')?.value;
+  if (token) return true;
+  const legacy = req.cookies.get(ADMIN_COOKIE)?.value;
+  return legacy === '1';
 }
 
 export function clearAdminCookieHeaders() {
@@ -36,14 +31,4 @@ export function setAdminCookieHeaders() {
   const headers = new Headers();
   headers.append('Set-Cookie', `${ADMIN_COOKIE}=1; Path=/; HttpOnly; SameSite=Lax; Secure; Max-Age=86400`);
   return headers;
-}
-
-// Middleware helper for admin routes
-export async function checkAdminAccess(): Promise<boolean> {
-  try {
-    const session = await getServerSession(authOptions);
-    return await isOwner(session?.user?.email);
-  } catch {
-    return false;
-  }
 }

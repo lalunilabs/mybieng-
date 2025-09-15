@@ -3,8 +3,12 @@
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { Clock, User, ArrowRight, BookOpen } from 'lucide-react';
+import { Calendar, Clock, User, ArrowRight, BookOpen } from 'lucide-react';
 import Link from 'next/link';
+import { fallbackBlogs } from '@/lib/fallbackData';
+import ImageCard from '@/components/ui/ImageCard';
+import PrimaryCTA from '@/components/ui/PrimaryCTA';
+import SectionHeader from '@/components/ui/SectionHeader';
 
 // Sample blog data - replace with actual data from your CMS
 const featuredBlogs = [
@@ -50,81 +54,36 @@ export default function FeaturedBlogs() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
         >
-          <div className="inline-flex items-center px-4 py-2 bg-yellow-100 text-black rounded-full text-sm font-medium mb-6">
-            <BookOpen className="w-4 h-4 mr-2" />
-            Latest Insights
-          </div>
-          <h2 className="text-4xl lg:text-5xl font-bold text-black mb-6">
-            Research-Backed 
-            <span className="block text-gradient bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent">
-              Articles
-            </span>
-          </h2>
-          <p className="text-xl text-black max-w-3xl mx-auto leading-relaxed">
-            Dive deeper into the science of self-discovery with our curated articles on psychology, behavior, and personal growth.
-          </p>
+          <SectionHeader
+            overline={<span className="inline-flex items-center"><BookOpen className="w-4 h-4 mr-2" /> Latest Insights</span>}
+            title="Research‑Backed"
+            highlight="Articles"
+            description="Dive deeper into the science of self-discovery with our curated articles on psychology, behavior, and personal growth."
+            align="center"
+          />
         </motion.div>
 
         {/* Blog Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-          {featuredBlogs.map((blog, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {fallbackBlogs.slice(0, 3).map((blog, index) => (
             <motion.div
               key={blog.slug}
               initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: index * 0.1 }}
-              viewport={{ once: true }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
             >
-              <Card className="group hover:shadow-brutal transition-all duration-300 hover:-translate-y-2 overflow-hidden border-0 shadow-soft">
-                {/* Image */}
-                <div className="aspect-[16/9] bg-gradient-to-br from-yellow-300 to-purple-400 flex items-center justify-center relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-yellow-300/80 to-purple-400/80"></div>
-                  <span className="text-4xl text-white relative z-10">📚</span>
-                  <div className="absolute top-3 left-3">
-                    <span className="px-2 py-1 bg-white/20 backdrop-blur-sm text-white text-xs font-medium rounded-full">
-                      {blog.category}
-                    </span>
-                  </div>
-                </div>
-
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg text-black group-hover:text-purple-600 transition-colors duration-200 line-clamp-2">
-                    {blog.title}
-                  </CardTitle>
-                  <CardDescription className="text-sm text-black line-clamp-3">
-                    {blog.excerpt}
-                  </CardDescription>
-                </CardHeader>
-
-                <CardContent className="pt-0">
-                  <div className="flex items-center justify-between text-xs text-black mb-4">
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-1">
-                        <User className="w-3 h-3" />
-                        <span>{blog.author}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        <span>{blog.readTime}</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full group-hover:bg-yellow-50 group-hover:border-purple-200 transition-colors duration-200"
-                    asChild
-                  >
-                    <Link href={`/blog/${blog.slug}`}>
-                      <span className="mr-2">Read Article</span>
-                      <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform duration-200" />
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
+              <ImageCard
+                title={blog.title}
+                description={blog.excerpt}
+                imageUrl={`https://images.unsplash.com/photo-${1559757148 + index}?w=400&h=250&fit=crop&auto=format&q=80`}
+                author={blog.author}
+                date={new Date(blog.published_at || '').toLocaleDateString()}
+                readTime={blog.readTime}
+                href={`/blog/${blog.slug}`}
+                category="Understanding Yourself"
+                isPremium={index === 2}
+              />
             </motion.div>
           ))}
         </div>
@@ -137,17 +96,10 @@ export default function FeaturedBlogs() {
           viewport={{ once: true }}
           className="text-center"
         >
-          <Button 
-            variant="gradient" 
-            size="lg"
-            className="shadow-glow hover:shadow-glow-lg hover:scale-105 transition-all duration-300"
-            asChild
-          >
-            <Link href="/blog">
-              <span className="mr-2">View All Articles</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </Button>
+          <PrimaryCTA href="/blog" size="lg" variant="uiverse" className="px-8 py-4">
+            <span className="mr-2">View All Articles</span>
+            <ArrowRight className="w-4 h-4" />
+          </PrimaryCTA>
         </motion.div>
       </div>
     </section>

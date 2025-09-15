@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-  const baseUrl = process.env.NEXT_PUBLIC_DOMAIN || 'https://mybeing.com';
+  const baseUrl = process.env.NEXT_PUBLIC_DOMAIN || 'https://mybeing.in';
   
   const robots = `User-agent: *
 Allow: /
@@ -20,11 +20,14 @@ Allow: /research
 Allow: /blog
 Allow: /quizzes
 Allow: /blog/*
-Allow: /quizzes/*`;
+Allow: /quizzes/*
+Allow: /quiz
+Allow: /quiz/*`;
 
   return new NextResponse(robots, {
     headers: {
       'Content-Type': 'text/plain',
+      'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=604800',
     },
   });
 }

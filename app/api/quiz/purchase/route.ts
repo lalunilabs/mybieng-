@@ -3,7 +3,9 @@ import { purchaseQuiz } from '@/lib/purchases';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, slug } = await request.json();
+    const body = await request.json();
+    const email = body?.email as string | undefined;
+    const slug = (body?.slug || body?.quizSlug) as string | undefined;
     if (!email || !slug) {
       return NextResponse.json({ error: 'Missing email or slug' }, { status: 400 });
     }

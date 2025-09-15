@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { Button } from './Button';
 import { Card, CardContent, CardHeader, CardTitle } from './Card';
 
@@ -50,6 +51,7 @@ class ErrorBoundaryClass extends React.Component<ErrorBoundaryProps, ErrorBounda
 }
 
 function DefaultErrorFallback({ error, reset }: { error: Error; reset: () => void }) {
+  const router = useRouter();
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-red-50 flex items-center justify-center p-6">
       <motion.div
@@ -88,7 +90,7 @@ function DefaultErrorFallback({ error, reset }: { error: Error; reset: () => voi
                 Try Again
               </Button>
               <Button
-                onClick={() => window.location.href = '/'}
+                onClick={() => router.push('/')}
                 variant="gradient"
                 className="flex-1"
               >

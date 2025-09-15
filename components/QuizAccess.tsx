@@ -1,9 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { trackQuizStart, trackQuizProgress, trackQuizComplete, trackQuizPurchase, trackViewItem, trackBeginCheckout } from '@/lib/analytics/gtag';
+import { useRouter } from 'next/navigation';
 import type { Quiz } from '@/data/quizzes';
 import QuizRunner from '@/components/QuizRunner';
 import { Button } from '@/components/ui/Button';
+import PrimaryCTA from '@/components/ui/PrimaryCTA';
+import { PRICING } from '@/lib/constants';
 
 interface AccessResponse {
   exists?: boolean;
@@ -21,6 +25,7 @@ export default function QuizAccess({ quiz }: { quiz: Quiz }) {
   const [access, setAccess] = useState<AccessResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [purchasing, setPurchasing] = useState(false);
+  const router = useRouter();
 
   // load cached email
   useEffect(() => {
@@ -61,21 +66,27 @@ export default function QuizAccess({ quiz }: { quiz: Quiz }) {
   }
 
   async function handlePurchase() {
-    if (!email) {
-      alert('Please enter your email to purchase.');
-      return;
-    }
+    if (!email) return;
+    setPurchasing(true);
+    
+    // Track ecommerce events
+    trackViewItem(quiz.slug, quiz.title, 'quiz', quiz.price || 0);
+    trackBeginCheckout([{
+      id: quiz.slug,
+      name: quiz.title,
+      category: 'quiz',
+      price: quiz.price || 0
+    }]);
+    
     try {
-      setPurchasing(true);
-      const res = await fetch('/api/quiz/purchase', {
+      const response = await fetch('/api/quiz/purchase', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, slug: quiz.slug })
+        body: JSON.stringify({ email, quizSlug: quiz.slug }),
       });
-      const j = await res.json();
-      if (!res.ok) {
-        alert(j?.error || 'Purchase failed');
-      } else {
+      if (response.ok) {
+        // Track successful purchase
+        trackQuizPurchase(quiz.slug, quiz.price || 0);
         await fetchAccess(email);
       }
     } catch (e) {
@@ -86,7 +97,7 @@ export default function QuizAccess({ quiz }: { quiz: Quiz }) {
   }
 
   function handleSubscribe() {
-    window.location.href = '/subscribe';
+    router.push('/subscribe');
   }
 
   if (!isPaidQuiz || canRun) {
@@ -118,9 +129,15 @@ export default function QuizAccess({ quiz }: { quiz: Quiz }) {
                   className="w-full mt-1 px-3 py-2 border rounded"
                 />
               </div>
-              <Button onClick={handlePurchase} className="w-full mt-4" size="lg" disabled={purchasing || loading}>
+              <PrimaryCTA
+                onClick={handlePurchase}
+                surface="quiz_access"
+                eventName="purchase_click"
+                className="w-full mt-4"
+                variant="uiverse"
+              >
                 {purchasing ? 'Processing...' : 'Buy Quiz'}
-              </Button>
+              </PrimaryCTA>
             </div>
           </div>
 
@@ -128,16 +145,22 @@ export default function QuizAccess({ quiz }: { quiz: Quiz }) {
           <div className="bg-white rounded-lg p-5 border shadow-sm">
             <div className="text-center">
               <h4 className="font-bold text-lg">Premium Monthly</h4>
-              <div className="text-3xl font-bold text-gray-900 mt-2">$32<span className="text-sm text-gray-500">/month</span></div>
+              <div className="text-3xl font-bold text-gray-900 mt-2">${PRICING.MONTHLY_USD}<span className="text-sm text-gray-500">/month</span></div>
               <ul className="text-sm text-gray-600 mt-4 space-y-2 text-left inline-block">
-                <li>✅ 2 premium articles/month included</li>
-                <li>✅ Related quizzes free for those articles</li>
-                <li>✅ Member discounts on select quizzes</li>
+                <li>✅ 3 premium articles/month included</li>
+                <li>✅ 2 free quizzes/month (≤ $50 value each)</li>
+                <li>✅ Member discounts on additional content</li>
                 <li>✅ Audio narration for all articles</li>
               </ul>
-              <Button onClick={handleSubscribe} variant="outline" className="w-full mt-4" size="lg">
+              <PrimaryCTA
+                onClick={handleSubscribe}
+                surface="quiz_access"
+                eventName="subscribe_click"
+                className="w-full mt-4"
+                variant="uiverse"
+              >
                 Subscribe
-              </Button>
+              </PrimaryCTA>
             </div>
           </div>
         </div>

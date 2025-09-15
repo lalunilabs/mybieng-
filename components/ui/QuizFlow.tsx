@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Progress } from '@/components/ui/Progress';
 import { collectAnonymousResponse } from '@/lib/research';
-import { saveProgress } from '@/lib/longitudinal';
+import { saveProgress, getUserId } from '@/lib/longitudinal';
 
 interface QuizFlowProps {
   quiz: Quiz;
@@ -40,8 +40,29 @@ export function QuizFlow({ quiz, onComplete }: QuizFlowProps) {
       // Get result band
       const band = getResultBand(score);
       
-      // Collect research data
+      // Collect research data (in-memory)
       collectResearchData(score, answers);
+
+      // Persist minimal run to DB for admin research
+      try {
+        const sessionId = getUserId();
+        const mapped = quiz.questions.map(q => ({
+          questionId: q.id,
+          questionText: q.text,
+          answer: Number(answers[q.id] ?? 0),
+          questionType: q.type === 'likert' ? 'scale' : 'text',
+        }));
+        fetch('/api/quiz/complete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId,
+            quizId: quiz.slug,
+            responses: mapped,
+            score,
+          }),
+        }).catch(() => {});
+      } catch {}
       
       // Save longitudinal progress
       saveProgress(

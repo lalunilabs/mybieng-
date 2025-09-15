@@ -1,7 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
+import { Label } from '@/components/ui/Label';
+import { Input } from '@/components/shadcn/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { PREMIUM_PLAN } from '@/lib/subscription';
 
@@ -60,7 +63,7 @@ export default function SubscribePage() {
               <li>🤖 Get priority AI chat support</li>
             </ul>
             <Button asChild className="w-full mt-6">
-              <a href="/blog">Start Exploring</a>
+              <Link href="/blog">Start Exploring</Link>
             </Button>
           </CardContent>
         </Card>
@@ -107,15 +110,13 @@ export default function SubscribePage() {
 
               <form onSubmit={handleSubscribe} className="space-y-4">
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                    Email Address
-                  </label>
-                  <input
+                  <Label htmlFor="email">Email Address</Label>
+                  <Input
                     type="email"
                     id="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                    className="mt-1 h-11 rounded-md focus-visible:ring-brand-500"
                     placeholder="your@email.com"
                     required
                   />

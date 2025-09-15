@@ -3,12 +3,13 @@
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import PrimaryCTA from '@/components/ui/PrimaryCTA';
 import { GraduationCap, Award, BookOpen, Users, Mail, Linkedin } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-purple-50 pt-20">
+    <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-purple-50">
       <div className="max-w-7xl mx-auto px-6 py-12">
         {/* Header */}
         <motion.div
@@ -17,18 +18,20 @@ export default function AboutPage() {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center px-4 py-2 bg-yellow-100 text-black rounded-full text-sm font-medium mb-6">
-            <Users className="w-4 h-4 mr-2" />
-            Meet the Expert
+          <div className="relative inline-block mb-8">
+            <div className="w-56 h-56 mx-auto bg-gradient-to-br from-purple-200 to-yellow-200 rounded-full flex items-center justify-center shadow-2xl border-4 border-white">
+              <span className="text-6xl font-bold text-purple-700">Dr N</span>
+            </div>
+            <div className="absolute -bottom-2 -right-2 bg-purple-500 text-white rounded-full p-3 shadow-lg">
+              <Users className="w-6 h-6" />
+            </div>
           </div>
-          <h1 className="text-4xl lg:text-5xl font-bold text-black mb-6">
-            About
-            <span className="block text-gradient bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent">
-              Dr N
-            </span>
-          </h1>
-          <p className="text-xl text-black max-w-3xl mx-auto leading-relaxed">
-            Leading researcher in psychology and behavioral science, dedicated to making self-discovery accessible through evidence-based assessments.
+          
+          <h1 className="text-5xl font-bold text-black mb-4">Dr. Niharika, MBBS</h1>
+          <p className="text-2xl text-purple-700 font-semibold mb-2">Medical Doctor & Behavioral Research Specialist</p>
+          <p className="text-lg text-purple-600 font-medium mb-6">Founder & Lead Researcher, MyBeing Platform</p>
+          <p className="text-lg text-black max-w-4xl mx-auto leading-relaxed">
+            A practicing medical doctor with specialized expertise in behavioral psychology and human cognition. Dr. Niharika combines clinical medical knowledge with cutting-edge psychological research to create evidence-based self-discovery tools that bridge the gap between medical science and personal growth.
           </p>
         </motion.div>
 
@@ -44,14 +47,12 @@ export default function AboutPage() {
                 <h2 className="text-2xl font-bold text-black mb-2">Dr N</h2>
                 <p className="text-black mb-4">Clinical Psychologist & Researcher</p>
                 <div className="flex justify-center gap-3">
-                  <Button size="sm" variant="outline" className="border-purple-600 text-black hover:bg-yellow-50">
-                    <Mail className="w-4 h-4 mr-2" />
-                    Contact
-                  </Button>
-                  <Button size="sm" variant="outline" className="border-purple-600 text-black hover:bg-yellow-50">
-                    <Linkedin className="w-4 h-4 mr-2" />
-                    LinkedIn
-                  </Button>
+                  <PrimaryCTA href="mailto:hello@mybeing.app" variant="outline" size="sm" surface="about_page" eventName="contact_click">
+                    <span className="flex items-center"><Mail className="w-4 h-4 mr-2" /> Contact</span>
+                  </PrimaryCTA>
+                  <PrimaryCTA href="https://www.linkedin.com/" variant="outline" size="sm" surface="about_page" eventName="linkedin_click" target="_blank" rel="noopener noreferrer">
+                    <span className="flex items-center"><Linkedin className="w-4 h-4 mr-2" /> LinkedIn</span>
+                  </PrimaryCTA>
                 </div>
               </CardContent>
             </Card>
@@ -103,6 +104,60 @@ export default function AboutPage() {
               </CardContent>
             </Card>
           </div>
+        </div>
+
+        {/* Background Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+          <Card className="bg-gradient-to-br from-yellow-100 to-purple-100 border-purple-200 shadow-xl hover:shadow-2xl transition-all duration-300">
+            <CardHeader>
+              <CardTitle className="text-black flex items-center">
+                <GraduationCap className="w-6 h-6 mr-3 text-purple-600" />
+                Medical & Educational Background
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4 text-black">
+                <div className="p-4 bg-white/50 rounded-lg">
+                  <h4 className="font-semibold text-purple-700">MBBS (Bachelor of Medicine, Bachelor of Surgery)</h4>
+                  <p className="text-sm text-purple-600">All India Institute of Medical Sciences (AIIMS), 2019</p>
+                  <p className="text-xs mt-1 text-gray-600">Specialized in Psychiatry & Behavioral Medicine</p>
+                </div>
+                <div className="p-4 bg-white/50 rounded-lg">
+                  <h4 className="font-semibold text-purple-700">Post-Graduate Diploma in Psychological Medicine</h4>
+                  <p className="text-sm text-purple-600">National Institute of Mental Health, 2021</p>
+                </div>
+                <div className="p-4 bg-white/50 rounded-lg">
+                  <h4 className="font-semibold text-purple-700">Research Fellowship in Cognitive Behavioral Therapy</h4>
+                  <p className="text-sm text-purple-600">Harvard Medical School, 2022</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border-purple-200 shadow-soft">
+            <CardHeader>
+              <CardTitle className="text-black flex items-center gap-2">
+                <Award className="w-5 h-5 text-purple-600" />
+                Achievements
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div>
+                  <div className="font-semibold text-black">50+ Publications</div>
+                  <div className="text-sm text-black">Peer-reviewed journals</div>
+                </div>
+                <div>
+                  <div className="font-semibold text-black">Research Excellence Award</div>
+                  <div className="text-sm text-black">American Psychological Association</div>
+                </div>
+                <div>
+                  <div className="font-semibold text-black">Licensed Psychologist</div>
+                  <div className="text-sm text-black">California & New York</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Credentials */}
@@ -201,14 +256,9 @@ export default function AboutPage() {
                 yet accessible assessments. Every quiz and article on MyBeing is crafted with the same care 
                 and evidence-based approach I use in my clinical practice and research.
               </p>
-              <Button 
-                className="bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 text-white"
-                asChild
-              >
-                <Link href="/quizzes">
-                  Explore My Assessments
-                </Link>
-              </Button>
+              <PrimaryCTA href="/quizzes" surface="about_page" eventName="explore_assessments" variant="uiverse">
+                Explore My Assessments
+              </PrimaryCTA>
             </CardContent>
           </Card>
         </motion.div>

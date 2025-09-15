@@ -8,7 +8,7 @@ import Link from 'next/link';
 
 export default function ResearchPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-purple-50 pt-20">
+    <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-purple-50">
       <div className="max-w-7xl mx-auto px-6 py-12">
         {/* Header */}
         <motion.div

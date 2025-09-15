@@ -6,6 +6,11 @@
   .bg-gradient-radial {
     background-image: radial-gradient(var(--tw-gradient-stops));
   }
+
+/* Editorial serif utility (uses Playfair_Display set as --font-serif in RootLayout) */
+.font-serif-brand {
+  font-family: var(--font-serif), ui-serif, Georgia, serif;
+}
 }
 
 /* Modern CSS Variables for Design System */
@@ -17,7 +22,7 @@
   --muted-foreground: 100 116 139; /* slate-500 */
   --border: 226 232 240; /* slate-200 */
   --input: 241 245 249; /* slate-100 */
-  --ring: 99 102 241; /* indigo-500 */
+  --ring: 129 140 248; /* indigo-400 */
   
   /* Accent & Paper */
   --accent: 250 204 21; /* yellow-400 */
@@ -25,7 +30,7 @@
   --paper: 250 250 249; /* stone-50 */
   
   /* Brand Colors */
-  --primary: 99 102 241; /* indigo-500 */
+  --primary: 129 140 248; /* indigo-400 */
   --primary-foreground: 255 255 255;
   --secondary: 241 245 249; /* slate-100 */
   --secondary-foreground: 15 23 42; /* slate-900 */

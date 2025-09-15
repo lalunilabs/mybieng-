@@ -3,17 +3,18 @@ import { cn } from '@/lib/utils';
 
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
   hover?: boolean;
-  variant?: 'default' | 'elevated' | 'glass' | 'gradient';
+  variant?: 'default' | 'elevated' | 'glass' | 'gradient' | 'premium';
   size?: 'sm' | 'md' | 'lg';
 }
 
 const Card = forwardRef<HTMLDivElement, CardProps>(
   ({ className, hover, variant = 'default', size = 'md', ...props }, ref) => {
     const variants = {
-      default: 'bg-white border border-border shadow-soft',
-      elevated: 'bg-white border-0 shadow-large',
+      default: 'bg-white border border-black/10 shadow-sm',
+      elevated: 'bg-white border border-black/10 shadow-lg',
       glass: 'glass border border-white/20',
-      gradient: 'bg-gradient-to-br from-white to-gray-50/50 border border-border shadow-medium'
+      gradient: 'bg-gradient-to-br from-white to-lilac-50 border border-black/10 shadow-md',
+      premium: 'bg-gradient-to-br from-white to-lilac-50 border border-black/10 shadow-md'
     };
 
     const sizes = {
@@ -29,7 +30,7 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
           'transition-all duration-300 group',
           variants[variant],
           sizes[size],
-          hover && 'hover:shadow-large hover:-translate-y-1 hover:scale-[1.02] cursor-pointer',
+          hover && 'hover:shadow-lg hover:-translate-y-1 hover:scale-[1.01] cursor-pointer',
           'animate-fade-in',
           className
         )}
@@ -72,7 +73,7 @@ const CardDescription = forwardRef<HTMLParagraphElement, HTMLAttributes<HTMLPara
       ref={ref} 
       className={cn(
         'text-sm text-muted-foreground leading-relaxed',
-        'group-hover:text-foreground/80 transition-colors duration-200',
+        'group-hover:text-lilac-700 transition-colors duration-200',
         className
       )} 
       {...props} 

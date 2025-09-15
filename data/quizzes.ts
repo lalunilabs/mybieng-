@@ -1,11 +1,15 @@
 export type QuizBand = { min: number; max: number; label: string; advice: string };
 
+export type QuizAttachment = { label: string; url: string; type?: 'link' | 'image' | 'file' };
+
 export type QuizQuestion = {
   id: string;
   text: string;
   type: 'likert' | 'yes_no' | 'multiple_choice' | 'text_input';
   options?: string[]; // For multiple_choice questions
   placeholder?: string; // For text_input questions
+  imageUrl?: string; // Optional visual aid
+  attachments?: QuizAttachment[]; // Optional related resources
 };
 
 export type Quiz = {
@@ -16,6 +20,7 @@ export type Quiz = {
   bands: QuizBand[];
   // Admin & SEO metadata
   published?: boolean;
+  publishedAt?: string; // ISO timestamp for scheduling
   tags?: string[];
   isPaid?: boolean;
   price?: number;
@@ -25,6 +30,8 @@ export type Quiz = {
   canonicalUrl?: string;
   ogImage?: string;
   robots?: string;
+  imageUrl?: string; // optional cover image for listings
+  attachments?: QuizAttachment[]; // quiz-level resources
 };
 
 export const quizzes: Quiz[] = [
@@ -33,6 +40,17 @@ export const quizzes: Quiz[] = [
     title: 'The Mental Tug-of-War (Cognitive Dissonance)',
     description:
       'Detect where your values and actions are out of sync across five patterns: instant justification, gradual belief shift, selective evidence, identity protection, and social reality distortion.',
+    isPaid: true,
+    price: 45,
+    published: true,
+    publishedAt: '2025-08-01T00:00:00.000Z',
+    tags: ['cognitive dissonance', 'values', 'behavior', 'identity', 'justification', 'patterns'],
+    metaTitle: 'The Mental Tug-of-War: Cognitive Dissonance Assessment',
+    metaDescription: 'Spot contradictions between values and actions across 5 patterns. No right/wrong answers—use this assessment to recognize dissonance cues and choose small alignment steps.',
+    keywords: ['cognitive dissonance', 'values vs actions', 'instant justification', 'identity protection', 'selective evidence', 'self-discovery'],
+    canonicalUrl: '/quizzes/cognitive-dissonance',
+    ogImage: '',
+    robots: 'index,follow',
     questions: [
       { id: 'cd1', text: 'I quickly explain away choices that conflict with my values.', type: 'likert' }, // instant justification
       { id: 'cd2', text: 'When I feel tension, I tell myself it was unavoidable.', type: 'likert' },
@@ -55,6 +73,17 @@ export const quizzes: Quiz[] = [
     slug: 'stress-patterns',
     title: 'Stress Patterns Check-in',
     description: 'Spot recurring stress signals across sleep, energy, focus, mood, and social strain.',
+    isPaid: true,
+    price: 35,
+    published: true,
+    publishedAt: '2025-08-10T00:00:00.000Z',
+    tags: ['stress', 'energy', 'sleep', 'focus', 'mood', 'patterns'],
+    metaTitle: 'Stress Patterns Check-in: Daily Signals Overview',
+    metaDescription: 'Identify stress signals across sleep, energy, focus, mood, and social strain. Quick check-in designed for practical insight and small adjustments.',
+    keywords: ['stress patterns', 'sleep', 'energy levels', 'focus', 'mood', 'self-assessment'],
+    canonicalUrl: '/quizzes/stress-patterns',
+    ogImage: '',
+    robots: 'index,follow',
     questions: [
       { id: 'sp1', text: 'My sleep is disrupted or unrefreshing.', type: 'likert' },
       { id: 'sp2', text: 'My energy crashes during the day.', type: 'likert' },
@@ -94,4 +123,34 @@ export const quizzes: Quiz[] = [
 
 export function getQuizBySlug(slug: string) {
   return quizzes.find((q) => q.slug === slug);
+}
+
+export function getBandForScore(score: number, maxScore: number): QuizBand | null {
+  // Convert score to a percentage-based system (0-100)
+  const percentage = (score / maxScore) * 100;
+  
+  // For now, we'll use a simple approach based on the cognitive dissonance quiz bands
+  // In a real implementation, this would be more sophisticated
+  if (percentage <= 40) {
+    return {
+      min: 10,
+      max: 20,
+      label: 'Low dissonance',
+      advice: 'You generally act in alignment with your values. Keep reflecting on decisions and use that alignment as a strength.'
+    };
+  } else if (percentage <= 70) {
+    return {
+      min: 21,
+      max: 35,
+      label: 'Moderate dissonance',
+      advice: 'You may be managing occasional tensions by rationalizing or shifting beliefs. Choose one area to realign with a small, testable action.'
+    };
+  } else {
+    return {
+      min: 36,
+      max: 50,
+      label: 'High dissonance',
+      advice: 'You often experience value–behavior gaps. Map the biggest friction point, identify one value to honor this week, and remove a small obstacle to acting on it.'
+    };
+  }
 }

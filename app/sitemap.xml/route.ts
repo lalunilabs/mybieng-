@@ -1,67 +1,47 @@
 import { NextResponse } from 'next/server';
-import { DatabaseService } from '@/lib/database';
+import { loadAllArticles, loadAllQuizzes } from '@/lib/content';
 
 export async function GET() {
   try {
-    const blogs = await DatabaseService.getAllBlogs();
-    const quizzes = await DatabaseService.getAllQuizzes();
-    
-    const baseUrl = process.env.NEXT_PUBLIC_DOMAIN || 'https://mybeing.com';
+    const baseUrl = process.env.NEXT_PUBLIC_DOMAIN || 'https://mybeing.in';
+    const now = Date.now();
     const currentDate = new Date().toISOString();
-    
-    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>${baseUrl}</loc>
-    <lastmod>${currentDate}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>${baseUrl}/about</loc>
-    <lastmod>${currentDate}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>${baseUrl}/research</loc>
-    <lastmod>${currentDate}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>${baseUrl}/blog</loc>
-    <lastmod>${currentDate}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>${baseUrl}/quizzes</loc>
-    <lastmod>${currentDate}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  ${blogs.map(blog => `
-  <url>
-    <loc>${baseUrl}/blog/${blog.slug}</loc>
-    <lastmod>${blog.updated_at}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>`).join('')}
-  ${quizzes.map(quiz => `
-  <url>
-    <loc>${baseUrl}/quizzes/${quiz.slug}</loc>
-    <lastmod>${quiz.updated_at}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>`).join('')}
-</urlset>`;
 
-    return new NextResponse(sitemap, {
-      headers: {
-        'Content-Type': 'application/xml',
-      },
+    const blogs = loadAllArticles()
+      .filter(b => b.published !== false && b.publishedAt.getTime() <= now)
+      .sort((a, b) => b.publishedAt.getTime() - a.publishedAt.getTime());
+
+    const quizzes = loadAllQuizzes()
+      .filter(q => q.published !== false && (!q.publishedAt || new Date(q.publishedAt).getTime() <= now))
+      .sort((a, b) => (a.slug < b.slug ? -1 : 1));
+
+    const urls: string[] = [];
+    const add = (loc: string, lastmod?: string, changefreq = 'monthly', priority = '0.8') => {
+      urls.push(`  <url>\n    <loc>${loc}</loc>\n    ${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>\n  </url>`);
+    };
+
+    // Core pages
+    add(`${baseUrl}`, currentDate, 'weekly', '1.0');
+    add(`${baseUrl}/about`, currentDate, 'monthly', '0.8');
+    add(`${baseUrl}/research`, currentDate, 'monthly', '0.8');
+    add(`${baseUrl}/blog`, currentDate, 'weekly', '0.9');
+    add(`${baseUrl}/quizzes`, currentDate, 'weekly', '0.9');
+    add(`${baseUrl}/how-it-works`, currentDate, 'monthly', '0.8');
+    add(`${baseUrl}/check-ins`, currentDate, 'daily', '0.7');
+
+    // Blog posts
+    blogs.forEach(blog => {
+      add(`${baseUrl}/blog/${blog.slug}`, blog.publishedAt.toISOString(), 'monthly', '0.7');
     });
+
+    // Quizzes
+    quizzes.forEach(quiz => {
+      const lastmod = quiz.publishedAt ? new Date(quiz.publishedAt).toISOString() : currentDate;
+      add(`${baseUrl}/quizzes/${quiz.slug}`, lastmod, 'monthly', '0.8');
+    });
+
+    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>`;
+    return new NextResponse(sitemap, { headers: { 'Content-Type': 'application/xml', 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } });
   } catch (error) {
     console.error('Error generating sitemap:', error);
     return new NextResponse('Error generating sitemap', { status: 500 });

@@ -114,12 +114,53 @@ export function PricingManager() {
 
   return (
     <div className="space-y-8">
-      {/* Pricing Plans Management */}
+      {/* Individual Item Pricing */}
       <Card>
         <CardHeader>
-          <CardTitle>Pricing Plans Management</CardTitle>
+          <CardTitle>Individual Item Pricing</CardTitle>
           <p className="text-sm text-gray-600">
-            💡 Based on Reddit research: Users prefer $15-25/month. BetterHelp ($65/month) gets complaints about pricing.
+            Set pricing for individual quizzes and premium articles
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="border rounded-lg p-4">
+              <h3 className="font-semibold mb-2">Quizzes</h3>
+              <div className="flex items-center space-x-2 mb-3">
+                <span className="text-2xl font-bold">$50</span>
+                <span className="text-sm text-gray-500">per quiz</span>
+              </div>
+              <p className="text-sm text-gray-600 mb-3">
+                Price for individual cognitive assessments
+              </p>
+              <Button size="sm" variant="outline" disabled>
+                Edit Price
+              </Button>
+            </div>
+            
+            <div className="border rounded-lg p-4">
+              <h3 className="font-semibold mb-2">Premium Articles</h3>
+              <div className="flex items-center space-x-2 mb-3">
+                <span className="text-2xl font-bold">$50</span>
+                <span className="text-sm text-gray-500">per article</span>
+              </div>
+              <p className="text-sm text-gray-600 mb-3">
+                Price for premium research-backed content
+              </p>
+              <Button size="sm" variant="outline" disabled>
+                Edit Price
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Subscription Plans Management */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Subscription Plans Management</CardTitle>
+          <p className="text-sm text-gray-600">
+            Manage subscription plans with included benefits
           </p>
         </CardHeader>
         <CardContent>
@@ -289,30 +330,29 @@ export function PricingManager() {
         </CardContent>
       </Card>
 
-      {/* Pricing Strategy Recommendations */}
+      {/* Pricing Strategy */}
       <Card>
         <CardHeader>
-          <CardTitle>💡 Pricing Strategy Insights</CardTitle>
+          <CardTitle>💡 Pricing Strategy</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <h4 className="font-medium mb-3">Market Research (Reddit Feedback)</h4>
+              <h4 className="font-medium mb-3">Current Model</h4>
               <ul className="text-sm space-y-2 text-gray-700">
-                <li>• <strong>Headspace/Calm:</strong> $12-15/month (well-received)</li>
-                <li>• <strong>BetterHelp:</strong> $65/month (many complaints)</li>
-                <li>• <strong>Sweet spot:</strong> $15-25/month for self-help apps</li>
-                <li>• <strong>User preference:</strong> Lower entry price with upgrades</li>
+                <li>• <strong>Individual Items:</strong> $50 each for quizzes and articles</li>
+                <li>• <strong>Subscription:</strong> $32/month with included benefits</li>
+                <li>• <strong>Subscriber Discounts:</strong> Additional items at reduced price</li>
+                <li>• <strong>Manual Discounts:</strong> Admin-applied discounts for special cases</li>
               </ul>
             </div>
             <div>
-              <h4 className="font-medium mb-3">Recommended Strategy</h4>
+              <h4 className="font-medium mb-3">Recommendations</h4>
               <ul className="text-sm space-y-2 text-gray-700">
-                <li>• Start with <strong>$19/month</strong> basic plan</li>
-                <li>• Offer <strong>50% launch discount</strong> for first 100 users</li>
-                <li>• Create <strong>yearly plans</strong> with significant savings</li>
-                <li>• Use <strong>student discounts</strong> to build user base</li>
-                <li>• Gradually increase prices as value is proven</li>
+                <li>• Maintain <strong>$50/item</strong> pricing for premium content</li>
+                <li>• Offer <strong>subscriber discounts</strong> of 20-30% on additional items</li>
+                <li>• Use <strong>manual discounts</strong> for special promotions</li>
+                <li>• Consider <strong>bundle pricing</strong> for multiple items</li>
               </ul>
             </div>
           </div>
