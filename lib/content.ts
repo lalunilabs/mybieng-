@@ -53,13 +53,29 @@ export function loadArticleBySlug(slug: string): Blog | undefined {
   return seedBlogs.find(b => b.slug === slug);
 }
 
-export type SaveArticleInput = Omit<Blog, 'publishedAt'> & { publishedAt: string };
+import { ArticleInput } from '@/lib/validations/article';
+
+export type SaveArticleInput = ArticleInput;
 
 export function saveArticle(input: SaveArticleInput) {
   ensureDirs();
   const slug = input.slug;
   const filePath = path.join(ARTICLES_DIR, `${slug}.json`);
-  writeJsonFile(filePath, input);
+  
+  // Ensure required fields have defaults
+  const articleData = {
+    ...input,
+    id: input.id || crypto.randomUUID(),
+    author: input.author || 'MyBeing Research',
+    readTime: input.readTime || 5,
+    published: input.published ?? true,
+    isPremium: input.isPremium ?? false,
+    likes: input.likes ?? 0,
+    tags: input.tags || [],
+  };
+  
+  writeJsonFile(filePath, articleData);
+  return articleData;
 }
 
 export function deleteArticle(slug: string) {

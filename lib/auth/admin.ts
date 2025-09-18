@@ -72,14 +72,25 @@ export const ADMIN_PERMISSIONS = {
 const OWNER_EMAIL = process.env.OWNER_EMAIL || '';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
 
-const JWT_SECRET = process.env.ADMIN_JWT_SECRET || 'your-super-secret-admin-key';
-const SESSION_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+const SESSION_DURATION_SEC = Number(process.env.ADMIN_SESSION_TIMEOUT || '86400');
+const SESSION_DURATION = Number.isFinite(SESSION_DURATION_SEC) && SESSION_DURATION_SEC > 0
+  ? SESSION_DURATION_SEC * 1000
+  : 24 * 60 * 60 * 1000; // fallback to 24h
 
 export class AdminAuthError extends Error {
   constructor(message: string, public code: string) {
     super(message);
     this.name = 'AdminAuthError';
   }
+}
+
+function getJWTSecret(): string {
+  const secret = process.env.ADMIN_JWT_SECRET;
+  if (!secret || secret.length < 16) {
+    // Only thrown at the time of admin auth usage
+    throw new AdminAuthError('Admin not configured', 'ADMIN_NOT_CONFIGURED');
+  }
+  return secret;
 }
 
 export async function authenticateAdmin(email: string, password: string): Promise<AdminSession> {
@@ -116,8 +127,8 @@ export async function authenticateAdmin(email: string, password: string): Promis
       email: user.email, 
       role: user.role 
     },
-    JWT_SECRET,
-    { expiresIn: '24h' }
+    getJWTSecret(),
+    { expiresIn: `${Math.floor(SESSION_DURATION / 1000)}s` }
   );
 
   const expiresAt = new Date(Date.now() + SESSION_DURATION).toISOString();
@@ -127,7 +138,9 @@ export async function authenticateAdmin(email: string, password: string): Promis
 
 export async function verifyAdminToken(token: string): Promise<AdminUser | null> {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    const secret = process.env.ADMIN_JWT_SECRET;
+    if (!secret) return null;
+    const decoded = jwt.verify(token, secret) as any;
     if (!decoded?.email || decoded.email !== OWNER_EMAIL) return null;
     // Reconstruct minimal user (single owner)
     const user: AdminUser = {
@@ -199,8 +212,8 @@ export function createAdminSession(user: AdminUser): AdminSession {
       email: user.email, 
       role: user.role 
     },
-    JWT_SECRET,
-    { expiresIn: '24h' }
+    getJWTSecret(),
+    { expiresIn: `${Math.floor(SESSION_DURATION / 1000)}s` }
   );
 
   const expiresAt = new Date(Date.now() + SESSION_DURATION).toISOString();

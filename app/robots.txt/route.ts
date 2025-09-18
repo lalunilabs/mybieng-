@@ -20,9 +20,7 @@ Allow: /research
 Allow: /blog
 Allow: /quizzes
 Allow: /blog/*
-Allow: /quizzes/*
-Allow: /quiz
-Allow: /quiz/*`;
+Allow: /quizzes/*`;
 
   return new NextResponse(robots, {
     headers: {

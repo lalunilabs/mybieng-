@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
+import { z } from 'zod';
 import { authOptions } from '@/lib/auth';
+import { ipRateLimit } from '@/lib/rate-limit';
+
+// Input validation schema
+const rangeSchema = z.enum(['7d', '30d', '90d']);
 
 // Mock analytics data - in production, this would integrate with Google Analytics API
 const mockAnalyticsData = {
@@ -89,29 +94,104 @@ const mockAnalyticsData = {
 
 export async function GET(request: NextRequest) {
   try {
+    // Rate limiting - 10 requests per minute per IP
+    await ipRateLimit.check(request, 10);
+
+    // Authentication
     const session = await getServerSession(authOptions);
-    
     if (!session || session.user?.email !== process.env.OWNER_EMAIL) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return new NextResponse(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Unauthorized',
+          code: 'UNAUTHORIZED'
+        }), 
+        { 
+          status: 401, 
+          headers: { 
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-store, max-age=0'
+          } 
+        }
+      );
     }
 
     const { searchParams } = new URL(request.url);
     const range = searchParams.get('range') || '7d';
 
-    // Validate range
-    if (!['7d', '30d', '90d'].includes(range)) {
-      return NextResponse.json({ error: 'Invalid range' }, { status: 400 });
+    // Validate range using Zod
+    const validation = rangeSchema.safeParse(range);
+    if (!validation.success) {
+      return new NextResponse(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Invalid date range',
+          code: 'INVALID_RANGE',
+          details: validation.error.format()
+        }), 
+        { 
+          status: 400, 
+          headers: { 
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-store, max-age=0'
+          } 
+        }
+      );
     }
 
     // In production, this would fetch real data from Google Analytics API
-    const analyticsData = mockAnalyticsData[range as keyof typeof mockAnalyticsData];
+    const analyticsData = mockAnalyticsData[validation.data as keyof typeof mockAnalyticsData];
 
-    return NextResponse.json(analyticsData);
-  } catch (error) {
+    return new NextResponse(
+      JSON.stringify({ 
+        success: true, 
+        data: analyticsData 
+      }),
+      { 
+        headers: { 
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store, max-age=0',
+          'X-Content-Type-Options': 'nosniff'
+        } 
+      }
+    );
+  } catch (error: any) {
     console.error('Analytics API error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch analytics data' },
-      { status: 500 }
+    
+    // Handle rate limiting errors
+    if (error.message?.includes('Rate limit exceeded')) {
+      return new NextResponse(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Too many requests',
+          code: 'RATE_LIMIT_EXCEEDED',
+          message: 'Please try again later.'
+        }), 
+        { 
+          status: 429, 
+          headers: { 
+            'Content-Type': 'application/json',
+            'Retry-After': '60',
+            'Cache-Control': 'no-store, max-age=0'
+          } 
+        }
+      );
+    }
+    
+    return new NextResponse(
+      JSON.stringify({ 
+        success: false, 
+        error: 'Failed to fetch analytics data',
+        code: 'INTERNAL_SERVER_ERROR',
+        message: process.env.NODE_ENV === 'development' ? error.message : undefined
+      }),
+      { 
+        status: 500, 
+        headers: { 
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store, max-age=0'
+        } 
+      }
     );
   }
 }

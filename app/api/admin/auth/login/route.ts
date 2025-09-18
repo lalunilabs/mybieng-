@@ -1,19 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateAdmin, AdminAuthError } from '@/lib/auth/admin';
 import { cookies } from 'next/headers';
+import { z } from 'zod';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json();
-
-    if (!email || !password) {
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
       return NextResponse.json(
-        { error: 'Email and password are required' },
-        { status: 400 }
+        { error: 'Invalid JSON in request body' },
+        { status: 400, headers: { 'Cache-Control': 'no-store' } }
       );
     }
 
-    const session = await authenticateAdmin(email, password);
+    const schema = z.object({
+      email: z.string().email(),
+      password: z.string().min(1).max(256),
+    });
+
+    const parsed = schema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Invalid credentials format', details: parsed.error.flatten() },
+        { status: 400, headers: { 'Cache-Control': 'no-store' } }
+      );
+    }
+
+    const session = await authenticateAdmin(parsed.data.email, parsed.data.password);
     
     // Set secure HTTP-only cookie
     const cookieStore = cookies();
@@ -25,29 +40,32 @@ export async function POST(request: NextRequest) {
       path: '/'
     });
 
-    return NextResponse.json({
-      success: true,
-      user: {
-        id: session.user.id,
-        email: session.user.email,
-        name: session.user.name,
-        role: session.user.role,
-        permissions: session.user.permissions
-      }
-    });
+    return new NextResponse(
+      JSON.stringify({
+        success: true,
+        user: {
+          id: session.user.id,
+          email: session.user.email,
+          name: session.user.name,
+          role: session.user.role,
+          permissions: session.user.permissions
+        }
+      }),
+      { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } }
+    );
 
   } catch (error) {
     if (error instanceof AdminAuthError) {
       return NextResponse.json(
         { error: error.message, code: error.code },
-        { status: 401 }
+        { status: 401, headers: { 'Cache-Control': 'no-store' } }
       );
     }
 
     console.error('Admin login error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { status: 500, headers: { 'Cache-Control': 'no-store' } }
     );
   }
 }

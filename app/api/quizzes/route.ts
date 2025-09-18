@@ -5,14 +5,13 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const includeUnpublished = searchParams.get('includeUnpublished') === 'true';
-    
+
     const quizzes = await DatabaseService.getAllQuizzes(includeUnpublished);
-    
-    return NextResponse.json({
-      success: true,
-      data: quizzes,
-      count: quizzes.length
-    });
+
+    return new NextResponse(
+      JSON.stringify({ success: true, data: quizzes, count: quizzes.length }),
+      { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } }
+    );
   } catch (error) {
     console.error('Error fetching quizzes:', error);
     return NextResponse.json(
@@ -22,38 +21,10 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    
-    // Validate required fields
-    const { title, slug, description, questions, scoring_bands, author_id } = body;
-    if (!title || !slug || !description || !questions || !scoring_bands || !author_id) {
-      return NextResponse.json(
-        { success: false, error: 'Missing required fields' },
-        { status: 400 }
-      );
-    }
-    
-    const quiz = await DatabaseService.createQuiz({
-      title,
-      slug,
-      description,
-      questions,
-      scoring_bands,
-      published: body.published || false,
-      author_id
-    });
-    
-    return NextResponse.json({
-      success: true,
-      data: quiz
-    });
-  } catch (error) {
-    console.error('Error creating quiz:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to create quiz' },
-      { status: 500 }
-    );
-  }
+export async function POST(_request: NextRequest) {
+  // Public creation of quizzes is not allowed. Use admin API instead.
+  return NextResponse.json(
+    { error: 'Method not allowed. Use /api/admin/quizzes for content management.' },
+    { status: 405 }
+  );
 }
