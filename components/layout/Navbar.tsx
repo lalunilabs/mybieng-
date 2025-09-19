@@ -59,7 +59,7 @@ export function Navbar() {
               variant="uiverse"
               className="shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
             >
-              Start for Free
+              Read Articles
             </PrimaryCTA>
           </div>
 
@@ -131,7 +131,7 @@ export function Navbar() {
                   className="w-full shadow-lg"
                   onClick={() => setIsOpen(false)}
                 >
-                  Start for Free
+                  Read Articles
                 </PrimaryCTA>
               </div>
             </div>
