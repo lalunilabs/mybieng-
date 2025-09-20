@@ -1,7 +1,5 @@
 import { Metadata } from 'next';
 import PricingSection from '@/components/pricing/PricingSection';
-import { Navbar } from '@/components/layout/Navbar';
-import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
   title: 'Pricing Plans - MyBeing',
