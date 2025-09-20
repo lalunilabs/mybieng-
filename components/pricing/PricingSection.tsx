@@ -2,44 +2,37 @@
 
 import { motion } from 'framer-motion';
 import { PremiumCard, MYBEING_FEATURES } from '@/components/ui/PremiumCard';
-import { Brain, BarChart3, MessageCircle, Calendar, Sparkles, Users, Lock, Zap, TrendingUp, BookOpen, Target } from 'lucide-react';
+import { Brain, BarChart3, MessageCircle, Calendar, Sparkles, Users, Lock, Zap, TrendingUp, BookOpen, Target, Volume2, Gift, Star, Check } from 'lucide-react';
 
 const pricingPlans = [
   {
-    title: "Explorer",
-    tag: "Free",
-    description: "Perfect for individuals starting their self-discovery journey. Take basic quizzes and get foundational insights into your patterns.",
+    title: "Free",
+    tag: "Basic",
+    description: "Start your self-discovery journey with essential features",
     features: [
-      { icon: MYBEING_FEATURES.quizzes, text: "3 Basic Quizzes" },
-      { icon: MYBEING_FEATURES.insights, text: "Basic Insights" },
-      { icon: <Users className="w-4 h-4" />, text: "Community Access" },
-      { icon: MYBEING_FEATURES.support, text: "Email Support" }
+      { icon: <Brain className="w-4 h-4" />, text: "Basic quizzes" },
+      { icon: <BookOpen className="w-4 h-4" />, text: "Free articles with ads" },
+      { icon: <BarChart3 className="w-4 h-4" />, text: "Basic insights" },
+      { icon: <Calendar className="w-4 h-4" />, text: "Weekly check-ins" }
     ],
-    price: {
-      amount: 0,
-      currency: "$",
-      period: "forever"
-    },
+    price: { amount: 0, currency: "$", period: "forever" },
     isPopular: false
   },
   {
-    title: "Premium",
+    title: "MyBeing Premium",
     tag: "Best Value",
-    description: "Comprehensive plan with everything you need for deep self-discovery and personal growth. Includes 2 free quizzes, premium articles, AI conversations, and more.",
+    description: "Unlock your full potential with comprehensive self-discovery tools",
     features: [
-      { icon: <Brain className="w-4 h-4" />, text: "2 Free Premium Quizzes" },
-      { icon: <BookOpen className="w-4 h-4" />, text: "3 Premium Articles" },
-      { icon: <MessageCircle className="w-4 h-4" />, text: "Unlimited AI Conversations" },
-      { icon: <TrendingUp className="w-4 h-4" />, text: "Personalized Content Curation" },
-      { icon: <Target className="w-4 h-4" />, text: "Custom Learning Plans" },
-      { icon: <Calendar className="w-4 h-4" />, text: "Progress Tracking" },
-      { icon: <BarChart3 className="w-4 h-4" />, text: "Advanced Analytics" }
+      { icon: <Volume2 className="w-4 h-4" />, text: "Audio articles (listen instead of read)" },
+      { icon: <Gift className="w-4 h-4" />, text: "1 premium quiz/month (up to $50 value)" },
+      { icon: <Star className="w-4 h-4" />, text: "Subscriber-only articles & quizzes" },
+      { icon: <TrendingUp className="w-4 h-4" />, text: "Advanced analytics & insights" },
+      { icon: <MessageCircle className="w-4 h-4" />, text: "Unlimited AI conversations" },
+      { icon: <Sparkles className="w-4 h-4" />, text: "Ad-free experience" },
+      { icon: <Calendar className="w-4 h-4" />, text: "Custom learning plans" },
+      { icon: <Check className="w-4 h-4" />, text: "Subscriber discounts on additional content" }
     ],
-    price: {
-      amount: 32,
-      currency: "$",
-      period: "per month"
-    },
+    price: { amount: 32, currency: "$", period: "month" },
     isPopular: true
   }
 ];

@@ -2,21 +2,27 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import './globals.css';
 import '../styles/colors.css';
-import { Inter, Playfair_Display } from 'next/font/google';
+import { Unbounded, Space_Grotesk } from 'next/font/google';
 import Providers from '@/components/Providers';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 // import { EngagementProvider } from '@/components/providers/EngagementProvider';
 // import ScrollAnimations from '@/components/ui/ScrollAnimations';
-import { Navbar } from '@/components/layout/Navbar';
+import { NavbarWrapper } from '@/components/layout/NavbarWrapper';
 import Footer from '@/components/Footer';
 import { Toaster } from 'sonner';
 import GoogleAnalytics from '@/components/analytics/GoogleAnalytics';
 
-const inter = Inter({ subsets: ['latin'] });
-const playfair = Playfair_Display({ 
-  subsets: ['latin'], 
-  variable: '--font-playfair',
-  display: 'swap' 
+const unbounded = Unbounded({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800', '900'],
+  variable: '--font-unbounded',
+  display: 'swap',
+});
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '700'],
+  variable: '--font-space-grotesk',
+  display: 'swap',
 });
 
 const BASE_DOMAIN = process.env.NEXT_PUBLIC_DOMAIN || 'https://mybeing.in';
@@ -103,7 +109,7 @@ export default function RootLayout({
     logo: `${base}/apple-touch-icon.png`,
   };
   return (
-    <html lang="en" className={`${inter.className} ${playfair.variable}`}>
+    <html lang="en" className={`${spaceGrotesk.variable} ${unbounded.variable}`}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -133,7 +139,7 @@ export default function RootLayout({
               >
                 Skip to content
               </a>
-              <Navbar />
+              <NavbarWrapper />
               <main id="main-content" className="flex-1 pt-16" role="main">
                 {children}
               </main>

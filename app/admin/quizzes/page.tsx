@@ -1,21 +1,28 @@
 import { requireAdmin } from '@/lib/adminAuth';
-import AdminNav from '@/components/admin/AdminNav';
+import { WorldClassAdminLayout } from '@/components/admin/WorldClassAdminLayout';
 import AdminQuizzes from '@/components/admin/AdminQuizzes';
 
 export const dynamic = 'force-dynamic';
 
 export default function AdminQuizzesPage() {
   requireAdmin();
+  
+  const user = {
+    name: 'MyBeing Creator',
+    email: process.env.ADMIN_EMAIL || 'creator@mybeing.in'
+  };
+
   return (
-    <section className="py-10">
-      <h1 className="text-2xl font-semibold">Manage Quizzes</h1>
-      <p className="text-gray-600 mt-2">Create, edit, publish, pricing, and SEO metadata.</p>
-      <div className="mt-4">
-        <AdminNav />
-      </div>
-      <div className="mt-6">
+    <WorldClassAdminLayout user={user} activeSection="quizzes">
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Quizzes</h1>
+            <p className="text-gray-600 mt-1">Create and manage research-backed self-discovery quizzes</p>
+          </div>
+        </div>
         <AdminQuizzes />
       </div>
-    </section>
+    </WorldClassAdminLayout>
   );
 }

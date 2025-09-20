@@ -1,16 +1,18 @@
-import { AdminLayout } from '@/components/admin/AdminLayout';
-import { EnhancedDashboard } from '@/components/admin/EnhancedDashboard';
-
-const mockUser = {
-  name: 'Admin User',
-  email: 'admin@mybeing.com',
-  role: 'super_admin'
-};
+import { requireAdmin } from '@/lib/adminAuth';
+import { WorldClassAdminLayout } from '@/components/admin/WorldClassAdminLayout';
+import { WorldClassDashboard } from '@/components/admin/WorldClassDashboard';
 
 export default function AdminPage() {
+  requireAdmin();
+  
+  const user = {
+    name: 'MyBeing Creator',
+    email: process.env.ADMIN_EMAIL || 'creator@mybeing.in'
+  };
+
   return (
-    <AdminLayout user={mockUser}>
-      <EnhancedDashboard />
-    </AdminLayout>
+    <WorldClassAdminLayout user={user} activeSection="dashboard">
+      <WorldClassDashboard />
+    </WorldClassAdminLayout>
   );
 }

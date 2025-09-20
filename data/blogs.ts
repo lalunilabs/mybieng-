@@ -124,7 +124,7 @@ Every recommendation comes with context:
 
 ## Premium Subscription: Unlocking Your Full Potential
 
-While everyone can access basic AI assistance, our **Premium subscription ($${PRICING.MONTHLY_USD}/month)** transforms the experience into something truly personalized and comprehensive.
+While everyone can access basic AI assistance, our **Premium subscription ($${PRICING.monthly}/month)** transforms the experience into something truly personalized and comprehensive.
 
 ### **What's Included in Premium**
 
@@ -183,7 +183,7 @@ Our AI assistant is here to make that conversation richer, more insightful, and 
 
 *MyBeing AI represents the next evolution in personal development technology – where artificial intelligence meets authentic self-discovery. Join thousands of users who are already experiencing the difference personalized AI guidance makes in their growth journey.*
 
-**[Start Your First Assessment](/quizzes) | [Subscribe for $${PRICING.MONTHLY_USD}/month](/pricing) | [Chat with AI Now](/chat)**`,
+**[Start Your First Assessment](/quizzes) | [Subscribe for $${PRICING.monthly}/month](/pricing) | [Chat with AI Now](/chat)**`,
     author: 'MyBeing Research Team',
     publishedAt: new Date('2025-09-04'),
     tags: ['ai', 'self-discovery', 'technology', 'personalization'],
@@ -191,9 +191,9 @@ Our AI assistant is here to make that conversation richer, more insightful, and 
     published: true,
     likes: 0,
     isPremium: false,
-    metaTitle: `MyBeing AI: Your Personal Self-Discovery Companion | $${PRICING.MONTHLY_USD}/month Premium Plan`,
-    metaDescription: `Discover how MyBeing AI transforms self-discovery with intelligent quiz analysis, personalized recommendations, and a $${PRICING.MONTHLY_USD}/month premium plan including 2 free quizzes and 3 premium articles.`,
-    keywords: ['AI assistant', 'self-discovery', 'quiz analysis', 'personalized recommendations', 'personal growth', 'psychology AI', 'behavioral insights', `$${PRICING.MONTHLY_USD} subscription`],
+    metaTitle: `MyBeing AI: Your Personal Self-Discovery Companion | $${PRICING.monthly}/month Premium Plan`,
+    metaDescription: `Discover how MyBeing AI transforms self-discovery with intelligent quiz analysis, personalized recommendations, and a $${PRICING.monthly}/month premium plan including 2 free quizzes and 3 premium articles.`,
+    keywords: ['AI assistant', 'self-discovery', 'quiz analysis', 'personalized recommendations', 'personal growth', 'psychology AI', 'behavioral insights', `$${PRICING.monthly} subscription`],
     ogImage: '/images/blog/mybeing-ai-companion.jpg'
   },
 ];

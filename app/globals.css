@@ -7,10 +7,10 @@
     background-image: radial-gradient(var(--tw-gradient-stops));
   }
 
-/* Editorial serif utility (uses Playfair_Display set as --font-serif in RootLayout) */
-.font-serif-brand {
-  font-family: var(--font-serif), ui-serif, Georgia, serif;
-}
+  /* Numeric figures for dashboards/analytics */
+  .numeric-figures {
+    font-variant-numeric: lining-nums tabular-nums;
+  }
 }
 
 /* Modern CSS Variables for Design System */
@@ -64,8 +64,25 @@
   --radius-xl: 1.5rem;   /* 24px */
   
   /* Typography */
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-unbounded), ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', 'Roboto Mono', monospace;
+}
+
+@layer base {
+  h1, h2, .font-display {
+    font-family: var(--font-display);
+  }
+
+  h1 { font-size: clamp(2rem, 2vw + 1.5rem, 3.5rem); line-height: 1.1; font-weight: 800; letter-spacing: -0.015em; text-wrap: balance; }
+  h2 { font-size: clamp(1.5rem, 1.5vw + 1rem, 2.5rem); line-height: 1.15; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
+  h3 { font-size: clamp(1.25rem, 1vw + 0.75rem, 2rem); line-height: 1.2; font-weight: 600; letter-spacing: -0.005em; }
+
+  /* Article readability */
+  .prose { font-family: var(--font-sans); line-height: 1.65; }
+  .prose p { line-height: 1.75; }
+  .prose h1, .prose h2 { font-family: var(--font-display); }
+  .prose img { border-radius: 1rem; }
 }
 
 /* Class-based dark mode overrides */

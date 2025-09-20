@@ -19,12 +19,12 @@ export function Navbar() {
   // Keep navbar minimal and consistent across pages
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-[100] bg-white/90 supports-[backdrop-filter]:backdrop-blur border-b border-gray-200/60 shadow-sm">
+    <nav className="fixed top-0 left-0 right-0 z-[9999] bg-white/95 supports-[backdrop-filter]:backdrop-blur-sm border-b border-gray-200/60 shadow-sm">
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center group" aria-label="MyBeing Home">
-            <span className="font-serif-brand text-2xl md:text-3xl font-semibold tracking-tight text-gray-900 group-hover:text-primary transition-colors">
+            <span className="font-display text-2xl md:text-3xl font-semibold tracking-tight text-gray-900 group-hover:text-primary transition-colors">
               MyBeing
             </span>
           </Link>

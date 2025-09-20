@@ -12,6 +12,8 @@ import PrimaryCTA from '@/components/ui/PrimaryCTA';
 import { ArrowLeft, ArrowRight, RotateCcw, CheckCircle } from 'lucide-react';
 import { trackQuizStart, trackQuizProgress, trackQuizComplete } from '@/lib/analytics/gtag';
 import { QuizCompletion } from '@/components/QuizCompletion';
+import { WorldClassQuizFlow } from '@/components/quiz/WorldClassQuizFlow';
+import { QuizResultsWithAI } from '@/components/quiz/QuizResultsWithAI';
 
 const likert = [
   { label: 'Strongly disagree', value: 1 },
@@ -30,6 +32,8 @@ export default function QuizRunner({ quiz }: { quiz: Quiz }) {
   const [answers, setAnswers] = useState<Record<string, number | string>>({});
   const [submitted, setSubmitted] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [useWorldClassFlow, setUseWorldClassFlow] = useState(true);
+  const [showAIChat, setShowAIChat] = useState(false);
 
   const total = useMemo(() => {
     return Object.values(answers).reduce((sum: number, answer) => {
@@ -316,7 +320,7 @@ export default function QuizRunner({ quiz }: { quiz: Quiz }) {
         )}
       </div>
 
-      {submitted && (
+      {submitted && !useWorldClassFlow && (
         <QuizCompletion
           sessionId={`quiz-${quiz.slug}-${Date.now()}`}
           quizId={quiz.slug}
@@ -337,4 +341,75 @@ export default function QuizRunner({ quiz }: { quiz: Quiz }) {
       )}
     </div>
   );
+
+  // World-class quiz flow
+  if (useWorldClassFlow) {
+    const worldClassQuiz = {
+      title: quiz.title,
+      description: quiz.description,
+      category: 'Self-Discovery',
+      estimatedTime: '5-8 minutes',
+      questions: quiz.questions.map(q => ({
+        id: q.id,
+        question: q.text,
+        type: 'multiple-choice' as const,
+        options: likert.map(l => l.label),
+        required: true,
+        category: 'general'
+      }))
+    };
+
+    const handleWorldClassComplete = (results: any) => {
+      // Convert world-class results to our format
+      const convertedAnswers: Record<string, number> = {};
+      Object.entries(results.answers).forEach(([questionId, answer]) => {
+        const likertValue = likert.find(l => l.label === answer)?.value || 3;
+        convertedAnswers[questionId] = likertValue;
+      });
+      
+      setAnswers(convertedAnswers);
+      setSubmitted(true);
+      
+      // Track completion
+      const timeSpent = Date.now() - (window as any).quizStartTime || 0;
+      trackQuizComplete(quiz.slug, Object.values(convertedAnswers).reduce((a, b) => a + b, 0), Math.floor(timeSpent / 1000));
+    };
+
+    if (submitted) {
+      const results = {
+        answers,
+        patterns: [
+          'Strong self-awareness patterns detected',
+          'Consistent response alignment',
+          'Mindful decision-making approach'
+        ],
+        insights: [
+          'High cognitive consistency in responses',
+          'Strong pattern recognition abilities',
+          'Balanced perspective on self-assessment'
+        ],
+        recommendations: [
+          'Continue with weekly self-reflection sessions',
+          'Explore related articles on cognitive patterns',
+          'Consider daily mindfulness micro-check-ins'
+        ],
+        mindfulnessScore: Math.round((total / (quiz.questions.length * 5)) * 100)
+      };
+
+      return (
+        <QuizResultsWithAI
+          results={results}
+          quiz={{ title: quiz.title, category: 'Self-Discovery' }}
+          onStartAIChat={() => setShowAIChat(true)}
+        />
+      );
+    }
+
+    return (
+      <WorldClassQuizFlow
+        quiz={worldClassQuiz}
+        onComplete={handleWorldClassComplete}
+      />
+    );
+  }
 }

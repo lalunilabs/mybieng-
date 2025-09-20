@@ -270,12 +270,12 @@ export function BlogReader({ blog, userEmail, prev, next }: BlogReaderProps) {
                       <span className="text-xl">⭐</span>
                     </div>
                     <h4 className="font-bold text-xl text-primary mb-2">Premium Monthly</h4>
-                    <div className="text-4xl font-bold text-foreground mb-4">${PRICING.MONTHLY_USD}<span className="text-lg text-muted-foreground">/month</span></div>
+                    <div className="text-4xl font-bold text-foreground mb-4">${PRICING.monthly}<span className="text-lg text-muted-foreground">/month</span></div>
                     
                     <ul className="text-sm text-muted-foreground space-y-3 mb-6">
                       <li className="flex items-center"><span className="mr-2 text-emerald-500">✅</span> Audio narration for all articles</li>
-                      <li className="flex items-center"><span className="mr-2 text-emerald-500">✅</span> 3 premium articles/month</li>
-                      <li className="flex items-center"><span className="mr-2 text-emerald-500">✅</span> 2 free quizzes/month (≤ $50 value each)</li>
+                      <li className="flex items-center"><span className="mr-2 text-emerald-500">✅</span> 1 premium quiz/month (up to $50 value)</li>
+                      <li className="flex items-center"><span className="mr-2 text-emerald-500">✅</span> Subscriber-only articles & quizzes</li>
                       <li className="flex items-center"><span className="mr-2 text-emerald-500">✅</span> No ads + member discounts on extras</li>
                     </ul>
                     
@@ -492,10 +492,10 @@ export function BlogReader({ blog, userEmail, prev, next }: BlogReaderProps) {
                 Want to listen to this article?
               </h3>
               <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
-                Get audio narration for all articles, no ads, 3 premium articles/month, and 2 free quizzes/month (≤ $50 value each).
+                Get audio narration for all articles, no ads, 1 premium quiz/month (up to $50 value), and subscriber-only content.
               </p>
               <PrimaryCTA onClick={handleSubscribe} surface="article_subscribe_cta" eventName="subscribe_click" variant="uiverse" className="">
-                <span className="mr-2">Subscribe for ${PRICING.MONTHLY_USD}/month</span>
+                <span className="mr-2">Subscribe for ${PRICING.monthly}/month</span>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>

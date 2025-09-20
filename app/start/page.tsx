@@ -121,7 +121,7 @@ export default function StartPage() {
               </div>
               <CardTitle className="text-black text-2xl">Premium Researcher</CardTitle>
               <CardDescription className="text-black text-lg font-semibold">
-                ${PRICING.MONTHLY_USD}/month
+                ${PRICING.monthly}/month
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">

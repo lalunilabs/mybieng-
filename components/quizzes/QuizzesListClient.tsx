@@ -34,7 +34,7 @@ export default function QuizzesListClient({ quizzes }: { quizzes: Quiz[] }) {
                 <span className="font-semibold">Research-backed assessments</span>
               </div>
               
-              <h1 className="text-5xl font-bold tracking-tight text-foreground sm:text-6xl lg:text-7xl mb-8">
+              <h1 className="text-5xl tracking-tight text-foreground sm:text-6xl lg:text-7xl mb-8">
                 <span className="block">Discover Your</span>
                 <span className="block text-gradient bg-gradient-to-r from-primary via-purple-600 to-indigo-600 bg-clip-text text-transparent">
                   Inner Patterns
@@ -49,15 +49,15 @@ export default function QuizzesListClient({ quizzes }: { quizzes: Quiz[] }) {
               {/* Stats */}
               <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-2xl mx-auto">
                 <div className="text-center group">
-                  <div className="text-3xl font-bold text-primary group-hover:scale-110 transition-transform duration-200">{count}</div>
+                  <div className="text-3xl font-bold text-primary group-hover:scale-110 transition-transform duration-200 numeric-figures">{count}</div>
                   <div className="text-sm text-muted-foreground font-medium">Available Quizzes</div>
                 </div>
                 <div className="text-center group">
-                  <div className="text-3xl font-bold text-primary group-hover:scale-110 transition-transform duration-200">5-15</div>
+                  <div className="text-3xl font-bold text-primary group-hover:scale-110 transition-transform duration-200 numeric-figures">5-15</div>
                   <div className="text-sm text-muted-foreground font-medium">Minutes Each</div>
                 </div>
                 <div className="text-center group">
-                  <div className="text-3xl font-bold text-primary group-hover:scale-110 transition-transform duration-200">∞</div>
+                  <div className="text-3xl font-bold text-primary group-hover:scale-110 transition-transform duration-200 numeric-figures">∞</div>
                   <div className="text-sm text-muted-foreground font-medium">Retakes Available</div>
                 </div>
               </div>

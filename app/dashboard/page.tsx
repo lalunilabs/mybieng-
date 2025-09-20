@@ -313,7 +313,7 @@ export default async function DashboardPage() {
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-600">Price</span>
-                        <span className="font-medium text-gray-900">${PRICING.MONTHLY_USD}/month</span>
+                        <span className="font-medium text-gray-900">${PRICING.monthly}/month</span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-600">Renewal Date</span>

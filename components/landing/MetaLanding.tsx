@@ -13,6 +13,7 @@ import { PRICING } from '@/lib/constants';
 import { Sparkles, Brain, BookOpenCheck, MessageSquare, ShieldCheck, ChevronRight, Star, ArrowRight, PlayCircle, Users, Globe, Heart, Lightbulb, TrendingUp, Calendar } from 'lucide-react';
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import Newsletter from '@/components/Newsletter';
+import { PageWrapper } from '@/components/layout/PageWrapper';
 
 export default function MetaLanding() {
   // Decorative blobs (deterministic for SSR)
@@ -31,7 +32,8 @@ export default function MetaLanding() {
   const scaleHero = useTransform(scrollYProgress, [0, 1], [1, prefersReducedMotion ? 1 : 1.04]);
 
   return (
-    <div ref={containerRef} className="relative min-h-screen overflow-hidden">
+    <PageWrapper>
+      <div ref={containerRef} className="relative min-h-screen overflow-hidden bg-white">
       {/* Backdrop */}
       <div className="absolute inset-0 bg-[linear-gradient(180deg,#faf5ff_0%,#ffffff_40%,#eef2ff_100%)]" />
       {blobs.map((b, i) => (
@@ -51,21 +53,22 @@ export default function MetaLanding() {
             {/* Left: Copy */}
             <div className="lg:col-span-7 text-center lg:text-left">
               <span className="inline-flex items-center rounded-full border border-black/10 bg-white px-3 py-1 text-xs font-medium tracking-wide text-black/70 shadow-sm">By Meum Labs</span>
-              <h1 className="mt-6 text-5xl sm:text-6xl md:text-7xl font-black leading-[0.95] tracking-tight text-gray-900">
-                Make better 
-                <span className="bg-gradient-to-r from-violet-600 via-fuchsia-600 to-indigo-600 bg-clip-text text-transparent"> decisions</span>
-                <span className="block mt-2">with clearer thinking</span>
-              </h1>
-              <p className="mx-auto lg:mx-0 mt-6 max-w-2xl text-xl leading-relaxed text-gray-700">
-                Understand your decision-making patterns and cognitive biases to make choices that create positive impact. 
-                <span className="block mt-2 font-medium text-gray-900">Better decisions lead to a better world.</span>
-              </p>
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-foreground mb-8">
+              Discover the <span className="bg-gradient-to-r from-purple-600 via-fuchsia-500 to-indigo-600 bg-clip-text text-transparent">hidden patterns</span><br />
+              shaping your life
+            </h1>
+            <p className="text-xl sm:text-2xl text-muted-foreground mb-8 max-w-2xl leading-relaxed">
+              Unlock deep self-awareness through science-backed assessments. Understand your mind, transform your decisions, and create lasting change.
+            </p>
+            <p className="text-lg text-muted-foreground/80 mb-12 max-w-xl">
+              <strong>2,847+ people</strong> have already started their journey to better self-understanding.
+            </p>
               <div className="mt-8 flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-4">
-                <PrimaryCTA href="/blog" variant="uiverse" className="px-8 py-4 text-base font-semibold">
-                  Start Reading Articles
+                <PrimaryCTA href="/quizzes" variant="uiverse" className="px-8 py-4 text-base font-semibold">
+                  🧠 Take Your First Assessment
                 </PrimaryCTA>
-                <PrimaryCTA href="/quizzes" variant="secondary" className="px-6 py-4 text-base">
-                  Take a Quiz
+                <PrimaryCTA href="/blog" variant="secondary" className="px-6 py-4 text-base">
+                  📚 Explore Free Articles
                 </PrimaryCTA>
               </div>
               <div className="mt-4 text-center lg:text-left">
@@ -75,14 +78,17 @@ export default function MetaLanding() {
               </div>
               {/* Trust signals */}
               <div className="mt-6 flex flex-wrap items-center justify-center lg:justify-start gap-4 text-sm text-gray-600">
-                <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-full border border-gray-200">
-                  <span>📚</span> <span className="font-medium">Free Articles</span>
+                <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-50 rounded-full border border-green-200 text-green-700">
+                  <span>✓</span>
+                  <span>2,847+ Active Users</span>
                 </span>
-                <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-full border border-gray-200">
-                  <span>🧪</span> <span className="font-medium">Research-Based</span>
+                <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 rounded-full border border-blue-200 text-blue-700">
+                  <span>✓</span>
+                  <span>Research-Backed</span>
                 </span>
-                <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-full border border-gray-200">
-                  <span>🎯</span> <span className="font-medium">Actionable Insights</span>
+                <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-purple-50 rounded-full border border-purple-200 text-purple-700">
+                  <span>✓</span>
+                  <span>5-Min Quick Start</span>
                 </span>
               </div>
             </div>
@@ -140,6 +146,13 @@ export default function MetaLanding() {
           </div>
         </div>
       </section>
+      
+      {/* Main Categories Section */}
+      <MainCategoriesSection />
+      
+      {/* Fresh This Week */}
+      <FreshThisWeek />
+      
       {/* Press / Mentions */}
       <PressBar />
 
@@ -188,7 +201,7 @@ export default function MetaLanding() {
                 {
                   title: 'Apply Your Learning',
                   desc: 'Use your insights for real growth with weekly check-ins, premium research articles, and ongoing AI support. Premium members get 2 free assessments monthly.',
-                  cta: { href: '/subscribe', label: `Get Premium • $${PRICING.MONTHLY_USD}/mo` },
+                  cta: { href: '/subscribe', label: `Get Premium • $${PRICING.monthly}/mo` },
                 },
               ].map((s, i) => (
                 <motion.div
@@ -302,29 +315,29 @@ export default function MetaLanding() {
               </p>
               <div className="mt-6 flex flex-col sm:flex-row items-center gap-3">
                 <PrimaryCTA href="/blog" variant="premium" className="px-8 py-3 text-base font-semibold">Start Reading Free Articles</PrimaryCTA>
-                <PrimaryCTA href="/subscribe" variant="outline" className="px-6 py-3">Upgrade Later • ${PRICING.MONTHLY_USD}/mo</PrimaryCTA>
+                <PrimaryCTA href="/subscribe" variant="outline" className="px-6 py-3">Upgrade Later • ${PRICING.monthly}/mo</PrimaryCTA>
               </div>
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Main Categories Section */}
-      <MainCategoriesSection />
-      
-      {/* Fresh This Week */}
-      <FreshThisWeek />
-      
       {/* Content Toggle Section */}
       <ContentToggleSection />
       
-      {/* Newsletter Section - After content consumption */}
-      <div className="mx-auto max-w-7xl px-6 py-10">
-        <Newsletter />
-      </div>
+      {/* Featured Content Showcase */}
+      <FeaturedContentShowcase />
+      
+      {/* How It Works Section - Above Newsletter */}
+      <HowItWorksSection />
+      
+      {/* Newsletter Section - Improved */}
+      <ImprovedNewsletterSection />
+      
       {/* Sticky CTA / Progress Bar */}
       <StickyCTA />
-    </div>
+      </div>
+    </PageWrapper>
   );
 }
 
@@ -453,28 +466,30 @@ function FeatureReel() {
 function MainCategoriesSection() {
   const categories = [
     {
-      title: "Understanding Yourself",
+      title: "🧠 Discover Your Inner Patterns",
       icon: <Users className="w-6 h-6" />,
-      description: "Explore your inner world through psychology and self-awareness",
+      description: "Uncover the hidden forces driving your decisions through personalized assessments",
       subcategories: [
-        { name: "Decision-Making Patterns", count: 8, href: "/blog/category/decision-making" },
-        { name: "Cognitive Biases", count: 12, href: "/blog/category/cognitive-biases" },
-        { name: "Emotional Intelligence", count: 6, href: "/blog/category/emotional-intelligence" },
-        { name: "Personal Growth", count: 10, href: "/blog/category/personal-growth" }
+        { name: "The Mental Tug-of-War", count: "5 min", href: "/quizzes/cognitive-dissonance" },
+        { name: "Decision-Making Patterns", count: "New", href: "/blog/mental-tug-of-war-cognitive-dissonance" },
+        { name: "Behavioral Insights", count: "Free", href: "/blog" },
+        { name: "Personal Growth Tools", count: "2+", href: "/blog" }
       ],
-      color: "from-purple-600 to-indigo-600"
+      color: "from-purple-600 to-indigo-600",
+      cta: { text: "🎯 Start Your Assessment", href: "/quizzes" }
     },
     {
-      title: "Understanding Our Surroundings",
+      title: "🌍 Navigate Your Environment",
       icon: <Globe className="w-6 h-6" />,
-      description: "Navigate the world with better awareness and insight",
+      description: "Understand how your surroundings shape your thoughts and behaviors",
       subcategories: [
-        { name: "Social Psychology", count: 7, href: "/blog/category/social-psychology" },
-        { name: "Environmental Impact", count: 5, href: "/blog/category/environment" },
-        { name: "Technology & Society", count: 9, href: "/blog/category/technology" },
-        { name: "Cultural Patterns", count: 4, href: "/blog/category/culture" }
+        { name: "Social Influence", count: "Free", href: "/blog" },
+        { name: "Research Insights", count: "Latest", href: "/research" },
+        { name: "Evidence-Based Content", count: "3+", href: "/blog" },
+        { name: "Practical Applications", count: "Guide", href: "/how-it-works" }
       ],
-      color: "from-fuchsia-500 to-violet-600"
+      color: "from-fuchsia-500 to-violet-600",
+      cta: { text: "📖 Explore Articles", href: "/blog" }
     }
   ];
 
@@ -489,10 +504,10 @@ function MainCategoriesSection() {
           className="text-center mb-12"
         >
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-            Two Ways to Understand Better
+            Two Powerful Paths to Self-Discovery
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Dive deep into yourself and your environment to make better decisions and create positive impact.
+            Choose your journey: dive deep with personalized assessments or explore insights through research-backed articles. Both paths lead to profound self-understanding.
           </p>
         </motion.div>
 
@@ -537,6 +552,16 @@ function MainCategoriesSection() {
                     </Link>
                   ))}
                 </div>
+
+                <div className="mt-6">
+                  <PrimaryCTA 
+                    href={category.cta.href} 
+                    variant="uiverse" 
+                    className="w-full justify-center"
+                  >
+                    {category.cta.text}
+                  </PrimaryCTA>
+                </div>
               </div>
             </motion.div>
           ))}
@@ -550,29 +575,29 @@ function FreshThisWeek() {
   const freshContent = [
     {
       type: "Article",
-      title: "Why Your Brain Tricks You Into Bad Decisions",
-      excerpt: "Understanding cognitive biases that sabotage your choices",
-      readTime: "5 min read",
-      category: "Decision-Making",
-      href: "/blog/cognitive-biases-bad-decisions",
+      title: "The Mental Tug-of-War: Cognitive Dissonance",
+      excerpt: "Understanding the psychological tension when beliefs conflict with actions",
+      readTime: "8 min read",
+      category: "Psychology",
+      href: "/blog/mental-tug-of-war-cognitive-dissonance",
       isNew: true
     },
     {
       type: "Quiz",
-      title: "Your Decision-Making Style Assessment",
-      excerpt: "Discover how you process information and make choices",
-      readTime: "8 min quiz",
+      title: "Cognitive Dissonance Assessment",
+      excerpt: "Detect contradictions between values and actions across 5 patterns",
+      readTime: "10 min quiz",
       category: "Self-Assessment",
-      href: "/quizzes/decision-making-style",
+      href: "/quizzes/cognitive-dissonance",
       isNew: true
     },
     {
       type: "Article",
-      title: "The Psychology of Social Media Influence",
-      excerpt: "How digital environments shape our thoughts and behaviors",
-      readTime: "7 min read",
-      category: "Social Psychology",
-      href: "/blog/social-media-psychology",
+      title: "Example Article: Getting Started",
+      excerpt: "A sample article to demonstrate the platform's capabilities",
+      readTime: "5 min read",
+      category: "Getting Started",
+      href: "/blog/example-article",
       isNew: false
     }
   ];
@@ -591,8 +616,8 @@ function FreshThisWeek() {
             <Calendar className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Fresh This Week</h2>
-            <p className="text-gray-600">New insights to expand your understanding</p>
+            <h2 className="text-2xl font-bold text-gray-900">🔥 This Week's Breakthroughs</h2>
+            <p className="text-gray-600">Fresh insights that 2,847+ people are already exploring</p>
           </div>
         </motion.div>
 
@@ -649,49 +674,49 @@ function ContentToggleSection() {
 
   const articles = [
     {
-      title: "The Science of Better Decision Making",
-      excerpt: "Research-backed strategies to improve your choices",
-      category: "Decision-Making",
-      readTime: "6 min read",
-      href: "/blog/science-better-decisions"
-    },
-    {
-      title: "Understanding Confirmation Bias",
-      excerpt: "Why we seek information that confirms our beliefs",
-      category: "Cognitive Biases",
-      readTime: "4 min read",
-      href: "/blog/confirmation-bias"
-    },
-    {
-      title: "Emotional Intelligence in Daily Life",
-      excerpt: "Practical ways to understand and manage emotions",
-      category: "Emotional Intelligence",
+      title: "The Mental Tug-of-War: Cognitive Dissonance",
+      excerpt: "Understanding the psychological tension when beliefs conflict with actions",
+      category: "Psychology",
       readTime: "8 min read",
-      href: "/blog/emotional-intelligence-daily"
+      href: "/blog/mental-tug-of-war-cognitive-dissonance"
+    },
+    {
+      title: "Example Article: Getting Started",
+      excerpt: "A sample article to demonstrate the platform's capabilities",
+      category: "Getting Started",
+      readTime: "5 min read",
+      href: "/blog/example-article"
+    },
+    {
+      title: "Explore All Articles",
+      excerpt: "Browse our complete collection of research-backed insights",
+      category: "Browse",
+      readTime: "Browse",
+      href: "/blog"
     }
   ];
 
   const quizzes = [
     {
-      title: "Cognitive Bias Assessment",
-      excerpt: "Discover which biases most influence your thinking",
+      title: "Cognitive Dissonance Assessment",
+      excerpt: "Detect contradictions between values and actions across 5 patterns",
       category: "Self-Assessment",
       readTime: "10 min quiz",
-      href: "/quizzes/cognitive-bias-assessment"
+      href: "/quizzes/cognitive-dissonance"
     },
     {
-      title: "Decision-Making Under Pressure",
-      excerpt: "How do you handle high-stakes choices?",
-      category: "Decision-Making",
-      readTime: "12 min quiz",
-      href: "/quizzes/pressure-decisions"
+      title: "Explore All Quizzes",
+      excerpt: "Browse our complete collection of self-discovery assessments",
+      category: "Browse",
+      readTime: "Browse",
+      href: "/quizzes"
     },
     {
-      title: "Social Influence Patterns",
-      excerpt: "Understand how others affect your choices",
-      category: "Social Psychology",
-      readTime: "8 min quiz",
-      href: "/quizzes/social-influence"
+      title: "Coming Soon: Stress Patterns",
+      excerpt: "Understand your stress responses and coping mechanisms",
+      category: "Coming Soon",
+      readTime: "10 min quiz",
+      href: "/quizzes"
     }
   ];
 
@@ -706,10 +731,10 @@ function ContentToggleSection() {
           className="text-center mb-8"
         >
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Choose Your Learning Path
+            Ready to Dive Deeper?
           </h2>
           <p className="text-lg text-gray-600 mb-8">
-            Read articles for insights or take quizzes to understand your patterns
+            Choose your preferred path: quick insights through articles or deep self-discovery through personalized assessments
           </p>
 
           {/* Toggle Buttons */}
@@ -723,7 +748,7 @@ function ContentToggleSection() {
               }`}
             >
               <BookOpenCheck className="w-4 h-4 inline mr-2" />
-              Start Reading
+              📚 Quick Insights
             </button>
             <button
               onClick={() => setActiveTab('quizzes')}
@@ -734,7 +759,7 @@ function ContentToggleSection() {
               }`}
             >
               <Brain className="w-4 h-4 inline mr-2" />
-              Take a Quiz
+              🧠 Deep Discovery
             </button>
           </div>
         </motion.div>
@@ -784,6 +809,263 @@ function ContentToggleSection() {
   );
 }
 
+function FeaturedContentShowcase() {
+  return (
+    <section className="relative py-16 bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+      <div className="mx-auto max-w-7xl px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true, amount: 0.2 }}
+          className="text-center mb-12"
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium mb-6">
+            <span>⭐</span>
+            <span>Most Popular</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+            Start Your Journey Here
+          </h2>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Join thousands who've already discovered profound insights about themselves through our flagship assessment and articles.
+          </p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Featured Quiz */}
+          <motion.div
+            initial={{ opacity: 0, x: -24 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true, amount: 0.2 }}
+            className="group"
+          >
+            <Link href="/quizzes/cognitive-dissonance" className="block">
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-600 p-8 text-white shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02]">
+                <div className="absolute -top-16 -right-16 h-48 w-48 rounded-full bg-white/20 blur-2xl" />
+                <div className="absolute -bottom-12 -left-12 h-56 w-56 rounded-full bg-black/10 blur-2xl" />
+                
+                <div className="relative">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 rounded-full text-sm font-medium mb-4">
+                    <span>🧠</span>
+                    <span>Featured Assessment</span>
+                  </div>
+                  
+                  <h3 className="text-2xl font-bold mb-3">The Mental Tug-of-War</h3>
+                  <p className="text-purple-100 mb-6 leading-relaxed">
+                    Discover the hidden contradictions between your values and actions. This 5-minute assessment reveals patterns of cognitive dissonance that shape your daily decisions.
+                  </p>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4 text-sm text-purple-200">
+                      <span>⏱️ 5-10 minutes</span>
+                      <span>📊 Instant results</span>
+                    </div>
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-lg font-medium group-hover:bg-white/30 transition-colors">
+                      <span>Start Assessment</span>
+                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          </motion.div>
+
+          {/* Featured Article */}
+          <motion.div
+            initial={{ opacity: 0, x: 24 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true, amount: 0.2 }}
+            className="group"
+          >
+            <Link href="/blog/mental-tug-of-war-cognitive-dissonance" className="block">
+              <div className="relative overflow-hidden rounded-2xl bg-white border border-gray-200 p-8 shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02] h-full">
+                <div className="absolute -top-8 -right-8 h-32 w-32 rounded-full bg-gradient-to-br from-fuchsia-500/20 to-violet-600/20 blur-2xl" />
+                
+                <div className="relative">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-fuchsia-100 text-fuchsia-700 rounded-full text-sm font-medium mb-4">
+                    <span>📖</span>
+                    <span>Featured Article</span>
+                  </div>
+                  
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">Understanding Cognitive Dissonance</h3>
+                  <p className="text-gray-600 mb-6 leading-relaxed">
+                    Dive deep into the psychology behind conflicting beliefs and actions. Learn how cognitive dissonance affects your decisions and discover practical strategies to align your values with your behavior.
+                  </p>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4 text-sm text-gray-500">
+                      <span>📚 8 min read</span>
+                      <span>🔬 Research-backed</span>
+                    </div>
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg font-medium text-gray-700 group-hover:bg-gray-200 transition-colors">
+                      <span>Read Article</span>
+                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          </motion.div>
+        </div>
+
+        {/* Quick Access Bar */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          viewport={{ once: true, amount: 0.2 }}
+          className="mt-12 text-center"
+        >
+          <div className="inline-flex items-center gap-4 px-6 py-3 bg-white rounded-full border border-gray-200 shadow-sm">
+            <span className="text-sm text-gray-600">Quick access:</span>
+            <Link href="/quizzes" className="text-sm font-medium text-purple-600 hover:text-purple-700 transition-colors">
+              All Assessments
+            </Link>
+            <span className="text-gray-300">|</span>
+            <Link href="/blog" className="text-sm font-medium text-purple-600 hover:text-purple-700 transition-colors">
+              All Articles
+            </Link>
+            <span className="text-gray-300">|</span>
+            <Link href="/reports" className="text-sm font-medium text-purple-600 hover:text-purple-700 transition-colors">
+              View Reports
+            </Link>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+function HowItWorksSection() {
+  return (
+    <section className="relative py-16 bg-gray-50/50">
+      <div className="mx-auto max-w-7xl px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true, amount: 0.2 }}
+          className="text-center mb-12"
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-medium mb-6">
+            <span>🔥</span>
+            <span>Just Released</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+            This Week's Breakthroughs
+          </h2>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Fresh insights and powerful assessments that thousands are already using to transform their self-understanding.
+          </p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {[
+            {
+              step: "01",
+              title: "Take an Assessment",
+              description: "Choose from research-backed assessments that reveal your cognitive patterns and behavioral tendencies.",
+              icon: <Brain className="w-8 h-8" />,
+              color: "from-purple-600 to-indigo-600"
+            },
+            {
+              step: "02", 
+              title: "Get Personalized Insights",
+              description: "Receive detailed reports analyzing your unique patterns and chat with AI for deeper understanding.",
+              icon: <Lightbulb className="w-8 h-8" />,
+              color: "from-fuchsia-500 to-violet-600"
+            },
+            {
+              step: "03",
+              title: "Apply Your Learning", 
+              description: "Use insights for real growth with ongoing support, premium content, and progress tracking.",
+              icon: <TrendingUp className="w-8 h-8" />,
+              color: "from-purple-600 to-pink-600"
+            }
+          ].map((item, index) => (
+            <motion.div
+              key={item.step}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+              viewport={{ once: true, amount: 0.2 }}
+              className="relative text-center"
+            >
+              <div className="relative mb-6">
+                <div className={`w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center text-white shadow-lg`}>
+                  {item.icon}
+                </div>
+                <div className="absolute -top-2 -right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center text-sm font-bold text-gray-900 shadow-md">
+                  {item.step}
+                </div>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">{item.title}</h3>
+              <p className="text-gray-600 leading-relaxed">{item.description}</p>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ImprovedNewsletterSection() {
+  return (
+    <section className="relative py-16 bg-gradient-to-br from-purple-50 via-white to-indigo-50">
+      <div className="mx-auto max-w-7xl px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true, amount: 0.2 }}
+          className="text-center mb-12"
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-medium mb-6">
+            <span>📬</span>
+            <span>Weekly Insights</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+            The Weekly Reflection
+          </h2>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Get curated insights, new research findings, and practical tips for self-discovery delivered to your inbox every week.
+          </p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          viewport={{ once: true, amount: 0.2 }}
+          className="max-w-2xl mx-auto"
+        >
+          <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-lg">
+            <Newsletter />
+            
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-sm text-gray-500">
+              <div className="flex items-center gap-1">
+                <span>✓</span>
+                <span>Weekly delivery</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span>✓</span>
+                <span>Research-backed content</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span>✓</span>
+                <span>Unsubscribe anytime</span>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
 function StickyCTA() {
   const [show, setShow] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -815,7 +1097,7 @@ function StickyCTA() {
           </div>
           <div className="flex items-center gap-2">
             <PrimaryCTA href="/blog" size="sm" variant="uiverse" className="px-4 py-2">Read Articles</PrimaryCTA>
-            <PrimaryCTA href="/subscribe" size="sm" variant="premium" className="px-4 py-2">Premium • ${PRICING.MONTHLY_USD}/mo</PrimaryCTA>
+            <PrimaryCTA href="/subscribe" size="sm" variant="premium" className="px-4 py-2">Premium • ${PRICING.monthly}/mo</PrimaryCTA>
           </div>
         </div>
       </div>

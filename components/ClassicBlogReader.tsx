@@ -129,7 +129,7 @@ export function ClassicBlogReader({ blog }: ClassicBlogReaderProps) {
 
   const handleSubscribe = () => {
     // Track subscription intent
-    trackSubscription('premium', PRICING.MONTHLY_USD);
+    trackSubscription('premium', PRICING.monthly);
     router.push('/subscribe');
   };
 
@@ -191,7 +191,7 @@ export function ClassicBlogReader({ blog }: ClassicBlogReaderProps) {
                   </div>
                   <h3 className="text-2xl font-serif text-black mb-4">Premium Monthly</h3>
                   <div className="text-4xl font-serif text-black mb-6">
-                    {'$'}{PRICING.MONTHLY_USD}<span className="text-xl text-gray-600 font-sans">/month</span>
+                    {'$'}{PRICING.monthly}<span className="text-xl text-gray-600 font-sans">/month</span>
                   </div>
                   
                   <ul className="text-gray-700 space-y-3 mb-8 text-left max-w-sm mx-auto">
@@ -298,7 +298,7 @@ export function ClassicBlogReader({ blog }: ClassicBlogReaderProps) {
           
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-sm text-gray-500">
             <div className="flex flex-wrap items-center gap-4">
-              <span className="font-medium text-gray-900">By {blog.author}</span>
+              <span className="text-4xl font-bold text-gray-900">${PRICING.monthly}</span>
               <span className="hidden sm:inline text-gray-300">•</span>
               <span>{blog.readTime} min read</span>
               <span className="hidden sm:inline text-gray-300">•</span>
@@ -403,7 +403,7 @@ export function ClassicBlogReader({ blog }: ClassicBlogReaderProps) {
               onClick={handleSubscribe} 
               className="bg-black text-white hover:bg-gray-800 px-12 py-4 text-lg font-medium"
             >
-              Subscribe for {'$'}{PRICING.MONTHLY_USD}/month
+              Subscribe for {'$'}{PRICING.monthly}/month
             </Button>
           </div>
         )}

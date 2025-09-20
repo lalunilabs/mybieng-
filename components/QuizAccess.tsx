@@ -145,7 +145,7 @@ export default function QuizAccess({ quiz }: { quiz: Quiz }) {
           <div className="bg-white rounded-lg p-5 border shadow-sm">
             <div className="text-center">
               <h4 className="font-bold text-lg">Premium Monthly</h4>
-              <div className="text-3xl font-bold text-gray-900 mt-2">${PRICING.MONTHLY_USD}<span className="text-sm text-gray-500">/month</span></div>
+              <div className="text-3xl font-bold text-gray-900 mt-2">${PRICING.monthly}<span className="text-sm text-gray-500">/month</span></div>
               <ul className="text-sm text-gray-600 mt-4 space-y-2 text-left inline-block">
                 <li>✅ 3 premium articles/month included</li>
                 <li>✅ 2 free quizzes/month (≤ $50 value each)</li>

@@ -42,7 +42,7 @@ export default function Footer() {
       }
 
       setStatus('success');
-      setMessage(data?.message || "You're in! DID YOUR RESEARCH arrives every 14 days.");
+      setMessage(data?.message || "You're in! The Weekly Reflection arrives every week.");
       setEmail('');
       try { trackEvent('newsletter_submit_success', { surface: 'footer', confirmed: !!data?.confirmed }); } catch {}
     } catch (err: any) {
@@ -135,8 +135,8 @@ export default function Footer() {
         {/* Newsletter Signup */}
         <div className="border-t border-white/10 pt-12 mb-12">
           <div className="max-w-md">
-            <h4 className="font-semibold text-white mb-4 text-lg">Stay Updated</h4>
-            <p className="text-gray-300 text-sm mb-4">Every 14 days: research-backed insights and self-discovery tools. No spam.</p>
+            <h4 className="font-semibold text-white mb-4 text-lg">The Weekly Reflection</h4>
+            <p className="text-gray-300 text-sm mb-4">Weekly insights: research-backed content and self-discovery tools. No spam.</p>
             <form onSubmit={handleSubmit} className="flex">
               <Input
                 type="email"

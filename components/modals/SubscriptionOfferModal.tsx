@@ -28,7 +28,7 @@ export default function SubscriptionOfferModal({ isOpen, onClose }: Subscription
           <p className="mt-1 text-sm text-gray-600">Unlimited AI conversations, 3 premium articles/month with audio, and 2 free quizzes (≤ $50 value each).</p>
           <div className="mt-4 flex gap-2">
             <a href="/subscribe" className="flex-1">
-              <Button className="w-full h-11">Subscribe • ${PRICING.MONTHLY_USD}/mo</Button>
+              <Button className="w-full h-11">Subscribe • ${PRICING.monthly}/mo</Button>
             </a>
             <Button variant="outline" className="h-11" onClick={() => { onClose(); try { localStorage.setItem('subscription-offer-dismissed', 'true'); } catch {} }}>Maybe later</Button>
           </div>

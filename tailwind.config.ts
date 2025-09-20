@@ -74,7 +74,13 @@ const config: Config = {
   		},
   		fontFamily: {
   			sans: [
-  				'Inter',
+  				"var(--font-space-grotesk)",
+  				'ui-sans-serif',
+  				'system-ui',
+  				'sans-serif'
+  			],
+  			display: [
+  				"var(--font-unbounded)",
   				'ui-sans-serif',
   				'system-ui',
   				'sans-serif'
