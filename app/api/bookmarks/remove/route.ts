@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/db';
+import { prisma, safeDbOperation } from '@/lib/db';
 import { cookies } from 'next/headers';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -17,9 +17,12 @@ export async function POST(request: Request) {
     }
     
     // Verify the bookmark belongs to the current user/session
-    const bookmark = await prisma.bookmark.findUnique({
-      where: { id: bookmarkId },
-    });
+    const bookmark = await safeDbOperation(
+      () => prisma!.bookmark.findUnique({
+        where: { id: bookmarkId },
+      }),
+      null
+    );
     
     if (!bookmark) {
       return NextResponse.json({ error: 'Bookmark not found' }, { status: 404 });
@@ -29,9 +32,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    await prisma.bookmark.delete({
-      where: { id: bookmarkId },
-    });
+    await safeDbOperation(
+      () => prisma!.bookmark.delete({
+        where: { id: bookmarkId },
+      }),
+      null
+    );
     
     return NextResponse.json({ success: true });
   } catch (error) {

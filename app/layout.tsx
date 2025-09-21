@@ -9,6 +9,7 @@ import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 // import ScrollAnimations from '@/components/ui/ScrollAnimations';
 import { NavbarWrapper } from '@/components/layout/NavbarWrapper';
 import Footer from '@/components/Footer';
+import { PageTransitionWrapper } from '@/components/layout/PageTransitionWrapper';
 import { Toaster } from 'sonner';
 import GoogleAnalytics from '@/components/analytics/GoogleAnalytics';
 
@@ -141,7 +142,7 @@ export default function RootLayout({
               </a>
               <NavbarWrapper />
               <main id="main-content" className="flex-1 pt-16" role="main">
-                {children}
+                <PageTransitionWrapper>{children}</PageTransitionWrapper>
               </main>
               <Footer />
             </div>

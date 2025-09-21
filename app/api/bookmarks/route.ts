@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/db';
+import { prisma, safeDbOperation } from '@/lib/db';
 import { cookies } from 'next/headers';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -14,12 +14,15 @@ export async function GET() {
       return NextResponse.json([]);
     }
     
-    const bookmarks = await prisma.bookmark.findMany({
-      where: userId 
-        ? { userId }
-        : { sessionId },
-      orderBy: { createdAt: 'desc' },
-    });
+    const bookmarks = await safeDbOperation(
+      () => prisma!.bookmark.findMany({
+        where: userId 
+          ? { userId }
+          : { sessionId },
+        orderBy: { createdAt: 'desc' },
+      }),
+      []
+    );
     
     return NextResponse.json(bookmarks);
   } catch (error) {

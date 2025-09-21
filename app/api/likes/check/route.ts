@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/db';
+import { prisma, safeDbOperation } from '@/lib/db';
 import { cookies } from 'next/headers';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -16,11 +16,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ liked: false });
     }
     
-    const existingLike = await prisma.like.findFirst({
-      where: userId 
-        ? { userId, type, itemId }
-        : { sessionId, type, itemId },
-    });
+    const existingLike = await safeDbOperation(
+      () => prisma!.like.findFirst({
+        where: userId 
+          ? { userId, type, itemId }
+          : { sessionId, type, itemId },
+      }),
+      null
+    );
     
     return NextResponse.json({ liked: !!existingLike });
   } catch (error) {

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { cookies } from 'next/headers';
-import { prisma } from '@/lib/db';
+import { prisma, safeDbOperation } from '@/lib/db';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Progress } from '@/components/ui/Progress';
@@ -25,14 +25,17 @@ export default async function DashboardPage() {
   const renewalDateText: string = '';
   const sessionId = cookies().get('sessionId')?.value;
   const runs = sessionId
-    ? await prisma.quizRun.findMany({
-        where: { sessionId },
-        orderBy: { createdAt: 'desc' },
-        include: { 
-          answers: true,
-          user: true
-        },
-      })
+    ? await safeDbOperation(
+        () => prisma!.quizRun.findMany({
+          where: { sessionId },
+          orderBy: { createdAt: 'desc' },
+          include: { 
+            answers: true,
+            user: true
+          },
+        }),
+        []
+      )
     : [];
 
   const totalQuizzes = runs.length;

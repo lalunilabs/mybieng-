@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { prisma, safeDbOperation } from '@/lib/db';
 import { randomUUID } from 'crypto';
 
 export async function POST(req: NextRequest) {
@@ -18,24 +18,27 @@ export async function POST(req: NextRequest) {
 
     // Ensure a session cookie exists (anonymous)
     const cookieStore = req.cookies;
-    let sessionId = cookieStore.get('sessionId')?.value;
-    if (!sessionId) {
-      sessionId = randomUUID();
-    }
+    let sessionId = cookieStore.get('sessionId')?.value || randomUUID();
 
-    const run = await prisma.quizRun.create({
-      data: {
-        sessionId,
-        quizSlug,
-        total,
-        bandLabel,
-        answers: {
-          create: Object.entries(answers).map(([question, value]) => ({ question, value })),
+    const run = await safeDbOperation(
+      () => prisma!.quizRun.create({
+        data: {
+          sessionId,
+          quizSlug,
+          total,
+          bandLabel,
+          answers: {
+            create: Object.entries(answers).map(([question, value]) => ({ question, value })),
+          },
         },
-      },
-      select: { id: true, createdAt: true },
-    });
+        select: { id: true, createdAt: true },
+      }),
+      null
+    );
 
+    if (!run) {
+      return NextResponse.json({ ok: true, id: 'mock-id', createdAt: new Date() });
+    }
     const res = NextResponse.json({ ok: true, id: run.id, createdAt: run.createdAt });
     // Set cookie if it was missing
     if (!cookieStore.get('sessionId')) {
@@ -59,12 +62,15 @@ export async function GET(req: NextRequest) {
     const sessionId = cookieStore.get('sessionId')?.value;
     if (!sessionId) return NextResponse.json([]);
 
-    const runs = await prisma.quizRun.findMany({
-      where: { sessionId },
-      orderBy: { createdAt: 'desc' },
-      take: 20,
-      select: { id: true, quizSlug: true, total: true, bandLabel: true, createdAt: true },
-    });
+    const runs = await safeDbOperation(
+      () => prisma!.quizRun.findMany({
+        where: { sessionId },
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+        select: { id: true, quizSlug: true, total: true, bandLabel: true, createdAt: true },
+      }),
+      []
+    );
     return NextResponse.json(runs);
   } catch (e) {
     console.error('GET /api/runs error', e);

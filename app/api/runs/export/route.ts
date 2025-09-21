@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { prisma, safeDbOperation } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,12 +10,15 @@ export async function GET(req: NextRequest) {
       return NextResponse.json([]);
     }
 
-    const runs = await prisma.quizRun.findMany({
-      where: { sessionId },
-      orderBy: { createdAt: 'desc' },
-      include: { answers: true },
-      take: 100,
-    });
+    const runs = await safeDbOperation(
+      () => prisma!.quizRun.findMany({
+        where: { sessionId },
+        orderBy: { createdAt: 'desc' },
+        include: { answers: true },
+        take: 100,
+      }),
+      []
+    );
 
     const payload = runs.map((r: {
       id: string;

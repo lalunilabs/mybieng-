@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { prisma, safeDbOperation } from '@/lib/db';
 import { verifyAdminToken } from '@/lib/auth/admin';
 import { loadQuizBySlug } from '@/lib/content';
 
@@ -67,16 +67,22 @@ export async function GET(request: NextRequest, { params }: { params: { slug: st
     const runWhere: any = { quizSlug: slug };
     if (cutoff) runWhere.createdAt = { gte: cutoff };
 
-    const runs = await prisma.quizRun.findMany({
-      where: runWhere,
-      select: { id: true, quizSlug: true, total: true, bandLabel: true, createdAt: true },
-      orderBy: { createdAt: 'asc' }
-    });
+    const runs = await safeDbOperation(
+      () => prisma!.quizRun.findMany({
+        where: runWhere,
+        select: { id: true, quizSlug: true, total: true, bandLabel: true, createdAt: true },
+        orderBy: { createdAt: 'asc' }
+      }),
+      []
+    );
 
     if (format === 'json') {
       // Attach answers
       const runIds = runs.map(r => r.id);
-      const answers = await prisma.quizAnswer.findMany({ where: { runId: { in: runIds } }, select: { runId: true, question: true, value: true } });
+      const answers = await safeDbOperation(
+        () => prisma!.quizAnswer.findMany({ where: { runId: { in: runIds } }, select: { runId: true, question: true, value: true } }),
+        []
+      );
       const byRun: Record<string, Array<{ question: string; value: number }>> = {};
       answers.forEach(a => {
         if (!byRun[a.runId]) byRun[a.runId] = [];
@@ -124,7 +130,10 @@ export async function GET(request: NextRequest, { params }: { params: { slug: st
     } else {
       // CSV
       const runIds = runs.map(r => r.id);
-      const answers = await prisma.quizAnswer.findMany({ where: { runId: { in: runIds } }, select: { runId: true, question: true, value: true } });
+      const answers = await safeDbOperation(
+        () => prisma!.quizAnswer.findMany({ where: { runId: { in: runIds } }, select: { runId: true, question: true, value: true } }),
+        []
+      );
 
       // Determine columns
       const questionSet = new Set<string>();

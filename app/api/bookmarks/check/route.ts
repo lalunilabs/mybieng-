@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/db';
+import { prisma, safeDbOperation } from '@/lib/db';
 import { cookies } from 'next/headers';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -21,10 +21,13 @@ export async function POST(request: Request) {
       ? { userId, type, itemId }
       : { sessionId: currentSessionId, type, itemId };
     
-    const bookmark = await prisma.bookmark.findFirst({
-      where,
-      select: { id: true },
-    });
+    const bookmark = await safeDbOperation(
+      () => prisma!.bookmark.findFirst({
+        where,
+        select: { id: true },
+      }),
+      null
+    );
     
     return NextResponse.json({
       exists: !!bookmark,

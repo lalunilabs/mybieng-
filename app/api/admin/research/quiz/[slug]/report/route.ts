@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { prisma, safeDbOperation } from '@/lib/db';
 import { verifyAdminToken } from '@/lib/auth/admin';
 import { loadQuizBySlug } from '@/lib/content';
 
@@ -49,11 +49,14 @@ export async function GET(request: NextRequest, { params }: { params: { slug: st
     const runWhere: any = { quizSlug: slug };
     if (cutoff) runWhere.createdAt = { gte: cutoff };
 
-    const runs = await prisma.quizRun.findMany({
-      where: runWhere,
-      select: { id: true, total: true, bandLabel: true, createdAt: true },
-      orderBy: { createdAt: 'asc' }
-    });
+    const runs = await safeDbOperation(
+      () => prisma!.quizRun.findMany({
+        where: runWhere,
+        select: { id: true, total: true, bandLabel: true, createdAt: true },
+        orderBy: { createdAt: 'asc' }
+      }),
+      []
+    );
 
     const lines: string[] = [];
     const quiz = loadQuizBySlug(slug);
@@ -105,10 +108,13 @@ export async function GET(request: NextRequest, { params }: { params: { slug: st
 
     // Question insights
     const runIds = runs.map(r => r.id);
-    const answers = await prisma.quizAnswer.findMany({
-      where: { runId: { in: runIds } },
-      select: { question: true, value: true }
-    });
+    const answers = await safeDbOperation(
+      () => prisma!.quizAnswer.findMany({
+        where: { runId: { in: runIds } },
+        select: { question: true, value: true }
+      }),
+      []
+    );
 
     const byQuestion: Record<string, number[]> = {};
     answers.forEach(a => {

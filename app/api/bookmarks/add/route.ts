@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/db';
+import { prisma, safeDbOperation } from '@/lib/db';
 import { cookies } from 'next/headers';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -17,25 +17,31 @@ export async function POST(request: Request) {
     }
     
     // Check if already bookmarked
-    const existingBookmark = await prisma.bookmark.findFirst({
-      where: userId 
-        ? { userId, type, itemId }
-        : { sessionId, type, itemId },
-    });
+    const existingBookmark = await safeDbOperation(
+      () => prisma!.bookmark.findFirst({
+        where: userId 
+          ? { userId, type, itemId }
+          : { sessionId, type, itemId },
+      }),
+      null
+    );
     
     if (existingBookmark) {
       return NextResponse.json(existingBookmark);
     }
     
-    const bookmark = await prisma.bookmark.create({
-      data: {
-        userId,
-        sessionId,
-        type,
-        itemId,
-        title,
-      },
-    });
+    const bookmark = await safeDbOperation(
+      () => prisma!.bookmark.create({
+        data: {
+          userId,
+          sessionId,
+          type,
+          itemId,
+          title,
+        },
+      }),
+      null
+    );
     
     return NextResponse.json(bookmark);
   } catch (error) {

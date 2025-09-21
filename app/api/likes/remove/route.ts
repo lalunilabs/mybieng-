@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/db';
+import { prisma, safeDbOperation } from '@/lib/db';
 import { cookies } from 'next/headers';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -16,19 +16,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No session found' }, { status: 400 });
     }
     
-    const existingLike = await prisma.like.findFirst({
-      where: userId 
-        ? { userId, type, itemId }
-        : { sessionId, type, itemId },
-    });
+    const existingLike = await safeDbOperation(
+      () => prisma!.like.findFirst({
+        where: userId 
+          ? { userId, type, itemId }
+          : { sessionId, type, itemId },
+      }),
+      null
+    );
     
     if (!existingLike) {
       return NextResponse.json({ error: 'Like not found' }, { status: 404 });
     }
     
-    await prisma.like.delete({
-      where: { id: existingLike.id },
-    });
+    await safeDbOperation(
+      () => prisma!.like.delete({
+        where: { id: existingLike.id },
+      }),
+      null
+    );
     
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -3,7 +3,7 @@
 import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { QuizCard } from '@/components/ui/QuizCard';
+import { ProfessionalQuizCard } from '@/components/cards/ProfessionalQuizCard';
 import { Progress } from '@/components/ui/Progress';
 
 export default function DesignSystemPage() {
@@ -125,31 +125,32 @@ export default function DesignSystemPage() {
       <div className="mt-8">
         <h2 className="text-2xl font-semibold text-gray-900 mb-4">Quiz Cards</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <QuizCard
+          <ProfessionalQuizCard
+            slug="cognitive-dissonance-assessment"
             title="Cognitive Dissonance Assessment"
-            description="Explore contradictions between your values and actions"
+            excerpt="Explore contradictions between your values and actions."
             category="Psychology"
-            duration="15 min"
-            questions={20}
-            progress={0}
+            duration={12}
+            questionCount={10}
           />
           
-          <QuizCard
+          <ProfessionalQuizCard
+            slug="behavioral-patterns-analysis"
             title="Behavioral Patterns Analysis"
-            description="Identify recurring patterns in your decision-making"
+            excerpt="Identify recurring patterns in your decision-making."
             category="Self-Awareness"
-            duration="10 min"
-            questions={15}
-            progress={60}
+            duration={10}
+            questionCount={15}
+            isPremium={true}
           />
           
-          <QuizCard
+          <ProfessionalQuizCard
+            slug="value-action-alignment"
             title="Value-Action Alignment"
-            description="Measure how well your actions align with your stated values"
+            excerpt="Check how well your daily actions align with your core values."
             category="Personal Growth"
-            duration="12 min"
-            questions={18}
-            progress={100}
+            duration={5}
+            questionCount={8}
           />
         </div>
       </div>

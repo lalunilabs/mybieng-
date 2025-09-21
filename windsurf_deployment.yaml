@@ -1,0 +1,65 @@
+# MyBeing Deployment Configuration
+# Optimized for cost-effectiveness and performance
+
+project:
+  name: "mybeing-self-discovery"
+  framework: "nextjs"
+  environment: "production"
+  
+deployment:
+  provider: "vercel"
+  region: "global"
+  optimization:
+    - static_generation
+    - edge_caching
+    - image_optimization
+    - compression
+    
+environment:
+  # Production environment variables
+  NEXT_PUBLIC_APP_URL: "https://mybeing-self-discovery.vercel.app"
+  NEXT_PUBLIC_ENVIRONMENT: "production"
+  
+  # Database (Supabase)
+  DATABASE_URL: "${SUPABASE_DATABASE_URL}"
+  DIRECT_URL: "${SUPABASE_DIRECT_URL}"
+  
+  # Authentication
+  NEXTAUTH_URL: "https://mybeing-self-discovery.vercel.app"
+  NEXTAUTH_SECRET: "${NEXTAUTH_SECRET}"
+  
+  # AI Services
+  OPENAI_API_KEY: "${OPENAI_API_KEY}"
+  
+  # Email Services
+  RESEND_API_KEY: "${RESEND_API_KEY}"
+  FROM_EMAIL: "hello@mybeing.co"
+  
+  # Analytics
+  NEXT_PUBLIC_VERCEL_ANALYTICS_ID: "${VERCEL_ANALYTICS_ID}"
+
+build:
+  command: "npm run build"
+  output: ".next"
+  cache:
+    - ".next/cache"
+    - "node_modules/.cache"
+
+features:
+  # Enable static optimization
+  static_site_generation: true
+  incremental_static_regeneration: true
+  
+  # Performance features
+  image_optimization: true
+  compression: true
+  
+  # Security features
+  https_enforced: true
+  security_headers: true
+
+monitoring:
+  # Free monitoring tools
+  vercel_analytics: true
+  performance_monitoring: true
+  error_tracking: true

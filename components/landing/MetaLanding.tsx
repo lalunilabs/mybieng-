@@ -327,12 +327,15 @@ export default function MetaLanding() {
       
       {/* Featured Content Showcase */}
       <FeaturedContentShowcase />
-      
+
+      {/* Testimonials Section */}
+      <TestimonialsSection />
+
       {/* How It Works Section - Above Newsletter */}
-      <HowItWorksSection />
+      <HowItWorks />
       
       {/* Newsletter Section - Improved */}
-      <ImprovedNewsletterSection />
+      <NewsletterSection />
       
       {/* Sticky CTA / Progress Bar */}
       <StickyCTA />
@@ -939,7 +942,51 @@ function FeaturedContentShowcase() {
   );
 }
 
-function HowItWorksSection() {
+function TestimonialsSection() {
+  return (
+    <section className="relative py-20 bg-gradient-to-br from-slate-50 to-white">
+      <div className="mx-auto max-w-7xl px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true, amount: 0.2 }}
+          className="text-center"
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-violet-100 text-violet-800 rounded-full text-sm font-medium mb-6">
+            <span>❤️</span>
+            <span>Community Impact</span>
+          </div>
+          
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8">
+            Making a Difference, Together
+          </h2>
+          
+          <div className="grid md:grid-cols-4 gap-8 max-w-4xl mx-auto">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-violet-600 mb-2">1250+</div>
+              <div className="text-sm text-gray-600">Active Users</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-indigo-600 mb-2">3420+</div>
+              <div className="text-sm text-gray-600">Articles Read</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-green-600 mb-2">1890+</div>
+              <div className="text-sm text-gray-600">Quizzes Completed</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-amber-600 mb-2">96%</div>
+              <div className="text-sm text-gray-600">Positive Feedback</div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+function HowItWorks() {
   return (
     <section className="relative py-16 bg-gray-50/50">
       <div className="mx-auto max-w-7xl px-6">
@@ -972,7 +1019,7 @@ function HowItWorksSection() {
               color: "from-purple-600 to-indigo-600"
             },
             {
-              step: "02", 
+              step: "02",
               title: "Get Personalized Insights",
               description: "Receive detailed reports analyzing your unique patterns and chat with AI for deeper understanding.",
               icon: <Lightbulb className="w-8 h-8" />,
@@ -980,7 +1027,7 @@ function HowItWorksSection() {
             },
             {
               step: "03",
-              title: "Apply Your Learning", 
+              title: "Apply Your Learning",
               description: "Use insights for real growth with ongoing support, premium content, and progress tracking.",
               icon: <TrendingUp className="w-8 h-8" />,
               color: "from-purple-600 to-pink-600"
@@ -1012,7 +1059,68 @@ function HowItWorksSection() {
   );
 }
 
-function ImprovedNewsletterSection() {
+function UrgencyBanner() {
+  const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
+
+  useEffect(() => {
+    // Set target to next Sunday at 11:59 PM (weekly reset)
+    const getNextSunday = () => {
+      const now = new Date();
+      const daysUntilSunday = (7 - now.getDay()) % 7;
+      const nextSunday = new Date(now);
+      nextSunday.setDate(now.getDate() + (daysUntilSunday === 0 ? 7 : daysUntilSunday));
+      nextSunday.setHours(23, 59, 59, 999);
+      return nextSunday;
+    };
+
+    const target = getNextSunday();
+
+    const timer = setInterval(() => {
+      const now = new Date().getTime();
+      const distance = target.getTime() - now;
+
+      if (distance > 0) {
+        setTimeLeft({
+          hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+          seconds: Math.floor((distance % (1000 * 60)) / 1000)
+        });
+      } else {
+        // Reset to next week
+        const newTarget = getNextSunday();
+        setTimeLeft({
+          hours: Math.floor((newTarget.getTime() - new Date().getTime()) % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+          minutes: Math.floor((newTarget.getTime() - new Date().getTime()) % (1000 * 60 * 60)) / (1000 * 60),
+          seconds: Math.floor((newTarget.getTime() - new Date().getTime()) % (1000 * 60)) / 1000
+        });
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-200/60 rounded-xl p-4 mb-8">
+      <div className="flex items-center justify-center gap-4 text-center">
+        <div className="flex items-center gap-2">
+          <span className="text-2xl">⏰</span>
+          <span className="font-semibold text-gray-900">Limited Time Offer</span>
+        </div>
+        <div className="flex items-center gap-2 text-sm">
+          <span className="bg-white px-2 py-1 rounded border border-red-200 text-red-700 font-mono font-bold">
+            {String(timeLeft.hours).padStart(2, '0')}:{String(timeLeft.minutes).padStart(2, '0')}:{String(timeLeft.seconds).padStart(2, '0')}
+          </span>
+          <span className="text-gray-600">until weekly content refresh</span>
+        </div>
+        <div className="text-sm font-medium text-red-700">
+          🚀 Get premium access before it's gone
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function NewsletterSection() {
   return (
     <section className="relative py-16 bg-gradient-to-br from-purple-50 via-white to-indigo-50">
       <div className="mx-auto max-w-7xl px-6">
@@ -1042,9 +1150,10 @@ function ImprovedNewsletterSection() {
           viewport={{ once: true, amount: 0.2 }}
           className="max-w-2xl mx-auto"
         >
+          <UrgencyBanner />
           <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-lg">
             <Newsletter />
-            
+
             <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-sm text-gray-500">
               <div className="flex items-center gap-1">
                 <span>✓</span>
