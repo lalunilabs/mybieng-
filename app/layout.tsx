@@ -12,6 +12,7 @@ import { PageTransitionWrapper } from '@/components/layout/PageTransitionWrapper
 import { Toaster } from 'sonner';
 import GoogleAnalytics from '@/components/analytics/GoogleAnalytics';
 import { OrganizationSchema } from '@/components/seo/OrganizationSchema';
+import { AdvancedStructuredData } from '@/components/seo/AdvancedStructuredData';
 import { CookieConsent } from '@/components/legal/CookieConsent';
 import { CookiePreferencesButton } from '@/components/legal/CookiePreferencesButton';
 import { WorldClassScroll } from '@/components/ui/WorldClassScroll';
@@ -25,11 +26,11 @@ export const metadata: Metadata = {
   applicationName: 'MyBeing - Personal Health Environment Platform',
   category: 'Self-Discovery & Psychology',
   title: {
-    default: 'MyBeing - Official Personal Health Environment Platform | Self-Discovery Quizzes & Insights',
-    template: '%s | MyBeing - Personal Health Environment',
+    default: 'MyBeing - #1 Personal Health Environment Platform | Self-Discovery Quizzes & AI Insights',
+    template: '%s | MyBeing - World-Class Personal Health Environment',
   },
   description:
-    'MyBeing - The official Personal Health Environment platform. Discover yourself through research-backed quizzes, behavioral pattern analysis, and AI-powered insights. Transform your self-understanding with MyBeing\'s comprehensive assessment tools and personalized growth strategies.',
+    'MyBeing - The world\'s leading Personal Health Environment platform. Discover your true self through scientifically-validated quizzes, advanced behavioral pattern analysis, and cutting-edge AI-powered insights. Join thousands transforming their lives with MyBeing\'s research-backed assessment tools, personalized growth strategies, and expert-guided self-discovery journey.',
   keywords: [
     'MyBeing',
     'MyBeing official',
@@ -73,10 +74,10 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: 'MyBeing - Official Personal Health Environment Platform',
-    description: 'MyBeing - The official Personal Health Environment platform. Discover yourself through research-backed quizzes, behavioral pattern analysis, and AI-powered insights. Transform your self-understanding with MyBeing\'s comprehensive assessment tools.',
+    title: 'MyBeing - #1 Personal Health Environment Platform | Transform Your Life',
+    description: 'MyBeing - The world\'s leading Personal Health Environment platform. Join thousands discovering their true selves through scientifically-validated quizzes, AI-powered insights, and expert-guided growth. Start your transformation today.',
     url: BASE_DOMAIN,
-    siteName: 'MyBeing - Personal Health Environment',
+    siteName: 'MyBeing - World-Class Personal Health Environment',
     images: [
       {
         url: '/og-image.jpg',
@@ -91,8 +92,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'MyBeing - Official Personal Health Environment Platform',
-    description: 'MyBeing - Discover yourself through research-backed quizzes, behavioral pattern analysis, and AI-powered insights. The official platform for personal growth and self-understanding.',
+    title: 'MyBeing - #1 Personal Health Environment Platform',
+    description: 'MyBeing - Transform your life with scientifically-validated quizzes, AI-powered insights, and expert-guided growth. Join thousands discovering their true potential.',
     images: ['/og-image.jpg'],
     creator: '@mybeing',
     site: '@mybeing',
@@ -206,6 +207,8 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(knowledgeGraphJsonLd) }}
         />
+        
+        <AdvancedStructuredData />
         
         {/* Termly Cookie Consent & Resource Blocker */}
         <script 
