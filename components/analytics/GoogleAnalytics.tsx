@@ -11,8 +11,8 @@ export default function GoogleAnalytics() {
 
   useEffect(() => {
     if (GA_TRACKING_ID) {
-      const query = searchParams.toString();
-      const url = query ? `${pathname}?${query}` : pathname;
+      const query = searchParams?.toString() || '';
+      const url = query ? `${pathname || ''}?${query}` : (pathname || '');
       pageview(url);
     }
   }, [pathname, searchParams]);

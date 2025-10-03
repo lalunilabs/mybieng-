@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
@@ -8,24 +8,27 @@ import PrimaryCTA from "@/components/ui/PrimaryCTA";
 import dynamic from "next/dynamic";
 import { getQuizBySlug, getBandForScore } from "@/data/quizzes";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { ArrowLeft, MessageCircle } from "lucide-react";
 import { toast } from 'sonner';
 
 export default function ReportDetailPage() {
+  const [showEmailField, setShowEmailField] = useState(false);
+  const [emailField, setEmailField] = useState('');
+  const [sending, setSending] = useState(false);
   const params = useParams();
   const search = useSearchParams();
   const router = useRouter();
-  const reportId = params.reportId as string;
-
+  const reportId = (params?.reportId as string) || '';
+  
   // Pull optional query params if present
-  const scoreParam = search.get("score");
-  const maxParam = search.get("maxScore");
+  const scoreParam = search?.get("score");
+  const maxParam = search?.get("maxScore");
+  const quizIdParam = search?.get("quizId");
 
-  const score = Number(scoreParam ?? 72);
+  const scoreValue = Number(scoreParam ?? 72);
   const maxScore = Number(maxParam ?? 100);
 
   const quiz = getQuizBySlug(reportId);
-  const band = getBandForScore(score, maxScore)!;
+  const band = getBandForScore(scoreValue, maxScore)!;
 
   // Build placeholder responses for visualization
   const responses = useMemo(
@@ -52,7 +55,7 @@ export default function ReportDetailPage() {
   const chatHref = `/chat/${chatSessionId}?quizId=${encodeURIComponent(
     reportId
   )}&band=${encodeURIComponent(band.label)}&score=${encodeURIComponent(
-    String(score)
+    String(scoreValue)
   )}&maxScore=${encodeURIComponent(String(maxScore))}`;
 
   const QuizReportVisualization = dynamic(
@@ -80,7 +83,7 @@ export default function ReportDetailPage() {
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <Link href="/reports" className="inline-flex items-center text-sm text-purple-700 hover:text-purple-800">
-            <ArrowLeft className="w-4 h-4 mr-2" /> Back to reports
+            ← Back to reports
           </Link>
         </div>
 
@@ -101,44 +104,74 @@ export default function ReportDetailPage() {
               <div>
                 <span className="font-semibold">Quiz:</span> {quiz?.slug || reportId}
               </div>
-              <div className="ml-auto flex gap-3">
+              <div className="ml-auto flex flex-col gap-3 items-end">
                 <PrimaryCTA href={chatHref} surface="report_detail" eventName="report_chat_start" variant="uiverse" className="whitespace-nowrap">
-                  <MessageCircle className="w-4 h-4 mr-2" /> Ask AI about this report
+                  Ask AI about this report
                 </PrimaryCTA>
-                <PrimaryCTA
-                  surface="report_detail"
-                  eventName="email_detailed_report"
-                  variant="outline"
-                  className="whitespace-nowrap"
-                  onClick={async () => {
-                    try {
-                      const email = window.prompt('Enter your email to receive the detailed report');
-                      if (!email) return;
-                      const res = await fetch('/api/quiz/email-results', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                          email,
-                          quizId: reportId,
-                          quizTitle: quiz?.title || reportId,
-                          score,
-                          maxScore,
-                          band: band.label,
-                        }),
-                      });
-                      if (res.ok) {
-                        toast.success('Detailed report will arrive by email shortly.');
-                      } else {
-                        const j = await res.json().catch(() => ({} as any));
-                        toast.error(j.error || 'Failed to queue email');
+                <div className="w-full">
+                  <PrimaryCTA
+                    surface="report_detail"
+                    eventName="email_detailed_report_click"
+                    variant="outline"
+                    className="whitespace-nowrap"
+                    onClick={() => setShowEmailField(v => !v)}
+                  >
+                    Email detailed report
+                  </PrimaryCTA>
+                </div>
+                {showEmailField && (
+                  <form
+                    className="flex flex-col sm:flex-row gap-3 w-full"
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      if (!emailField || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailField)) {
+                        toast.error('Please enter a valid email');
+                        return;
                       }
-                    } catch (e) {
-                      toast.error('Network error. Please try again.');
-                    }
-                  }}
-                >
-                  Email detailed report
-                </PrimaryCTA>
+                      try {
+                        setSending(true);
+                        const res = await fetch('/api/quiz/email-results', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            email: emailField,
+                            quizId: reportId,
+                            quizTitle: quiz?.title || reportId,
+                            score: scoreValue,
+                            maxScore,
+                            band: band.label,
+                          }),
+                        });
+                        if (res.ok) {
+                          toast.success('Detailed report will arrive by email shortly.');
+                          setShowEmailField(false);
+                          setEmailField('');
+                        } else {
+                          const j = await res.json().catch(() => ({} as any));
+                          toast.error(j.error || 'Failed to queue email');
+                        }
+                      } catch {
+                        toast.error('Network error. Please try again.');
+                      } finally {
+                        setSending(false);
+                      }
+                    }}
+                  >
+                    <input
+                      type="email"
+                      inputMode="email"
+                      placeholder="Enter your email"
+                      value={emailField}
+                      onChange={(e) => setEmailField(e.target.value)}
+                      className="flex-1 min-w-0 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      aria-label="Email address"
+                      required
+                    />
+                    <Button type="submit" disabled={sending} className="px-5">
+                      {sending ? 'Sending…' : 'Send report'}
+                    </Button>
+                  </form>
+                )}
               </div>
             </div>
           </CardContent>
@@ -146,7 +179,7 @@ export default function ReportDetailPage() {
 
         {/* Visualization */}
         <QuizReportVisualization
-          score={score}
+          score={scoreValue}
           maxScore={maxScore}
           band={band}
           quizTitle={quiz?.title || "Assessment"}

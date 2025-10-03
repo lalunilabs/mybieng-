@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { ipRateLimit } from '@/lib/rate-limit';
-import { isAdminRequest } from '@/lib/adminAuth';
+import { requireAdminAuth } from '@/lib/auth/admin';
 import { loadAllArticles, saveArticle, deleteArticle, loadArticleBySlug } from '@/lib/content';
 import { articleSchema, type ArticleInput } from '@/lib/validations/article';
 
@@ -19,7 +19,9 @@ export async function GET(req: NextRequest) {
     await ipRateLimit.check(req, 20);
 
     // Authentication
-    if (!isAdminRequest(req)) {
+    try {
+      await requireAdminAuth(req);
+    } catch (error) {
       return new NextResponse(
         JSON.stringify({ 
           success: false, 
@@ -98,7 +100,9 @@ export async function POST(req: NextRequest) {
     await ipRateLimit.check(req, 10);
 
     // Authentication
-    if (!isAdminRequest(req)) {
+    try {
+      await requireAdminAuth(req);
+    } catch (error) {
       return new NextResponse(
         JSON.stringify({ 
           success: false, 
@@ -237,7 +241,9 @@ export async function DELETE(req: NextRequest) {
     await ipRateLimit.check(req, 5);
 
     // Authentication
-    if (!isAdminRequest(req)) {
+    try {
+      await requireAdminAuth(req);
+    } catch (error) {
       return new NextResponse(
         JSON.stringify({ 
           success: false, 

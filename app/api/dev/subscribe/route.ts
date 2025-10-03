@@ -6,14 +6,18 @@ import { createSubscription, getSubscriptionStats } from '@/lib/subscription';
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    const body = await request.json().catch(() => ({}));
-    const email = (body?.email || session?.user?.email)?.toString();
-    if (!email) {
-      return NextResponse.json({ error: 'Missing email' }, { status: 400 });
+    
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    const sub = createSubscription(email);
-    const stats = getSubscriptionStats(email);
+    const userId = (session.user as any).id;
+    const userEmail = session.user.email!;
+
+    // Create test subscription (dev only - no Stripe)
+    const sub = await createSubscription(userId);
+    const stats = await getSubscriptionStats(userId);
+    
     return NextResponse.json({ success: true, subscription: sub, stats });
   } catch (error) {
     console.error('Dev subscribe API error:', error);

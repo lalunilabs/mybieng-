@@ -1,59 +1,54 @@
 import { loadArticleBySlug } from '@/lib/content';
 import { getArticlePriceForSubscriber, canAccessPremiumArticle, consumePremiumArticleCredit, isUserPremium } from '@/lib/subscription';
+import { prisma } from '@/lib/db';
+import { recordPurchase } from '@/lib/purchases';
 
-export interface ArticlePurchase {
-  id: string;
-  email: string;
-  slug: string; // article slug
-  pricePaid: number;
-  purchasedAt: Date;
+export async function hasPurchasedArticle(userId: string | null, slug: string): Promise<boolean> {
+  if (!userId) return false;
+  
+  const purchase = await prisma!.purchase.findFirst({
+    where: {
+      userId,
+      type: 'article',
+      itemId: slug
+    }
+  });
+  
+  return !!purchase;
 }
 
-const articlePurchases: ArticlePurchase[] = [];
-const articleUnlocks: { email: string; slug: string; unlockedAt: Date }[] = [];
-
-function genId() {
-  return Math.random().toString(36).slice(2, 10);
-}
-
-export function hasPurchasedArticle(email: string, slug: string): boolean {
-  if (!email) return false;
-  return articlePurchases.some(p => p.email === email && p.slug === slug);
-}
-
-export function recordArticlePurchase(email: string, slug: string, pricePaid: number): ArticlePurchase {
-  const purchase: ArticlePurchase = {
-    id: genId(),
-    email,
-    slug,
-    pricePaid,
-    purchasedAt: new Date()
-  };
-  articlePurchases.push(purchase);
-  return purchase;
-}
-
-export function hasUnlockedArticle(email: string, slug: string): boolean {
-  return articleUnlocks.some(u => u.email === email && u.slug === slug);
-}
-
-export function unlockArticleForSubscriber(email: string, slug: string): boolean {
-  // Avoid double consumption
-  if (hasUnlockedArticle(email, slug)) return true;
+export async function unlockArticleForSubscriber(userId: string, slug: string): Promise<boolean> {
+  // Check if already unlocked (purchased)
+  if (await hasPurchasedArticle(userId, slug)) return true;
+  
   const article = loadArticleBySlug(slug);
   if (!article) return false;
+  
   // Only premium articles count toward allowance
   if (!article.isPremium) return true;
-  if (!canAccessPremiumArticle(email)) return false;
-  const ok = consumePremiumArticleCredit(email);
+  
+  if (!await canAccessPremiumArticle(userId)) return false;
+  
+  const ok = await consumePremiumArticleCredit(userId);
   if (ok) {
-    articleUnlocks.push({ email, slug, unlockedAt: new Date() });
+    // Record as a free purchase (using subscription allowance)
+    await recordPurchase({
+      userId,
+      type: 'article',
+      itemId: slug,
+      itemTitle: article.title,
+      basePrice: typeof article.price === 'number' ? article.price : 0,
+      pricePaid: 0,
+      paymentMethod: 'subscription',
+      metadata: { unlockedViaSubscription: true }
+    });
     return true;
   }
+  
   return false;
 }
 
-export function getArticleAccess(email: string | null | undefined, slug: string) {
+export async function getArticleAccess(userId: string | null | undefined, slug: string) {
   const article = loadArticleBySlug(slug);
   if (!article) return { exists: false } as const;
 
@@ -73,9 +68,8 @@ export function getArticleAccess(email: string | null | undefined, slug: string)
     };
   }
 
-  const userEmail = email || undefined;
-  const purchased = userEmail ? hasPurchasedArticle(userEmail, slug) : false;
-  const isSubscriber = userEmail ? isUserPremium(userEmail) : false;
+  const purchased = userId ? await hasPurchasedArticle(userId, slug) : false;
+  const isSubscriber = userId ? await isUserPremium(userId) : false;
 
   if (purchased) {
     return {
@@ -90,25 +84,12 @@ export function getArticleAccess(email: string | null | undefined, slug: string)
   }
 
   // Subscribers may have free access via allowance
-  if (userEmail && isSubscriber) {
-    // If already unlocked earlier this cycle, keep access free
-    if (hasUnlockedArticle(userEmail, slug)) {
-      return {
-        exists: true,
-        hasAccess: true,
-        isPaid: true as const,
-        basePrice,
-        finalPrice: 0,
-        isSubscriber,
-        purchased: false,
-      };
-    }
-
+  if (userId && isSubscriber) {
     // Check price for subscriber (may be 0 if within allowance)
-    const priceForSub = getArticlePriceForSubscriber(userEmail, basePrice);
+    const priceForSub = await getArticlePriceForSubscriber(userId, basePrice);
     if (priceForSub === 0) {
       // Auto-unlock and consume allowance on access check
-      unlockArticleForSubscriber(userEmail, slug);
+      await unlockArticleForSubscriber(userId, slug);
       return {
         exists: true,
         hasAccess: true,
@@ -146,19 +127,23 @@ export function getArticleAccess(email: string | null | undefined, slug: string)
   };
 }
 
-export function purchaseArticle(email: string, slug: string) {
+export async function purchaseArticle(userId: string, slug: string, sessionId?: string) {
   const article = loadArticleBySlug(slug);
   if (!article) return { ok: false, error: 'Article not found' } as const;
 
   const basePrice = typeof article.price === 'number' ? article.price : 0;
   const isPaid = !!article.isPremium && basePrice > 0;
 
-  if (hasPurchasedArticle(email, slug)) {
-    return { ok: true, purchase: recordArticlePurchase(email, slug, 0) } as const;
+  // Check if already purchased
+  if (await hasPurchasedArticle(userId, slug)) {
+    const existingPurchase = await prisma!.purchase.findFirst({
+      where: { userId, type: 'article', itemId: slug }
+    });
+    return { ok: true, purchase: existingPurchase } as const;
   }
 
   // Subscriber pricing
-  const subPrice = getArticlePriceForSubscriber(email, basePrice);
+  const subPrice = await getArticlePriceForSubscriber(userId, basePrice);
   let finalPrice = isPaid ? basePrice : 0;
   if (subPrice !== null) {
     finalPrice = subPrice;
@@ -166,17 +151,41 @@ export function purchaseArticle(email: string, slug: string) {
 
   // If price is 0 for subscriber due to allowance, unlock and record
   if (isPaid && finalPrice === 0) {
-    unlockArticleForSubscriber(email, slug);
-    const p = recordArticlePurchase(email, slug, 0);
+    await unlockArticleForSubscriber(userId, slug);
+    const p = await prisma!.purchase.findFirst({
+      where: { userId, type: 'article', itemId: slug }
+    });
     return { ok: true, purchase: p } as const;
   }
 
   if (!isPaid || finalPrice === 0) {
-    const p = recordArticlePurchase(email, slug, 0);
+    const p = await recordPurchase({
+      userId,
+      sessionId,
+      type: 'article',
+      itemId: slug,
+      itemTitle: article.title,
+      basePrice,
+      pricePaid: 0,
+      paymentMethod: 'free',
+      metadata: { articleSlug: slug }
+    });
     return { ok: true, purchase: p } as const;
   }
 
-  // Mock payment and record purchase
-  const purchase = recordArticlePurchase(email, slug, finalPrice);
+  // Record purchase (payment happens via Stripe in real flow)
+  const purchase = await recordPurchase({
+    userId,
+    sessionId,
+    type: 'article',
+    itemId: slug,
+    itemTitle: article.title,
+    basePrice,
+    pricePaid: finalPrice,
+    discountApplied: basePrice - finalPrice,
+    paymentMethod: 'subscription',
+    metadata: { articleSlug: slug }
+  });
+  
   return { ok: true, purchase } as const;
 }

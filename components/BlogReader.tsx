@@ -16,6 +16,7 @@ import Breadcrumbs from '@/components/blog/Breadcrumbs';
 import BookmarkButton from '@/components/BookmarkButton';
 import NewsletterModal from '@/components/modals/NewsletterModal';
 import SubscriptionOfferModal from '@/components/modals/SubscriptionOfferModal';
+import FontSizeControl from '@/components/ui/FontSizeControl';
 
 interface BlogReaderProps {
   blog: Blog;
@@ -336,7 +337,7 @@ export function BlogReader({ blog, userEmail, prev, next }: BlogReaderProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30 relative overflow-hidden article-root">
       {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-indigo-400/10 to-purple-400/10 rounded-full blur-3xl animate-float" />
@@ -353,6 +354,9 @@ export function BlogReader({ blog, userEmail, prev, next }: BlogReaderProps) {
         />
         {/* Article Header */}
         <header className="mb-12 animate-fade-in">
+          <div className="flex justify-end mb-3">
+            <FontSizeControl />
+          </div>
           <div className="flex flex-wrap items-center gap-3 mb-6">
             {blog.isPremium && (
               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-amber-100 text-amber-800 border border-amber-200">

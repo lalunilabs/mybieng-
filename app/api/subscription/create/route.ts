@@ -1,32 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSubscription } from '@/lib/subscription';
+import { getServerSession } from 'next-auth';
+import { createCheckoutSession } from '@/lib/stripe/client';
+import { authOptions } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email } = await request.json();
-
-    if (!email) {
-      return NextResponse.json({ error: 'Email required' }, { status: 400 });
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    // In production, integrate with Stripe/PayPal here
-    // For now, create a mock subscription
-    const subscription = createSubscription(email);
+    const userId = (session.user as any).id;
+    const userEmail = session.user.email;
 
-    // TODO: Send welcome email with subscription details
-    // TODO: Set up recurring billing with payment provider
+    // Create Stripe checkout session
+    const checkoutSession = await createCheckoutSession({
+      userId,
+      userEmail,
+    });
 
     return NextResponse.json({ 
       success: true,
-      subscription: {
-        id: subscription.id,
-        plan: subscription.plan,
-        status: subscription.status,
-        endDate: subscription.endDate
-      }
+      checkoutUrl: checkoutSession.url,
+      sessionId: checkoutSession.id
     });
   } catch (error) {
     console.error('Subscription creation error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to create checkout session' }, { status: 500 });
   }
 }

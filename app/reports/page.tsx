@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { BarChart3, PieChart, TrendingUp, Mail, BookOpen, ExternalLink, Download, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import PrimaryCTA from '@/components/ui/PrimaryCTA';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -12,6 +11,9 @@ import { toast } from 'sonner';
 
 export default function ReportsPage() {
   const [selectedReport, setSelectedReport] = useState('cognitive-dissonance');
+  const [showEmailField, setShowEmailField] = useState(false);
+  const [emailField, setEmailField] = useState('');
+  const [sending, setSending] = useState(false);
   const router = useRouter();
 
   const reports = [
@@ -115,10 +117,7 @@ export default function ReportsPage() {
             <div className="lg:col-span-1">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="w-5 h-5" />
-                    Your Assessments
-                  </CardTitle>
+                  <CardTitle>Your Assessments</CardTitle>
                   <CardDescription>
                     Click on any report to view detailed charts and insights
                   </CardDescription>
@@ -175,7 +174,7 @@ export default function ReportsPage() {
                     router.push(`/chat/${id}?${params.toString()}`);
                   }}
                 >
-                  <MessageCircle className="w-4 h-4 mr-2" /> Ask AI about this
+                  Ask AI about this
                 </PrimaryCTA>
               </div>
             </div>
@@ -184,10 +183,7 @@ export default function ReportsPage() {
             <div className="lg:col-span-2">
               <Card className="mb-6">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <PieChart className="w-5 h-5" />
-                    Interactive Chart View
-                  </CardTitle>
+                  <CardTitle>Interactive Chart View</CardTitle>
                   <CardDescription>
                     Visual breakdown of your assessment results
                   </CardDescription>
@@ -196,7 +192,6 @@ export default function ReportsPage() {
                   {/* Mock Chart Area */}
                   <div className="h-64 bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg flex items-center justify-center mb-6">
                     <div className="text-center">
-                      <PieChart className="w-16 h-16 text-purple-600 mx-auto mb-4" />
                       <p className="text-purple-700 font-medium">Interactive Chart</p>
                       <p className="text-purple-600 text-sm">
                         {reports.find(r => r.id === selectedReport)?.title} Results
@@ -208,54 +203,79 @@ export default function ReportsPage() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {reports.find(r => r.id === selectedReport)?.insights.map((insight, index) => (
                       <div key={index} className="bg-gray-50 p-4 rounded-lg">
-                        <div className="flex items-center gap-2 mb-2">
-                          <TrendingUp className="w-4 h-4 text-purple-600" />
-                          <span className="text-sm font-medium text-gray-900">Key Insight</span>
-                        </div>
+                        <div className="mb-1 text-sm font-medium text-gray-900">Key Insight</div>
                         <p className="text-sm text-gray-600">{insight}</p>
                       </div>
                     ))}
                   </div>
 
                   {/* Email Report Button */}
-                  <div className="mt-6 flex gap-4">
-                    <PrimaryCTA 
-                      surface="reports_page" 
-                      eventName="email_report"
-                      onClick={async () => {
-                        try {
-                          const email = window.prompt('Enter your email to receive the detailed report');
-                          if (!email) return;
-                          const res = await fetch('/api/quiz/email-results', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                              email,
-                              quizId: selectedReport,
-                              quizTitle: selected?.title || selectedReport,
-                              score: selected?.score ?? 0,
-                              maxScore: maxScore,
-                              band: band?.label,
-                            }),
-                          });
-                          if (res.ok) {
-                            toast.success('Detailed report will arrive by email shortly.');
-                          } else {
-                            const j = await res.json().catch(() => ({}));
-                            toast.error(j.error || 'Failed to queue email');
+                  <div className="mt-6 space-y-3">
+                    <div className="flex gap-4">
+                      <PrimaryCTA 
+                        surface="reports_page" 
+                        eventName="email_report_click"
+                        onClick={() => setShowEmailField((v) => !v)}
+                      >
+                        Email Detailed Report
+                      </PrimaryCTA>
+                      <PrimaryCTA surface="reports_page" eventName="download_report" variant="outline">
+                        Download PDF
+                      </PrimaryCTA>
+                    </div>
+                    {showEmailField && (
+                      <form
+                        className="flex flex-col sm:flex-row gap-3"
+                        onSubmit={async (e) => {
+                          e.preventDefault();
+                          if (!emailField || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailField)) {
+                            toast.error('Please enter a valid email');
+                            return;
                           }
-                        } catch (e) {
-                          toast.error('Network error. Please try again.');
-                        }
-                      }}
-                    >
-                      <Mail className="w-4 h-4 mr-2" />
-                      Email Detailed Report
-                    </PrimaryCTA>
-                    <PrimaryCTA surface="reports_page" eventName="download_report" variant="outline">
-                      <Download className="w-4 h-4 mr-2" />
-                      Download PDF
-                    </PrimaryCTA>
+                          try {
+                            setSending(true);
+                            const res = await fetch('/api/quiz/email-results', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                email: emailField,
+                                quizId: selectedReport,
+                                quizTitle: selected?.title || selectedReport,
+                                score: selected?.score ?? 0,
+                                maxScore: maxScore,
+                                band: band?.label,
+                              }),
+                            });
+                            if (res.ok) {
+                              toast.success('Detailed report will arrive by email shortly.');
+                              setShowEmailField(false);
+                              setEmailField('');
+                            } else {
+                              const j = await res.json().catch(() => ({}));
+                              toast.error(j.error || 'Failed to queue email');
+                            }
+                          } catch {
+                            toast.error('Network error. Please try again.');
+                          } finally {
+                            setSending(false);
+                          }
+                        }}
+                      >
+                        <input
+                          type="email"
+                          inputMode="email"
+                          placeholder="Enter your email"
+                          value={emailField}
+                          onChange={(e) => setEmailField(e.target.value)}
+                          className="flex-1 min-w-0 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          aria-label="Email address"
+                          required
+                        />
+                        <Button type="submit" disabled={sending} className="px-5">
+                          {sending ? 'Sending…' : 'Send report'}
+                        </Button>
+                      </form>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -271,10 +291,7 @@ export default function ReportsPage() {
           >
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BookOpen className="w-5 h-5" />
-                  Recommended Reading
-                </CardTitle>
+                <CardTitle>Recommended Reading</CardTitle>
                 <CardDescription>
                   Books and articles to deepen your understanding based on your results
                 </CardDescription>
@@ -305,7 +322,6 @@ export default function ReportsPage() {
                       </div>
                       <p className="text-sm text-gray-600 mb-4">{material.description}</p>
                       <PrimaryCTA href={material.link} surface="reports_resources" eventName="view_resource" variant="outline" size="sm" className="w-full">
-                        <ExternalLink className="w-4 h-4 mr-2" />
                         View Resource
                       </PrimaryCTA>
                     </motion.div>

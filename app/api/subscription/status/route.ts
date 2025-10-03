@@ -1,20 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { getSubscriptionStats, isUserPremium, canAccessPremiumArticle } from '@/lib/subscription';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const email = searchParams.get('email');
-
-    if (!email) {
-      return NextResponse.json({ error: 'Email required' }, { status: 400 });
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user) {
+      return NextResponse.json({
+        isPremium: false,
+        canAccess: false,
+        stats: null
+      });
     }
 
-    const isPremium = isUserPremium(email);
-    const canAccessPremium = canAccessPremiumArticle(email);
-    const stats = getSubscriptionStats(email);
+    const userId = (session.user as any).id;
+    const isPremium = await isUserPremium(userId);
+    const canAccessPremium = await canAccessPremiumArticle(userId);
+    const stats = await getSubscriptionStats(userId);
 
     return NextResponse.json({
       isPremium,

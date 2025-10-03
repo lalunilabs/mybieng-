@@ -6,17 +6,18 @@ import PrimaryCTA from '@/components/ui/PrimaryCTA';
 import Container from '@/components/Container';
 import { PageLoader } from '@/components/ui/PageLoader';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
-import { ArrowRight, BookOpen, Clock, User } from 'lucide-react';
+import { ArrowRight, BookOpen, Clock, User, FileText, CheckCircle, Brain, BarChart3 } from 'lucide-react';
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import FileBlogCard from '@/components/ui/FileBlogCard';
+import AdSlot from '@/components/ads/AdSlot';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Articles | MyBeing',
   description: 'Research-backed articles on psychology, behavior, and personal growth. Designed to pair with your quiz insights.',
-  alternates: { canonical: '/blog' },
+  alternates: { canonical: '/blog', languages: { 'en-IN': '/blog', 'en-US': '/blog', 'x-default': '/blog' } },
   openGraph: {
     title: 'MyBeing Articles',
     description: 'Evidence-based explainers and guides across psychology and behavior.',
@@ -78,7 +79,7 @@ function BlogContent() {
               {/* Header */}
               <div className="mb-10 animate-fade-in">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-white shadow-brutal text-sm font-semibold">
-                  <span>📚</span>
+                  <BookOpen className="w-4 h-4" />
                   <span className="text-foreground">Research-backed insights</span>
                 </div>
                 <h1 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight">
@@ -95,7 +96,7 @@ function BlogContent() {
                   <div className="lg:col-span-2">
                     <Card variant="elevated" className="overflow-hidden shadow-brutal">
                       <div className="aspect-[16/9] bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                        <span className="text-6xl text-white">📚</span>
+                        <BookOpen className="w-16 h-16 text-white" />
                       </div>
                       <CardHeader>
                         <CardTitle className="text-2xl">{featuredPost.title}</CardTitle>
@@ -153,7 +154,7 @@ function BlogContent() {
                 /* Empty State */
                 <div className="text-center py-20 animate-fade-in" style={{ animationDelay: '0.2s' }}>
                   <div className="w-24 h-24 bg-indigo-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <span className="text-4xl">📝</span>
+                    <FileText className="w-10 h-10 text-indigo-700" />
                   </div>
                   <h3 className="text-2xl font-bold text-foreground mb-4">
                     Articles Coming Soon
@@ -163,18 +164,9 @@ function BlogContent() {
                     Check back soon for deep dives into psychology and self-awareness.
                   </p>
                   <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
-                    <div className="flex items-center">
-                      <span className="mr-2">🔬</span>
-                      Peer-reviewed sources
-                    </div>
-                    <div className="flex items-center">
-                      <span className="mr-2">🧠</span>
-                      Practical insights
-                    </div>
-                    <div className="flex items-center">
-                      <span className="mr-2">📊</span>
-                      Data-driven
-                    </div>
+                    <div className="flex items-center gap-2"><CheckCircle className="w-4 h-4" /> Peer-reviewed sources</div>
+                    <div className="flex items-center gap-2"><Brain className="w-4 h-4" /> Practical insights</div>
+                    <div className="flex items-center gap-2"><BarChart3 className="w-4 h-4" /> Data-driven</div>
                   </div>
                 </div>
               )}
@@ -210,6 +202,7 @@ export default function BlogPage() {
   return (
     <Suspense fallback={<PageLoader message="Loading blog posts..." />}>
       <BlogContent />
+      {/* No ads on blog listing - keeping experience clean */}
     </Suspense>
   );
 }

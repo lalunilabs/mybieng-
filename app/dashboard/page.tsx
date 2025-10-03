@@ -7,7 +7,8 @@ import { Progress } from '@/components/ui/Progress';
 import InsightsReviewsPanel from '@/components/dashboard/InsightsReviewsPanel';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
-import { BarChart3, MessageCircle, Calendar, TrendingUp, BookOpen } from "lucide-react";
+import { redirect } from 'next/navigation';
+import { BarChart3, MessageCircle } from "lucide-react";
 import { QuizReportVisualization } from '@/components/ui/QuizReportVisualization';
 import { headers } from 'next/headers';
 import { PRICING } from '@/lib/constants';
@@ -16,11 +17,20 @@ import PrimaryCTA from '@/components/ui/PrimaryCTA';
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
+  
+  // Redirect to login if not authenticated
+  if (!session) {
+    redirect('/login');
+  }
+  
   const email = (session as any)?.user?.email as string | undefined;
-  // TODO: Implement proper premium check
-  const isPremium = false;
-  // TODO: Implement subscription stats
-  const subscriptionStats: { endDate: Date } | null = null;
+  // Basic usage tracking
+  const quizzesUsed = email ? await safeDbOperation(async () => 
+    await prisma!.quizRun.count({
+      where: { userId: email }
+    }), 0) : 0;
+  const isPremium = false; // Placeholder for actual subscription check
+  const subscriptionStats = null; // Placeholder
   // Safe, precomputed renewal date for rendering (avoids TS narrowing issues)
   const renewalDateText: string = '';
   const sessionId = cookies().get('sessionId')?.value;
@@ -53,8 +63,7 @@ export default async function DashboardPage() {
         <div className="mx-auto max-w-7xl">
           {/* Header */}
           <div className="text-center mb-12 animate-fade-in">
-            <div className="mb-6 inline-flex items-center rounded-full bg-gradient-to-r from-lilac-100 to-pink-100 px-6 py-3 text-sm font-medium text-lilac-800 ring-1 ring-lilac-200/30 shadow-sm">
-              <span className="mr-2 text-lg">📊</span>
+            <div className="mb-6 inline-flex items-center rounded-full bg-gray-100 px-4 py-2 text-sm font-medium text-gray-800">
               <span className="font-semibold">Personal Dashboard</span>
             </div>
             
@@ -69,9 +78,9 @@ export default async function DashboardPage() {
 
           {/* Stats Overview */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-            <Card className="text-center group hover:shadow-lg transition-all duration-300 bg-white rounded-2xl border border-lilac-200 overflow-hidden">
+            <Card className="text-center group hover:shadow-lg transition-all duration-300 bg-white rounded-2xl border border-gray-200">
               <CardContent className="p-6">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-lilac-400 to-lilac-300 text-lilac-900 mb-4">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 text-gray-700 mb-4">
                   <BarChart3 className="h-6 w-6" />
                 </div>
                 <p className="text-sm font-medium text-gray-600 mb-1">Quizzes Taken</p>
@@ -79,20 +88,20 @@ export default async function DashboardPage() {
               </CardContent>
             </Card>
             
-            <Card className="text-center group hover:shadow-lg transition-all duration-300 bg-white rounded-2xl border border-lilac-200 overflow-hidden">
+            <Card className="text-center group hover:shadow-lg transition-all duration-300 bg-white rounded-2xl border border-gray-200">
               <CardContent className="p-6">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-lilac-400 to-lilac-300 text-lilac-900 mb-4">
-                  <span className="text-lg">📈</span>
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 text-gray-700 mb-4">
+                  <span className="text-2xl font-bold">{Math.round(completionRate)}</span>
                 </div>
-                <p className="text-3xl font-bold text-gray-900 mb-1">{Math.round(completionRate)}%</p>
+                <p className="text-3xl font-bold text-gray-900 mb-1">%</p>
                 <p className="text-sm font-medium text-gray-600">Profile Complete</p>
               </CardContent>
             </Card>
             
-            <Card className="text-center group hover:shadow-lg transition-all duration-300 bg-white rounded-2xl border border-lilac-200 overflow-hidden">
+            <Card className="text-center group hover:shadow-lg transition-all duration-300 bg-white rounded-2xl border border-gray-200">
               <CardContent className="pt-6 pb-6">
-                <div className="w-12 h-12 bg-gradient-to-r from-lilac-500 to-lilac-300 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <span className="text-white text-lg">📅</span>
+                <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <span className="text-gray-700 text-sm">{runs.length}</span>
                 </div>
                 <p className="text-3xl font-bold text-gray-900 mb-1">
                   {runs.length > 0 ? Math.floor((Date.now() - new Date(runs[runs.length - 1].createdAt).getTime()) / (1000 * 60 * 60 * 24)) : 0}
@@ -101,10 +110,10 @@ export default async function DashboardPage() {
               </CardContent>
             </Card>
             
-            <Card className="text-center group hover:shadow-lg transition-all duration-300 bg-white rounded-2xl border border-lilac-200 overflow-hidden">
+            <Card className="text-center group hover:shadow-lg transition-all duration-300 bg-white rounded-2xl border border-gray-200">
               <CardContent className="p-6">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-lilac-400 to-lilac-300 text-lilac-900 mb-4">
-                  <span className="text-lg">⭐</span>
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 text-gray-700 mb-4">
+                  <span className="text-sm font-medium">{isPremium ? 'Premium' : 'Free'}</span>
                 </div>
                 <p className="text-3xl font-bold text-gray-900 mb-1">
                   {isPremium ? 'Premium' : 'Free'}
@@ -121,23 +130,19 @@ export default async function DashboardPage() {
               <Card className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                 <CardHeader className="pb-4">
                   <CardTitle className="flex items-center text-gray-900">
-                    <span className="mr-3 text-2xl">📈</span>
                     Recent Results
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {runs.length === 0 ? (
                     <div className="text-center py-12">
-                      <div className="w-16 h-16 bg-gradient-to-r from-lilac-100 to-lilac-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span className="text-2xl text-lilac-600">🎯</span>
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span className="text-2xl">🎯</span>
                       </div>
                       <h3 className="text-lg font-semibold text-gray-900 mb-2">Ready to Begin?</h3>
                       <p className="text-gray-600 mb-6">Take your first quiz to start discovering patterns in your thoughts and behaviors.</p>
-                      <PrimaryCTA href="/start" surface="dashboard_empty" variant="uiverse" className="px-6 py-2.5 rounded-xl font-medium transition-all duration-300">
-                        <span className="mr-2">Start Your Journey</span>
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
+                      <PrimaryCTA href="/start" surface="dashboard_empty" variant="uiverse" className="px-6 py-2.5 rounded-lg font-medium">
+                        Start Your Journey
                       </PrimaryCTA>
                     </div>
                   ) : (
@@ -148,17 +153,17 @@ export default async function DashboardPage() {
                         const isFree = quizPrice === 0;
                         
                         return (
-                          <div key={r.id} className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-200 hover:shadow-md transition-all duration-200">
+                          <div key={r.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200 hover:shadow-md transition-all duration-200">
                             <div className="flex items-center space-x-4">
-                              <div className="w-12 h-12 bg-gradient-to-br from-lilac-400 to-lilac-300 rounded-xl flex items-center justify-center text-lilac-900 text-lg shadow-sm">
-                                🧠
+                              <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-gray-700 text-lg">
+                                <span className="font-bold">{r.quizSlug.charAt(0).toUpperCase()}</span>
                               </div>
                               <div>
                                 <h4 className="font-semibold text-gray-900 capitalize">
                                   {r.quizSlug.replace(/-/g, ' ')}
                                 </h4>
                                 <div className="flex items-center gap-2 mt-1">
-                                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-lilac-100 text-lilac-800">
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                                     {r.bandLabel}
                                   </span>
                                   <p className="text-sm text-gray-600">
@@ -189,16 +194,14 @@ export default async function DashboardPage() {
                           <div className="flex flex-wrap gap-3">
                             <a
                               href="/api/runs/export"
-                              className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200"
+                              className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg"
                             >
-                              <span className="mr-2">📄</span>
                               Export JSON
                             </a>
                             <a
                               href="/api/runs/export.csv"
-                              className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200"
+                              className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg"
                             >
-                              <span className="mr-2">📊</span>
                               Export CSV
                             </a>
                           </div>
@@ -215,7 +218,6 @@ export default async function DashboardPage() {
                   <CardHeader className="pb-4">
                     <CardTitle className="flex items-center justify-between text-gray-900">
                       <div className="flex items-center">
-                        <span className="mr-3 text-2xl">📊</span>
                         Detailed Report Preview
                       </div>
                       <div className="flex items-center gap-2">
@@ -268,7 +270,6 @@ export default async function DashboardPage() {
               <Card className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                 <CardHeader className="pb-4">
                   <CardTitle className="flex items-center text-gray-900">
-                    <span className="mr-3 text-xl">🎯</span>
                     Your Progress
                   </CardTitle>
                 </CardHeader>
@@ -304,7 +305,6 @@ export default async function DashboardPage() {
                 <Card className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                   <CardHeader className="pb-4">
                     <CardTitle className="flex items-center text-gray-900">
-                      <span className="mr-3 text-xl">💳</span>
                       Subscription Details
                     </CardTitle>
                   </CardHeader>
@@ -361,7 +361,6 @@ export default async function DashboardPage() {
               <Card className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                 <CardHeader className="pb-4">
                   <CardTitle className="flex items-center text-gray-900">
-                    <span className="mr-3 text-xl">✨</span>
                     Recommended Next
                   </CardTitle>
                 </CardHeader>
@@ -369,8 +368,8 @@ export default async function DashboardPage() {
                   <Link href="/quizzes/cognitive-dissonance" className="block group">
                     <div className="p-4 rounded-xl border border-gray-200 hover:border-lilac-300 hover:bg-lilac-50 transition-all duration-200">
                       <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-r from-lilac-400 to-lilac-300 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <span className="text-lilac-900 text-sm">🧠</span>
+                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <span className="text-gray-700 text-sm font-bold">CD</span>
                         </div>
                         <div>
                           <h4 className="font-medium text-gray-900 group-hover:text-lilac-700 transition-colors">
@@ -387,8 +386,8 @@ export default async function DashboardPage() {
                   <Link href="/quizzes/stress-patterns" className="block group">
                     <div className="p-4 rounded-xl border border-gray-200 hover:border-lilac-300 hover:bg-lilac-50 transition-all duration-200">
                       <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-r from-lilac-400 to-lilac-300 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <span className="text-lilac-900 text-sm">📊</span>
+                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <span className="text-gray-700 text-sm font-bold">SP</span>
                         </div>
                         <div>
                           <h4 className="font-medium text-gray-900 group-hover:text-lilac-700 transition-colors">

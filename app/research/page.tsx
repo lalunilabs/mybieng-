@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { BookOpen, Users, TrendingUp, Award, ExternalLink } from 'lucide-react';
+import AdSlot from '@/components/ads/AdSlot';
 import Link from 'next/link';
 
 export default function ResearchPage() {
@@ -31,6 +32,8 @@ export default function ResearchPage() {
             Our assessments and insights are grounded in peer-reviewed research from psychology, neuroscience, and behavioral science.
           </p>
         </motion.div>
+
+        {/* No top ads - keeping research content clean */}
 
         {/* Research Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
@@ -61,84 +64,74 @@ export default function ResearchPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
           <Card className="bg-white border-purple-200 shadow-soft">
             <CardHeader>
-              <CardTitle className="text-black flex items-center gap-2">
-                <span>🧠</span>
-                Cognitive Psychology
-              </CardTitle>
+              <CardTitle className="text-black">Cognitive Psychology</CardTitle>
               <CardDescription className="text-black">
                 Understanding how people process information and make decisions
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-2 text-sm text-black">
-                <li>• Cognitive bias identification and mitigation</li>
-                <li>• Decision-making pattern analysis</li>
-                <li>• Information processing styles</li>
-                <li>• Memory and learning preferences</li>
+              <ul className="list-disc pl-5 space-y-2 text-sm text-black">
+                <li>Cognitive bias identification and mitigation</li>
+                <li>Decision-making pattern analysis</li>
+                <li>Information processing styles</li>
+                <li>Memory and learning preferences</li>
               </ul>
             </CardContent>
           </Card>
 
           <Card className="bg-white border-purple-200 shadow-soft">
             <CardHeader>
-              <CardTitle className="text-black flex items-center gap-2">
-                <span>💭</span>
-                Behavioral Science
-              </CardTitle>
+              <CardTitle className="text-black">Behavioral Science</CardTitle>
               <CardDescription className="text-black">
                 Exploring patterns in human behavior and habit formation
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-2 text-sm text-black">
-                <li>• Habit formation and change mechanisms</li>
-                <li>• Motivation and goal-setting patterns</li>
-                <li>• Social influence and conformity</li>
-                <li>• Stress response and coping strategies</li>
+              <ul className="list-disc pl-5 space-y-2 text-sm text-black">
+                <li>Habit formation and change mechanisms</li>
+                <li>Motivation and goal-setting patterns</li>
+                <li>Social influence and conformity</li>
+                <li>Stress response and coping strategies</li>
               </ul>
             </CardContent>
           </Card>
 
           <Card className="bg-white border-purple-200 shadow-soft">
             <CardHeader>
-              <CardTitle className="text-black flex items-center gap-2">
-                <span>🎯</span>
-                Personality Research
-              </CardTitle>
+              <CardTitle className="text-black">Personality Research</CardTitle>
               <CardDescription className="text-black">
                 Evidence-based personality trait measurement and analysis
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-2 text-sm text-black">
-                <li>• Big Five personality dimensions</li>
-                <li>• Emotional intelligence assessment</li>
-                <li>• Values and belief system mapping</li>
-                <li>• Interpersonal style analysis</li>
+              <ul className="list-disc pl-5 space-y-2 text-sm text-black">
+                <li>Big Five personality dimensions</li>
+                <li>Emotional intelligence assessment</li>
+                <li>Values and belief system mapping</li>
+                <li>Interpersonal style analysis</li>
               </ul>
             </CardContent>
           </Card>
 
           <Card className="bg-white border-purple-200 shadow-soft">
             <CardHeader>
-              <CardTitle className="text-black flex items-center gap-2">
-                <span>📊</span>
-                Data Science
-              </CardTitle>
+              <CardTitle className="text-black">Data Science</CardTitle>
               <CardDescription className="text-black">
                 Advanced analytics and machine learning for personalized insights
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-2 text-sm text-black">
-                <li>• Pattern recognition algorithms</li>
-                <li>• Predictive modeling for growth</li>
-                <li>• Personalization engines</li>
-                <li>• Statistical validation methods</li>
+              <ul className="list-disc pl-5 space-y-2 text-sm text-black">
+                <li>Pattern recognition algorithms</li>
+                <li>Predictive modeling for growth</li>
+                <li>Personalization engines</li>
+                <li>Statistical validation methods</li>
               </ul>
             </CardContent>
           </Card>
         </div>
+
+        {/* No bottom ads - keeping research content clean */}
 
         {/* Call to Action */}
         <motion.div

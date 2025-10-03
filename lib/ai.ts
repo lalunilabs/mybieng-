@@ -1,3 +1,4 @@
+import { loadQuizBySlug as getQuizDef } from '@/lib/content';
 // AI Integration for Quiz Analysis and Insights
 // This would integrate with OpenAI, Claude, or your preferred AI service
 
@@ -5,7 +6,8 @@ export interface QuizResponse {
   questionId: string;
   questionText: string;
   answer: string | number;
-  questionType: 'multiple-choice' | 'scale' | 'text';
+  // Accept both legacy and new UI types
+  questionType: 'multiple-choice' | 'scale' | 'text' | 'likert' | 'yes_no' | 'multiple_choice' | 'text_input';
 }
 
 export interface AIInsight {
@@ -40,7 +42,15 @@ export async function analyzeQuizResponses(
     }
   }
   
-  // Fallback to local analysis
+  // Prefer quiz metadata when available
+  try {
+    const def = getQuizDef(quizSlug);
+    if (def?.resultType === 'motivation-language' || quizSlug === 'motivation-language') {
+      return analyzeMotivationLanguageQuiz(quizSlug, responses);
+    }
+  } catch {}
+
+  // Fallback to local analysis by slug
   if (quizSlug === 'cognitive-dissonance') {
     return analyzeCognitiveDissonanceQuiz(responses);
   } else if (quizSlug === 'stress-patterns') {
@@ -128,10 +138,10 @@ Return a JSON object with this structure:
 }
 
 function analyzeCognitiveDissonanceQuiz(responses: QuizResponse[]): QuizAnalysis {
-  // Calculate score based on responses
-  const scaleResponses = responses.filter(r => r.questionType === 'scale');
-  const totalScore = scaleResponses.reduce((sum, r) => sum + (r.answer as number), 0);
-  const maxScore = scaleResponses.length * 5;
+  // Treat any numeric answers as contributing to score (supports 'scale'/'likert')
+  const numericResponses = responses.filter(r => typeof r.answer === 'number');
+  const totalScore = numericResponses.reduce((sum, r) => sum + (r.answer as number), 0);
+  const maxScore = numericResponses.length * 5 || 100;
   const normalizedScore = Math.round((totalScore / maxScore) * 100);
   
   let band = 'Low Dissonance';
@@ -181,9 +191,9 @@ function analyzeCognitiveDissonanceQuiz(responses: QuizResponse[]): QuizAnalysis
 }
 
 function analyzeStressPatternsQuiz(responses: QuizResponse[]): QuizAnalysis {
-  const scaleResponses = responses.filter(r => r.questionType === 'scale');
-  const totalScore = scaleResponses.reduce((sum, r) => sum + (r.answer as number), 0);
-  const maxScore = scaleResponses.length * 5;
+  const numericResponses = responses.filter(r => typeof r.answer === 'number');
+  const totalScore = numericResponses.reduce((sum, r) => sum + (r.answer as number), 0);
+  const maxScore = numericResponses.length * 5 || 100;
   const normalizedScore = Math.round((totalScore / maxScore) * 100);
   
   let band = 'Low Stress';
@@ -227,9 +237,9 @@ function analyzeStressPatternsQuiz(responses: QuizResponse[]): QuizAnalysis {
 }
 
 function generateGenericAnalysis(responses: QuizResponse[]): QuizAnalysis {
-  const scaleResponses = responses.filter(r => r.questionType === 'scale');
-  const totalScore = scaleResponses.reduce((sum, r) => sum + (r.answer as number), 0);
-  const maxScore = scaleResponses.length * 5;
+  const numericResponses = responses.filter(r => typeof r.answer === 'number');
+  const totalScore = numericResponses.reduce((sum, r) => sum + (r.answer as number), 0);
+  const maxScore = numericResponses.length * 5 || 100;
   const normalizedScore = Math.round((totalScore / maxScore) * 100);
   
   return {
@@ -352,4 +362,107 @@ Guidelines:
 
   const data = await response.json();
   return data.choices[0]?.message?.content || 'I apologize, but I encountered an error. Please try asking your question again.';
+}
+
+// Categorical/profile-based analysis for quizzes like 'motivation-language'
+function analyzeMotivationLanguageQuiz(quizSlug: string, responses: QuizResponse[]): QuizAnalysis {
+  const def = getQuizDef(quizSlug);
+  // Guard: if missing definitions, fall back
+  if (!def) {
+    return generateGenericAnalysis(responses);
+  }
+
+  // Build category score map based on question optionCategories mapping
+  const categoryScores: Record<string, number> = {};
+  const multipleChoiceIds = new Set(
+    (def.questions || [])
+      .filter((q: any) => q.type === 'multiple_choice' && Array.isArray(q.options) && Array.isArray(q.optionCategories))
+      .map((q: any) => q.id)
+  );
+
+  for (const r of responses) {
+    // Only process multiple-choice style for categorical scoring
+    if (!multipleChoiceIds.has(r.questionId)) continue;
+    const q = (def.questions || []).find((q: any) => q.id === r.questionId);
+    if (!q) continue;
+    const options: string[] = q.options || [];
+    const cats: string[] = q.optionCategories || [];
+
+    // The answer may be the option text or an index; normalize
+    let idx = -1;
+    if (typeof r.answer === 'number') {
+      idx = Math.max(0, Math.min(options.length - 1, r.answer as number));
+    } else if (typeof r.answer === 'string') {
+      idx = options.findIndex(o => o === r.answer);
+    }
+    if (idx < 0 || idx >= cats.length) continue;
+    const cat = cats[idx];
+    if (!cat) continue;
+    categoryScores[cat] = (categoryScores[cat] || 0) + 1;
+  }
+
+  // Determine ranking
+  const ranked = Object.entries(categoryScores).sort((a, b) => b[1] - a[1]);
+  const [topCat, topScore] = ranked[0] || ['profile', 0];
+  const [secondCat, secondScore] = ranked[1] || [null, 0];
+
+  // Derive interpretation mode
+  let interpretation: 'single' | 'dual' | 'multi' = 'single';
+  if (topScore === 0) {
+    interpretation = 'multi';
+  } else if (secondCat && Math.abs((topScore || 0) - (secondScore || 0)) <= 1) {
+    interpretation = 'dual';
+  }
+
+  // Prepare messaging based on quiz definition
+  const profiles = def.resultProfiles || {} as Record<string, any>;
+  const interp = def.resultInterpretation || {} as Record<string, string>;
+  const primary = profiles[topCat || ''] || null;
+  const secondary = secondCat ? profiles[secondCat] : null;
+
+  const band = primary?.title || (topCat ? topCat.toUpperCase() : 'Profile');
+  const bandDescription = interp[interpretation] || 'Your results indicate a meaningful pattern in your motivation profile.';
+
+  // Score as normalized dominance of top category
+  const totalCatAnswers = ranked.reduce((s, [, v]) => s + v, 0) || 1;
+  const normalizedScore = Math.round((topScore / totalCatAnswers) * 100);
+
+  const keyInsights = [
+    primary ? {
+      pattern: primary.title,
+      description: primary.subtitle || 'Dominant tendency identified.',
+      actionableAdvice: (primary.lights?.[0] || primary.support?.[0] || 'Design your environment to align with this motivation style.')
+    } : {
+      pattern: 'Dominant pattern',
+      description: 'A primary tendency was identified in your responses.',
+      actionableAdvice: 'Lean into environments that support this pattern.'
+    }
+  ];
+
+  if (secondary) {
+    keyInsights.push({
+      pattern: secondary.title,
+      description: secondary.subtitle || 'Secondary tendency present.',
+      actionableAdvice: (secondary.lights?.[0] || secondary.support?.[0] || 'Blend this style when helpful for specific goals.')
+    } as any);
+  }
+
+  const recommendedActions: string[] = [];
+  if (primary?.lights?.length) recommendedActions.push(`Lean on: ${primary.lights[0]}`);
+  if (primary?.support?.length) recommendedActions.push(`Support: ${primary.support[0]}`);
+  if (secondary?.lights?.length) recommendedActions.push(`Blend with: ${secondary.lights[0]}`);
+
+  const nextSteps: string[] = [];
+  if (primary?.dna?.length) nextSteps.push(`Anchor to: ${primary.dna[0]}`);
+  if (secondary?.dna?.length) nextSteps.push(`Also consider: ${secondary.dna[0]}`);
+
+  return {
+    score: normalizedScore,
+    band,
+    bandDescription,
+    keyInsights,
+    personalizedMessage: bandDescription,
+    recommendedActions: recommendedActions.length ? recommendedActions : ['Design your routines to fit your dominant motivation style.'],
+    nextSteps: nextSteps.length ? nextSteps : ['Revisit this profile in a few weeks and see what changed.']
+  };
 }

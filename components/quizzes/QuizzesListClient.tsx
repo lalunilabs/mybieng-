@@ -10,6 +10,8 @@ type Quiz = {
   description: string;
   published?: boolean;
   publishedAt?: string;
+  benefits?: string[];
+  requirements?: string[];
 };
 
 export default function QuizzesListClient({ quizzes }: { quizzes: Quiz[] }) {
@@ -71,10 +73,12 @@ export default function QuizzesListClient({ quizzes }: { quizzes: Quiz[] }) {
                   className="animate-scale-in" 
                   style={{ animationDelay: `${0.1 * (index + 1)}s` }}
                 >
-                  <QuizCard 
-                    slug={quiz.slug} 
-                    title={quiz.title} 
-                    description={quiz.description} 
+                  <QuizCard
+                    slug={quiz.slug}
+                    title={quiz.title}
+                    description={quiz.description}
+                    benefits={quiz.benefits}
+                    requirements={quiz.requirements}
                   />
                 </div>
               ))}

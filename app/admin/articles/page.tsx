@@ -1,15 +1,15 @@
-import { requireAdmin } from '@/lib/adminAuth';
+import { requireAdminAuth } from '@/lib/auth/admin';
 import { WorldClassAdminLayout } from '@/components/admin/WorldClassAdminLayout';
 import AdminArticles from '@/components/admin/AdminArticles';
 
 export const dynamic = 'force-dynamic';
 
-export default function AdminArticlesPage() {
-  requireAdmin();
+export default async function AdminArticlesPage() {
+  const adminUser = await requireAdminAuth();
   
   const user = {
-    name: 'MyBeing Creator',
-    email: process.env.ADMIN_EMAIL || 'creator@mybeing.in'
+    name: adminUser.name,
+    email: adminUser.email
   };
 
   return (

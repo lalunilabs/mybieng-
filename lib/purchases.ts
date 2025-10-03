@@ -1,39 +1,65 @@
-// In-memory purchases store and helpers for quiz access
+// Database-backed purchases for quiz and article access
 import { getQuizPriceForSubscriber, isUserPremium, markDiscountedQuizUsed, canUseFreeQuiz, markFreeQuizUsed } from '@/lib/subscription';
 import { loadQuizBySlug } from '@/lib/content';
+import { prisma } from '@/lib/db';
 
-export interface QuizPurchase {
-  id: string;
-  email: string;
-  slug: string;
+export async function hasPurchasedQuiz(userId: string | null, slug: string): Promise<boolean> {
+  if (!userId) return false;
+  
+  const purchase = await prisma!.purchase.findFirst({
+    where: {
+      userId,
+      type: 'quiz',
+      itemId: slug
+    }
+  });
+  
+  return !!purchase;
+}
+
+export async function recordPurchase({
+  userId,
+  sessionId,
+  type,
+  itemId,
+  itemTitle,
+  basePrice,
+  pricePaid,
+  discountApplied = 0,
+  paymentMethod,
+  stripePaymentId,
+  metadata
+}: {
+  userId?: string;
+  sessionId?: string;
+  type: 'quiz' | 'article';
+  itemId: string;
+  itemTitle: string;
+  basePrice: number;
   pricePaid: number;
-  purchasedAt: Date;
+  discountApplied?: number;
+  paymentMethod?: string;
+  stripePaymentId?: string;
+  metadata?: any;
+}) {
+  return await prisma!.purchase.create({
+    data: {
+      userId,
+      sessionId,
+      type,
+      itemId,
+      itemTitle,
+      basePrice,
+      pricePaid,
+      discountApplied,
+      paymentMethod,
+      stripePaymentId,
+      metadata: metadata ? JSON.stringify(metadata) : null
+    }
+  });
 }
 
-const quizPurchases: QuizPurchase[] = [];
-
-function genId() {
-  return Math.random().toString(36).slice(2, 10);
-}
-
-export function hasPurchasedQuiz(email: string, slug: string): boolean {
-  if (!email) return false;
-  return quizPurchases.some(p => p.email === email && p.slug === slug);
-}
-
-export function recordQuizPurchase(email: string, slug: string, pricePaid: number): QuizPurchase {
-  const purchase: QuizPurchase = {
-    id: genId(),
-    email,
-    slug,
-    pricePaid,
-    purchasedAt: new Date()
-  };
-  quizPurchases.push(purchase);
-  return purchase;
-}
-
-export function getQuizAccess(email: string | null | undefined, slug: string) {
+export async function getQuizAccess(userId: string | null | undefined, slug: string) {
   const quiz = loadQuizBySlug(slug);
   if (!quiz) return { exists: false } as const;
 
@@ -53,9 +79,8 @@ export function getQuizAccess(email: string | null | undefined, slug: string) {
     };
   }
 
-  const userEmail = email || undefined;
-  const purchased = userEmail ? hasPurchasedQuiz(userEmail, slug) : false;
-  const isSubscriber = userEmail ? isUserPremium(userEmail) : false;
+  const purchased = userId ? await hasPurchasedQuiz(userId, slug) : false;
+  const isSubscriber = userId ? await isUserPremium(userId) : false;
 
   if (purchased) {
     return {
@@ -70,8 +95,8 @@ export function getQuizAccess(email: string | null | undefined, slug: string) {
   }
 
   let finalPrice = basePrice;
-  if (userEmail && isSubscriber) {
-    const subscriberPrice = getQuizPriceForSubscriber(userEmail, basePrice);
+  if (userId && isSubscriber) {
+    const subscriberPrice = await getQuizPriceForSubscriber(userId, basePrice);
     if (subscriberPrice !== null) {
       finalPrice = subscriberPrice;
     }
@@ -88,7 +113,7 @@ export function getQuizAccess(email: string | null | undefined, slug: string) {
   };
 }
 
-export function purchaseQuiz(email: string, slug: string) {
+export async function purchaseQuiz(userId: string, slug: string, sessionId?: string) {
   const quiz = loadQuizBySlug(slug);
   if (!quiz) return { ok: false, error: 'Quiz not found' } as const;
 
@@ -96,34 +121,47 @@ export function purchaseQuiz(email: string, slug: string) {
   const isPaid = !!quiz.isPaid && basePrice > 0;
 
   // Already purchased
-  if (hasPurchasedQuiz(email, slug)) {
-    return { ok: true, purchase: recordQuizPurchase(email, slug, 0) } as const;
+  if (await hasPurchasedQuiz(userId, slug)) {
+    const existingPurchase = await prisma!.purchase.findFirst({
+      where: { userId, type: 'quiz', itemId: slug }
+    });
+    return { ok: true, purchase: existingPurchase } as const;
   }
 
   // Compute price considering subscription
   let finalPrice = basePrice;
-  const subscriberPrice = getQuizPriceForSubscriber(email, basePrice);
+  let paymentMethod = 'free';
+  const subscriberPrice = await getQuizPriceForSubscriber(userId, basePrice);
+  
   if (subscriberPrice !== null) {
     finalPrice = subscriberPrice;
+    
+    // Track discounted quota usage only when a discounted (non-free) purchase happens
+    if (subscriberPrice > 0 && subscriberPrice < basePrice) {
+      await markDiscountedQuizUsed(userId);
+      paymentMethod = 'subscription';
+    }
+    
+    // Track free quiz allowance usage when a paid quiz becomes free for a subscriber
+    if (isPaid && finalPrice === 0 && await canUseFreeQuiz(userId, basePrice)) {
+      await markFreeQuizUsed(userId);
+      paymentMethod = 'subscription';
+    }
   }
 
-  // Track discounted quota usage only when a discounted (non-free) purchase happens
-  if (subscriberPrice !== null && subscriberPrice > 0 && subscriberPrice < basePrice) {
-    markDiscountedQuizUsed(email);
-  }
-
-  // Track free quiz allowance usage when a paid quiz becomes free for a subscriber
-  if (isPaid && finalPrice === 0 && canUseFreeQuiz(email, basePrice)) {
-    markFreeQuizUsed(email);
-  }
-
-  // Free (shouldn't happen for paid quizzes unless plan grants free access), but support it
-  if (!isPaid || finalPrice === 0) {
-    const p = recordQuizPurchase(email, slug, 0);
-    return { ok: true, purchase: p } as const;
-  }
-
-  // Mock payment success and record purchase
-  const purchase = recordQuizPurchase(email, slug, finalPrice);
+  // Record purchase
+  const purchase = await recordPurchase({
+    userId,
+    sessionId,
+    type: 'quiz',
+    itemId: slug,
+    itemTitle: quiz.title,
+    basePrice,
+    pricePaid: finalPrice,
+    discountApplied: basePrice - finalPrice,
+    paymentMethod,
+    metadata: { quizSlug: slug }
+  });
+  
   return { ok: true, purchase } as const;
 }

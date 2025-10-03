@@ -24,7 +24,7 @@ interface Message {
 export default function ChatSessionPage() {
   const params = useParams();
   const searchParams = useSearchParams();
-  const sessionId = params.sessionId as string;
+  const sessionId = (params?.sessionId as string) || '';
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -35,10 +35,10 @@ export default function ChatSessionPage() {
   const MAX_QUESTIONS = 6;
 
   // Read quiz context (optional) from query params
-  const quizId = searchParams.get('quizId') || undefined;
-  const band = searchParams.get('band') || undefined;
-  const score = searchParams.get('score') || undefined;
-  const maxScore = searchParams.get('maxScore') || undefined;
+  const quizId = (searchParams?.get('quizId') as string) || '';
+  const band = (searchParams?.get('band') as string) || '';
+  const score = (searchParams?.get('score') as string) || '';
+  const maxScore = (searchParams?.get('maxScore') as string) || '';
 
   // Build a lightweight context string for analytics
   const context = useMemo(() => {

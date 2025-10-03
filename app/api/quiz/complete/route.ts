@@ -14,13 +14,27 @@ export async function POST(request: NextRequest) {
     if (body?.sessionId && body?.quizId) {
       const sessionId = String(body.sessionId);
       const quizId = String(body.quizId);
-      const score = typeof body.score === 'number' ? body.score : 0;
-      const maxScore = Array.isArray(body.responses)
-        ? body.responses.filter((r: any) => r?.questionType === 'scale').length * 5 || 100
-        : 100;
-      const band = getBandForScore(score, maxScore);
 
-      // Store a run minimally for exports/reports
+      // Prefer structured analysis when responses are provided
+      let analysis: any | null = null;
+      if (Array.isArray(body.responses) && body.responses.length > 0) {
+        try {
+          analysis = await analyzeQuizResponses(quizId, body.responses);
+        } catch (e) {
+          // Continue with fallback banding
+          analysis = null;
+        }
+      }
+
+      const score = typeof body.score === 'number'
+        ? body.score
+        : (analysis?.score ?? 0);
+      const maxScore = Array.isArray(body.responses)
+        ? body.responses.filter((r: any) => r?.questionType === 'scale' || r?.questionType === 'likert').length * 5 || 100
+        : 100;
+      const band = analysis?.band ? { label: analysis.band } : getBandForScore(score, maxScore);
+
+      // Store a run with analysis summary for exports/reports
       const created = await safeDbOperation(
         () => prisma!.quizRun.create({
           data: {
@@ -28,6 +42,7 @@ export async function POST(request: NextRequest) {
             quizSlug: quizId,
             total: score,
             bandLabel: band?.label || 'Reported',
+            metadata: analysis ? JSON.stringify({ analysis }) : undefined,
             answers: Array.isArray(body.responses)
               ? {
                   create: body.responses.map((r: any) => ({
@@ -43,9 +58,9 @@ export async function POST(request: NextRequest) {
       );
 
       if (!created) {
-        return NextResponse.json({ ok: true, id: 'mock-id', createdAt: new Date() });
+        return NextResponse.json({ ok: true, id: 'mock-id', createdAt: new Date(), analysis: analysis || undefined });
       }
-      return NextResponse.json({ ok: true, id: created.id, createdAt: created.createdAt });
+      return NextResponse.json({ ok: true, id: created.id, createdAt: created.createdAt, analysis: analysis || undefined });
     }
 
     // Validate required fields

@@ -1,4 +1,5 @@
 import { loadAllQuizzes } from '@/lib/content';
+import AdSlot from '@/components/ads/AdSlot';
 import type { Metadata } from 'next';
 import QuizzesListClient from '@/components/quizzes/QuizzesListClient';
 
@@ -7,7 +8,7 @@ export const revalidate = 600; // Rebuild every 10 minutes
 export const metadata: Metadata = {
   title: 'Quizzes | MyBeing',
   description: 'Research-backed self-discovery assessments. No right/wrong answers — designed for pattern recognition and personal insight.',
-  alternates: { canonical: '/quizzes' },
+  alternates: { canonical: '/quizzes', languages: { 'en-IN': '/quizzes', 'en-US': '/quizzes', 'x-default': '/quizzes' } },
   openGraph: { 
     title: 'MyBeing Quizzes', 
     description: 'Assessments for insight, not judgment.', 
@@ -44,6 +45,7 @@ export default function QuizzesPage() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbsJsonLd) }} />
       <QuizzesListClient quizzes={quizzes} />
+      {/* No ads on quiz listing - keeping experience clean */}
     </>
   );
 }

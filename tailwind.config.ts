@@ -67,32 +67,40 @@ const config: Config = {
   				foreground: '#ffffff'
   			},
   			border: 'rgb(var(--border))',
-  			input: 'rgb(var(--input))',
   			ring: 'rgb(var(--ring))',
   			background: 'rgb(var(--background))',
   			foreground: 'rgb(var(--foreground))'
   		},
   		fontFamily: {
-  			sans: [
-  				"var(--font-space-grotesk)",
-  				'ui-sans-serif',
-  				'system-ui',
-  				'sans-serif'
-  			],
-  			display: [
-  				"var(--font-unbounded)",
-  				'ui-sans-serif',
-  				'system-ui',
-  				'sans-serif'
-  			],
-  			mono: [
-  				'ui-monospace',
-  				'SF Mono',
-  				'Cascadia Code',
-  				'Roboto Mono',
-  				'monospace'
-  			]
-  		},
+			sans: [
+				"var(--font-space-grotesk)",
+				'Inter',
+				'ui-sans-serif',
+				'system-ui',
+				'sans-serif'
+			],
+			display: [
+				"var(--font-unbounded)",
+				'Playfair Display',
+				'ui-sans-serif',
+				'system-ui',
+				'sans-serif'
+			],
+			serif: [
+				'Playfair Display',
+				'Georgia',
+				'Times New Roman',
+				'serif'
+			],
+			mono: [
+				'JetBrains Mono',
+				'ui-monospace',
+				'SF Mono',
+				'Cascadia Code',
+				'Roboto Mono',
+				'monospace'
+			]
+		},
   		fontSize: {
   			xs: [
   				'0.75rem',

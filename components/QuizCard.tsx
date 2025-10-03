@@ -9,11 +9,13 @@ type Props = {
   slug: string;
   title: string;
   description: string;
+  benefits?: string[];
+  requirements?: string[];
 };
 
 const quizIcons = ['🧠', '🎯', '💭', '🔍', '⚡', '🌟', '🎨', '🔮'];
 
-export default function QuizCard({ slug, title, description }: Props) {
+export default function QuizCard({ slug, title, description, benefits, requirements }: Props) {
   const randomIcon = quizIcons[Math.floor(Math.random() * quizIcons.length)];
   
   return (
@@ -51,6 +53,30 @@ export default function QuizCard({ slug, title, description }: Props) {
             <p className="text-muted-foreground leading-relaxed mb-6 flex-1 line-clamp-3">
               {description}
             </p>
+            {(!!benefits?.length || !!requirements?.length) && (
+              <div className="mb-5 space-y-3">
+                {benefits?.length ? (
+                  <div>
+                    <div className="text-xs font-semibold text-slate-600 mb-1">What you'll get</div>
+                    <ul className="text-sm text-slate-600 space-y-1 list-disc pl-4">
+                      {benefits.slice(0, 2).map((b, i) => (
+                        <li key={i} className="line-clamp-1">{b}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+                {requirements?.length ? (
+                  <div>
+                    <div className="text-xs font-semibold text-slate-600 mb-1">What you need</div>
+                    <ul className="text-sm text-slate-600 space-y-1 list-disc pl-4">
+                      {requirements.slice(0, 1).map((r, i) => (
+                        <li key={i} className="line-clamp-1">{r}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+              </div>
+            )}
             
             <div className="space-y-4">
               <div className="flex items-center justify-between text-sm text-muted-foreground">

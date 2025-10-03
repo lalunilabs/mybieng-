@@ -8,17 +8,17 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-    const email = session?.user?.email?.toString() || null;
+    const userId = session?.user ? (session.user as any).id : null;
 
-    if (!email) {
-      return NextResponse.json({ isPremium: false });
+    if (!userId) {
+      return NextResponse.json({ isPremium: false, stats: null });
     }
 
-    const isPremium = isUserPremium(email);
-    const stats = getSubscriptionStats(email);
+    const isPremium = await isUserPremium(userId);
+    const stats = await getSubscriptionStats(userId);
     return NextResponse.json({ isPremium, stats });
   } catch (error) {
     console.error('Subscription API error:', error);
-    return NextResponse.json({ isPremium: false });
+    return NextResponse.json({ isPremium: false, stats: null });
   }
 }

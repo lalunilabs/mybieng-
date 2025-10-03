@@ -7,6 +7,7 @@ import { Input } from '@/components/shadcn/input';
 import { Button } from '@/components/ui/Button';
 
 export default function Footer() {
+  const year = new Date().getFullYear();
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
@@ -125,9 +126,10 @@ export default function Footer() {
             <h4 className="font-semibold text-white mb-6 text-lg">Support</h4>
             <ul className="space-y-3">
               <li><Link href="/help" className="text-gray-300 hover:text-purple-300 text-sm transition-colors">Help Center</Link></li>
-              <li><Link href="/privacy" className="text-gray-300 hover:text-purple-300 text-sm transition-colors">Privacy Policy</Link></li>
+              <li><Link href="/privacy-policy" className="text-gray-300 hover:text-purple-300 text-sm transition-colors">Privacy Policy</Link></li>
               <li><Link href="/terms" className="text-gray-300 hover:text-purple-300 text-sm transition-colors">Terms of Service</Link></li>
-              <li><Link href="/cookies" className="text-gray-300 hover:text-purple-300 text-sm transition-colors">Cookie Policy</Link></li>
+              <li><Link href="/cookie-policy" className="text-gray-300 hover:text-purple-300 text-sm transition-colors">Cookie Policy</Link></li>
+              <li><a href="#" className="termly-display-preferences text-gray-300 hover:text-purple-300 text-sm transition-colors">Consent Preferences</a></li>
             </ul>
           </div>
         </div>
@@ -165,7 +167,7 @@ export default function Footer() {
         <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center">
           <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-6">
             <p className="text-gray-400 text-sm">
-              © 2024 MyBeing Platform. All rights reserved.
+              © {year} MyBeing. All rights reserved.
             </p>
             <p className="text-gray-400 text-sm">
               Developed by Dr. Niharika, MBBS - Medical Doctor & Behavioral Research Specialist

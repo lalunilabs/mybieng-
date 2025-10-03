@@ -18,10 +18,47 @@ export default function SignUpPage() {
     confirmPassword: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle signup logic here
-    console.log('Signup form submitted:', formData);
+    setLoading(true);
+    setError('');
+
+    // Validate passwords match
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Redirect to login or dashboard
+        window.location.href = '/login?message=Account created successfully';
+      } else {
+        setError(data.error || 'Failed to create account');
+      }
+    } catch (error) {
+      setError('Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -128,6 +165,13 @@ export default function SignUpPage() {
                   <p className="text-gray-600">Start your journey of self-discovery</p>
                 </div>
 
+                {/* Error Display */}
+                {error && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                    <p className="text-red-700 text-sm">{error}</p>
+                  </div>
+                )}
+
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {/* Name Field */}
@@ -217,8 +261,12 @@ export default function SignUpPage() {
                   </div>
 
                   {/* Submit Button */}
-                  <Button type="submit" className="w-full h-12 bg-purple-600 hover:bg-purple-700 text-white font-semibold text-lg rounded-lg">
-                    Create Account
+                  <Button 
+                    type="submit" 
+                    disabled={loading}
+                    className="w-full h-12 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white font-semibold text-lg rounded-lg"
+                  >
+                    {loading ? 'Creating Account...' : 'Create Account'}
                   </Button>
                 </form>
 

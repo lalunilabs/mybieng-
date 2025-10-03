@@ -12,8 +12,10 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   if (!isAdminRequest(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const body = (await req.json().catch(() => null)) as Quiz | null;
-  if (!body || !body.slug || !body.title || !Array.isArray(body.questions) || !Array.isArray(body.bands)) {
-    return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
+  const hasBands = Array.isArray((body as any)?.bands);
+  const hasResultType = typeof (body as any)?.resultType === 'string' && ((body as any)?.resultType || '').length > 0;
+  if (!body || !body.slug || !body.title || !Array.isArray((body as any).questions) || (!hasBands && !hasResultType)) {
+    return NextResponse.json({ error: 'Invalid payload: provide numeric bands or a resultType' }, { status: 400 });
   }
   try {
     saveQuiz(body);

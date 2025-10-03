@@ -46,11 +46,11 @@ export function ReadingProgress({ content, showTimeEstimate = true }: ReadingPro
   };
 
   const getMotivationalMessage = () => {
-    if (progress < 25) return "Just getting started!";
-    if (progress < 50) return "Keep going, you're doing great!";
-    if (progress < 75) return "Almost there!";
-    if (progress < 95) return "Just a bit more!";
-    return "Well done! 🎉";
+    if (progress < 25) return "Just getting started";
+    if (progress < 50) return "Good momentum—keep going";
+    if (progress < 75) return "You're past the halfway point";
+    if (progress < 95) return "Final section coming up";
+    return "Well done";
   };
 
   return (

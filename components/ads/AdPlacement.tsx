@@ -5,7 +5,7 @@ import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface AdPlacementProps {
-  position: 'article-sidebar' | 'article-inline' | 'quiz-result' | 'home-subtle' | 'between-content';
+  position: 'article-sidebar' | 'quiz-result' | 'home-subtle';
   className?: string;
   adId: string;
 }
@@ -31,13 +31,9 @@ export function AdPlacement({ position, className = '', adId }: AdPlacementProps
       case 'home-subtle':
         return 'max-w-xs mx-auto bg-gradient-to-br from-violet-50 to-purple-50 rounded-2xl p-4 border border-violet-100/50 shadow-sm';
       case 'article-sidebar':
-        return 'sticky top-24 bg-white rounded-xl p-4 border border-gray-100 shadow-sm';
-      case 'article-inline':
-        return 'my-12 mx-auto max-w-2xl bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-6 border border-indigo-100/50';
+        return 'sticky top-24 bg-white rounded-xl p-4 border border-gray-100 shadow-sm w-80 max-w-sm';
       case 'quiz-result':
         return 'mt-8 bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-100/50';
-      case 'between-content':
-        return 'my-16 mx-auto max-w-4xl bg-gradient-to-r from-slate-50 to-gray-50 rounded-2xl p-6 border border-gray-100';
       default:
         return '';
     }
@@ -83,7 +79,7 @@ export function AdPlacement({ position, className = '', adId }: AdPlacementProps
   );
 }
 
-// Ad configuration for different pages - NO ADS ON HOMEPAGE
+// Ad configuration for different pages - NO ADS ON HOMEPAGE, SIDEBAR ONLY
 export const AD_PLACEMENTS = {
   home: {
     maxAds: 0, // NO ADS on homepage/landing
@@ -91,9 +87,9 @@ export const AD_PLACEMENTS = {
     showAfterScroll: 100, // Never show
   },
   article: {
-    maxAds: 2, // Reduced from 3
-    positions: ['article-sidebar', 'article-inline'] as const,
-    showAfterRead: 50, // Show after 50% read to not annoy readers
+    maxAds: 1, // Only sidebar ads
+    positions: ['article-sidebar'] as const,
+    showAfterRead: 30, // Show after 30% read to not annoy readers
   },
   quiz: {
     maxAds: 1,
@@ -101,9 +97,9 @@ export const AD_PLACEMENTS = {
     showOnCompletion: true,
   },
   general: {
-    maxAds: 1, // Very minimal
-    positions: ['between-content'] as const,
-    spacing: 'generous', // Lots of space between ads
+    maxAds: 0, // No general ads to avoid middle placement
+    positions: [] as const,
+    spacing: 'generous',
   },
 };
 

@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DatabaseService } from '@/lib/database';
 import { sendNewsletterWelcome, sendNewsletterConfirm } from '@/lib/email';
-
-// Remove instance creation since methods are now static
+import { ipRateLimit } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting - 5 newsletter signups per minute per IP
+    await ipRateLimit.check(request, 5);
+
     const body = await request.json();
-    const { email } = body;
+    const { email, source = 'website' } = body;
 
     // Input validation
     if (!email || typeof email !== 'string') {
@@ -17,17 +19,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // Enhanced email format validation
+    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
     if (!emailRegex.test(email)) {
       return NextResponse.json(
-        { error: 'Invalid email format' },
+        { error: 'Please enter a valid email address' },
         { status: 400 }
       );
     }
 
     // Sanitize email
     const sanitizedEmail = email.toLowerCase().trim();
+
+    // Block common disposable email domains
+    const disposableDomains = ['tempmail.org', '10minutemail.com', 'guerrillamail.com', 'mailinator.com'];
+    const emailDomain = sanitizedEmail.split('@')[1];
+    if (disposableDomains.includes(emailDomain)) {
+      return NextResponse.json(
+        { error: 'Please use a permanent email address' },
+        { status: 400 }
+      );
+    }
 
     const DOUBLE_OPT_IN = (process.env.NEWSLETTER_DOUBLE_OPT_IN || '').toLowerCase() === 'true';
 
@@ -86,9 +98,18 @@ export async function POST(request: NextRequest) {
       { message: 'Successfully subscribed!', confirmed: true },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
+    // Handle rate limiting errors
+    if (error.message?.includes('Rate limit exceeded')) {
+      return NextResponse.json(
+        { error: 'Too many subscription attempts. Please try again later.' },
+        { status: 429 }
+      );
+    }
+    
+    console.error('Newsletter subscription error:', error);
     return NextResponse.json(
-      { error: 'Failed to subscribe' },
+      { error: 'Failed to subscribe. Please try again.' },
       { status: 500 }
     );
   }

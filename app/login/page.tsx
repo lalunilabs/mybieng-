@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { signIn, getSession } from 'next-auth/react';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock, Brain } from 'lucide-react';
 import { Label } from '@/components/ui/Label';
@@ -10,15 +12,42 @@ import { Button } from '@/components/ui/Button';
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
+  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log('Login form submitted:', formData);
+    setLoading(true);
+    setError('');
+
+    try {
+      const result = await signIn('credentials', {
+        email: formData.email,
+        password: formData.password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setError('Invalid credentials. Please try again.');
+      } else {
+        // Check if session was created
+        const session = await getSession();
+        if (session) {
+          router.push('/dashboard');
+        } else {
+          setError('Authentication failed. Please try again.');
+        }
+      }
+    } catch (error) {
+      setError('Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,6 +79,16 @@ export default function LoginPage() {
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Error state */}
+              {error && (
+                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-red-500 rounded-full flex-shrink-0"></div>
+                    {error}
+                  </div>
+                </div>
+              )}
+
               {/* Email Field */}
               <div>
                 <Label htmlFor="email">Email Address</Label>
@@ -101,8 +140,12 @@ export default function LoginPage() {
               </div>
 
               {/* Submit Button */}
-              <Button type="submit" className="w-full h-12 bg-purple-600 hover:bg-purple-700 text-white font-semibold text-lg rounded-lg">
-                Sign In
+              <Button 
+                type="submit" 
+                disabled={loading || !formData.email || !formData.password}
+                className="w-full h-12 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white font-semibold text-lg rounded-lg"
+              >
+                {loading ? 'Signing in...' : 'Sign In'}
               </Button>
             </form>
 

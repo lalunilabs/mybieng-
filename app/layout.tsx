@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import './globals.css';
 import '../styles/colors.css';
-import { Unbounded, Space_Grotesk } from 'next/font/google';
 import Providers from '@/components/Providers';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 // import { EngagementProvider } from '@/components/providers/EngagementProvider';
@@ -12,55 +11,78 @@ import Footer from '@/components/Footer';
 import { PageTransitionWrapper } from '@/components/layout/PageTransitionWrapper';
 import { Toaster } from 'sonner';
 import GoogleAnalytics from '@/components/analytics/GoogleAnalytics';
-
-const unbounded = Unbounded({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800', '900'],
-  variable: '--font-unbounded',
-  display: 'swap',
-});
-const spaceGrotesk = Space_Grotesk({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '700'],
-  variable: '--font-space-grotesk',
-  display: 'swap',
-});
+import { OrganizationSchema } from '@/components/seo/OrganizationSchema';
+import { CookieConsent } from '@/components/legal/CookieConsent';
+import { CookiePreferencesButton } from '@/components/legal/CookiePreferencesButton';
+import { WorldClassScroll } from '@/components/ui/WorldClassScroll';
 
 const BASE_DOMAIN = process.env.NEXT_PUBLIC_DOMAIN || 'https://mybeing.in';
+const GOOGLE_FONTS_STYLESHEET =
+  'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Unbounded:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap&text=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,!?:;()[]{}"\'-–—…';
 
 export const metadata: Metadata = {
-  title: {
-    default: 'MyBeing — Understand Your Patterns, Improve Your Being',
-    template: '%s | MyBeing',
-  },
-  description: 'Discover yourself through scientifically-backed quizzes and personalized insights. Track your growth, explore patterns, and unlock your potential with AI-powered guidance.',
-  keywords: ['psychology', 'self-discovery', 'personality assessment', 'cognitive patterns', 'behavioral analysis', 'Dr N', 'research-backed', 'evidence-based'],
-  authors: [{ name: 'Dr N', url: `${BASE_DOMAIN}/about` }],
-  creator: 'Dr N',
-  publisher: 'MyBeing',
   metadataBase: new URL(BASE_DOMAIN),
+  applicationName: 'MyBeing by Meum Labs',
+  category: 'Self-Discovery & Psychology',
+  title: {
+    default: 'MyBeing by Meum Labs — Your Personal Health Environment',
+    template: '%s | MyBeing by Meum Labs',
+  },
+  description:
+    'MyBeing by Meum Labs: Transform your self-understanding with your Personal Health Environment. Take research-backed quizzes, discover behavioral patterns, and unlock personalized insights for authentic growth.',
+  keywords: [
+    'MyBeing',
+    'MyBeing by Meum Labs',
+    'Meum Labs',
+    'Personal Health Environment',
+    'self-discovery',
+    'behavioral patterns',
+    'psychology quizzes',
+    'cognitive assessment',
+    'personal growth',
+    'self-awareness tools',
+    'research-backed insights',
+    'mental health tracking',
+    'behavioral analysis',
+    'wellbeing insights',
+    'MyBeing',
+    'Dr N',
+    'longitudinal check-ins',
+  ],
+  authors: [{ name: 'Dr N', url: `${BASE_DOMAIN}/about` }],
+  publisher: 'Meum Labs',
+  alternates: {
+    canonical: BASE_DOMAIN,
+    languages: {
+      'en-IN': `${BASE_DOMAIN}/`,
+      'en-US': `${BASE_DOMAIN}/`,
+      'x-default': `${BASE_DOMAIN}/`,
+    },
+  },
   openGraph: {
-    title: 'MyBeing by Dr N - Evidence-Based Self-Discovery',
-    description: 'Discover patterns in your thoughts, behaviors, and personal growth through scientifically-backed psychological assessments.',
+    title: 'MyBeing by Meum Labs - Your Personal Health Environment',
+    description: 'MyBeing by Meum Labs: Transform your self-understanding with research-backed quizzes, behavioral pattern analysis, and AI-powered insights for authentic personal growth.',
     url: BASE_DOMAIN,
-    siteName: 'MyBeing',
+    siteName: 'MyBeing by Meum Labs',
     images: [
       {
         url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'MyBeing - Self-Discovery Platform by Dr N',
+        alt: 'MyBeing - Your Personal Health Environment',
       },
     ],
     locale: 'en_IN',
+    alternateLocale: ['en_US'],
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'MyBeing by Dr N - Evidence-Based Self-Discovery',
-    description: 'Discover patterns in your thoughts, behaviors, and personal growth through scientifically-backed psychological assessments.',
+    title: 'MyBeing - Your Personal Health Environment',
+    description: 'Take control of your health, wellbeing, and fitness data. Research-backed content, personalized quizzes, and AI insights for growth.',
     images: ['/og-image.jpg'],
     creator: '@mybeing',
+    site: '@mybeing',
   },
   robots: {
     index: true,
@@ -105,21 +127,60 @@ export default function RootLayout({
   const orgJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'MyBeing',
+    name: 'Meum Labs',
+    alternateName: ['MyBeing', 'MyBeing by Meum Labs'],
     url: base,
     logo: `${base}/apple-touch-icon.png`,
+    description: 'Meum Labs creates MyBeing, a Personal Health Environment platform for self-discovery and behavioral pattern analysis.',
+    founder: {
+      '@type': 'Person',
+      name: 'Dr N',
+      jobTitle: 'Founder & Research Director'
+    },
+    knowsAbout: [
+      'Personal Health Environment',
+      'Behavioral Psychology', 
+      'Cognitive Dissonance',
+      'Self-Discovery',
+      'Mental Health Assessment'
+    ]
+  };
+  const knowledgeGraphJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: 'Dr N',
+    url: `${base}/about`,
+    jobTitle: 'Founder & Research Director, Meum Labs',
+    sameAs: [
+      'https://www.linkedin.com/in/mybeing',
+      'https://www.instagram.com/mybeing',
+      `${base}/research`,
+    ],
+    worksFor: {
+      '@type': 'Organization',
+      name: 'Meum Labs',
+      alternateName: 'MyBeing by Meum Labs',
+      url: base,
+    },
   };
   return (
-    <html lang="en" className={`${spaceGrotesk.variable} ${unbounded.variable}`}>
+    <html lang="en" className="font-sans">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="stylesheet" href={GOOGLE_FONTS_STYLESHEET} />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
         <meta name="theme-color" content="#6366f1" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
         {/* Canonical domain: mybeing.in (set NEXT_PUBLIC_DOMAIN to override in prod) */}
+        {/* Google AdSense Auto Ads */}
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1282817991856264"
+          crossOrigin="anonymous"
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
@@ -128,30 +189,45 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
         />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(knowledgeGraphJsonLd) }}
+        />
+        
+        {/* Termly Cookie Consent & Resource Blocker */}
+        <script 
+          src="https://app.termly.io/resource-blocker/036d8f5a-3210-4d73-b5ef-f78efbae5c0b?autoBlock=on"
+          async
+        />
       </head>
       <body className="antialiased">
         <ErrorBoundary>
           <Providers>
-            <div className="min-h-screen flex flex-col">
-              {/* Skip to content link for accessibility */}
-              <a
-                href="#main-content"
-                className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[1000] focus:bg-primary focus:text-white focus:px-3 focus:py-2 focus:rounded"
-              >
-                Skip to content
-              </a>
-              <NavbarWrapper />
-              <main id="main-content" className="flex-1 pt-16" role="main">
-                <PageTransitionWrapper>{children}</PageTransitionWrapper>
-              </main>
-              <Footer />
-            </div>
+            <PageTransitionWrapper>
+              <div className="min-h-screen flex flex-col">
+                {/* Skip to content link for accessibility */}
+                <a
+                  href="#main-content"
+                  className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[1000] focus:bg-primary focus:text-white focus:px-3 focus:py-2 focus:rounded"
+                >
+                  Skip to content
+                </a>
+                <NavbarWrapper />
+                <main id="main-content" className="flex-1 pt-16" role="main">
+                  {children}
+                </main>
+                <Footer />
+              </div>
+            </PageTransitionWrapper>
+            <Toaster position="top-right" />
+            <CookieConsent />
+            <CookiePreferencesButton />
+            <WorldClassScroll />
+            <Suspense fallback={null}>
+              <GoogleAnalytics />
+            </Suspense>
           </Providers>
         </ErrorBoundary>
-        <Toaster richColors position="top-right" />
-        <Suspense fallback={null}>
-          <GoogleAnalytics />
-        </Suspense>
       </body>
     </html>
   );

@@ -16,7 +16,7 @@ type Props = {
 };
 
 export default function QuizEditor({ value, onChange, onSave, onDelete, onUploadImage, onUploadQuestionImage, onGenerateMeta, onValidateMeta }: Props) {
-  const [tab, setTab] = useState<'overview' | 'questions' | 'bands' | 'seo' | 'schedule' | 'research' | 'raw'>('overview');
+  const [tab, setTab] = useState<'overview' | 'questions' | 'bands' | 'results' | 'seo' | 'schedule' | 'research' | 'raw'>('overview');
   const [draft, setDraft] = useState<Quiz>(value || {});
   const [scheduleInput, setScheduleInput] = useState<string>('');
   const [saving, setSaving] = useState(false);
@@ -175,6 +175,56 @@ export default function QuizEditor({ value, onChange, onSave, onDelete, onUpload
     </div>
   );
 
+  const renderResults = () => {
+    const interpStr = JSON.stringify(draft.resultInterpretation || { single: '', dual: '', multi: '' }, null, 2);
+    const profilesStr = JSON.stringify(draft.resultProfiles || {}, null, 2);
+    const onInterpBlur = (val: string) => {
+      try {
+        const parsed = JSON.parse(val);
+        update({ resultInterpretation: parsed });
+        setInfo('Updated result interpretation.');
+      } catch { setError('Invalid JSON for resultInterpretation'); }
+    };
+    const onProfilesBlur = (val: string) => {
+      try {
+        const parsed = JSON.parse(val);
+        update({ resultProfiles: parsed });
+        setInfo('Updated result profiles.');
+      } catch { setError('Invalid JSON for resultProfiles'); }
+    };
+    return (
+      <div className="space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium">Result Type</label>
+            <input className="mt-1 w-full border rounded px-2 py-1" placeholder="e.g., numeric-bands, motivation-language"
+              value={draft.resultType || ''} onChange={e => update({ resultType: e.target.value })} />
+            <div className="text-xs text-gray-500 mt-1">Use "motivation-language" for categorical/profile-based results. Leave empty to default to numeric bands.</div>
+          </div>
+        </div>
+        <div>
+          <div className="flex items-center justify-between">
+            <label className="block text-sm font-medium">Result Interpretation (JSON)</label>
+          </div>
+          <textarea className="mt-1 w-full border rounded px-2 py-1 font-mono text-xs" rows={8}
+            defaultValue={interpStr}
+            onBlur={e => onInterpBlur(e.target.value)}
+          />
+        </div>
+        <div>
+          <div className="flex items-center justify-between">
+            <label className="block text-sm font-medium">Result Profiles (JSON)</label>
+          </div>
+          <textarea className="mt-1 w-full border rounded px-2 py-1 font-mono text-xs" rows={12}
+            defaultValue={profilesStr}
+            onBlur={e => onProfilesBlur(e.target.value)}
+          />
+          <div className="text-xs text-gray-500 mt-1">Profiles keyed by category (e.g., architect, achiever, encourager, connector, visionary).</div>
+        </div>
+      </div>
+    );
+  };
+
   const updateQuestion = (idx: number, q: any) => {
     const arr = Array.isArray(draft.questions) ? [...draft.questions] : [];
     arr[idx] = q; update({ questions: arr });
@@ -232,6 +282,18 @@ export default function QuizEditor({ value, onChange, onSave, onDelete, onUpload
               <div className="mt-2">
                 <label className="block text-sm font-medium">Options (one per line)</label>
                 <textarea className="mt-1 w-full border rounded px-2 py-1" rows={3} value={(q.options || []).join('\n')} onChange={e => updateQuestion(i, { ...q, options: e.target.value.split('\n').map((s)=>s.trim()).filter(Boolean) })} />
+              </div>
+            )}
+            {q.type === 'multiple_choice' && (
+              <div className="mt-2">
+                <label className="block text-sm font-medium">Option Categories (one per line; must match number of options)</label>
+                <textarea
+                  className="mt-1 w-full border rounded px-2 py-1"
+                  rows={3}
+                  value={(q.optionCategories || []).join('\n')}
+                  onChange={e => updateQuestion(i, { ...q, optionCategories: e.target.value.split('\n').map((s)=>s.trim()).filter(Boolean) })}
+                />
+                <div className="text-xs text-gray-500 mt-1">Examples: architect, achiever, encourager, connector, visionary</div>
               </div>
             )}
             {q.type === 'text_input' && (
@@ -455,7 +517,7 @@ export default function QuizEditor({ value, onChange, onSave, onDelete, onUpload
 
       <div className="flex items-center justify-between mb-3">
         <div className="flex flex-wrap gap-2">
-          {(['overview','questions','bands','seo','schedule','research','raw'] as const).map(t => (
+          {(['overview','questions','bands','results','seo','schedule','research','raw'] as const).map(t => (
             <button key={t} onClick={() => setTab(t)} className={`px-3 py-1 rounded-full border ${tab===t?'bg-brand-600 text-white border-brand-600':'bg-white'}`}>{t[0].toUpperCase()+t.slice(1)}</button>
           ))}
         </div>
@@ -469,6 +531,7 @@ export default function QuizEditor({ value, onChange, onSave, onDelete, onUpload
         {tab === 'overview' && renderOverview()}
         {tab === 'questions' && renderQuestions()}
         {tab === 'bands' && renderBands()}
+        {tab === 'results' && renderResults()}
         {tab === 'seo' && renderSEO()}
         {tab === 'schedule' && renderSchedule()}
         {tab === 'research' && renderResearch()}

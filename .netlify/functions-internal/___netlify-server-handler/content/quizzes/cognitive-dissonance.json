@@ -1,0 +1,136 @@
+{
+  "title": "The Mental Tug-of-War: Cognitive Dissonance Assessment",
+  "description": "Explore how you handle contradictions between your values and actions. This research-based assessment identifies patterns in how you resolve mental conflicts and maintain psychological consistency.",
+  "category": "Cognitive Psychology",
+  "estimatedTime": 15,
+  "featured": true,
+  "researchBased": true,
+  "tags": ["cognitive-dissonance", "psychology", "self-awareness", "decision-making"],
+  "createdAt": "2024-01-10T00:00:00Z",
+  "author": "Dr. N",
+  "image": "/images/quizzes/cognitive-dissonance.jpg",
+  "questions": [
+    {
+      "id": "instant_justification_1",
+      "text": "When I make a decision that conflicts with my stated values, I quickly find reasons why it was actually the right choice.",
+      "type": "scale",
+      "scaleMin": 1,
+      "scaleMax": 5,
+      "scaleLabels": {
+        "min": "Never true for me",
+        "max": "Always true for me"
+      },
+      "required": true
+    },
+    {
+      "id": "belief_shift_1",
+      "text": "I notice that my opinions about important topics gradually change to align with my recent actions.",
+      "type": "scale",
+      "scaleMin": 1,
+      "scaleMax": 5,
+      "scaleLabels": {
+        "min": "Never happens",
+        "max": "Happens frequently"
+      },
+      "required": true
+    },
+    {
+      "id": "selective_evidence_1",
+      "text": "When researching a topic, I find myself paying more attention to information that supports what I already believe.",
+      "type": "scale",
+      "scaleMin": 1,
+      "scaleMax": 5,
+      "scaleLabels": {
+        "min": "Rarely notice this",
+        "max": "Very aware of this"
+      },
+      "required": true
+    },
+    {
+      "id": "identity_protection_1",
+      "text": "I feel uncomfortable when someone points out inconsistencies between my actions and my stated beliefs.",
+      "type": "scale",
+      "scaleMin": 1,
+      "scaleMax": 5,
+      "scaleLabels": {
+        "min": "Not uncomfortable",
+        "max": "Very uncomfortable"
+      },
+      "required": true
+    },
+    {
+      "id": "social_reality_1",
+      "text": "I sometimes adjust my expressed opinions to match those of people I respect or want to fit in with.",
+      "type": "scale",
+      "scaleMin": 1,
+      "scaleMax": 5,
+      "scaleLabels": {
+        "min": "Never do this",
+        "max": "Often do this"
+      },
+      "required": true
+    },
+    {
+      "id": "mental_discomfort_1",
+      "text": "I experience mental tension when I hold two conflicting beliefs or when my actions don't match my values.",
+      "type": "scale",
+      "scaleMin": 1,
+      "scaleMax": 5,
+      "scaleLabels": {
+        "min": "No tension felt",
+        "max": "Strong tension"
+      },
+      "required": true
+    },
+    {
+      "id": "excuse_patterns_1",
+      "text": "I catch myself making excuses for behavior that I would criticize in others.",
+      "type": "scale",
+      "scaleMin": 1,
+      "scaleMax": 5,
+      "scaleLabels": {
+        "min": "Never notice this",
+        "max": "Often notice this"
+      },
+      "required": true
+    },
+    {
+      "id": "value_behavior_gap_1",
+      "text": "There are areas where my daily actions don't fully align with my stated values or long-term goals.",
+      "type": "scale",
+      "scaleMin": 1,
+      "scaleMax": 5,
+      "scaleLabels": {
+        "min": "Perfect alignment",
+        "max": "Significant gaps"
+      },
+      "required": true
+    }
+  ],
+  "bands": [
+    {
+      "label": "Low Dissonance",
+      "min": 0,
+      "max": 35,
+      "description": "You experience minimal cognitive dissonance and have developed effective strategies for maintaining consistency between your values and actions.",
+      "advice": "Your low dissonance suggests strong self-awareness and value alignment. Consider how you can use this strength to help others navigate their own internal conflicts.",
+      "color": "#10B981"
+    },
+    {
+      "label": "Moderate Dissonance",
+      "min": 36,
+      "max": 65,
+      "description": "You experience typical levels of cognitive dissonance that most people encounter when navigating complex decisions and social situations.",
+      "advice": "This moderate level is normal and healthy. Focus on developing awareness of when dissonance occurs and practice sitting with the discomfort rather than immediately resolving it.",
+      "color": "#F59E0B"
+    },
+    {
+      "label": "High Dissonance",
+      "min": 66,
+      "max": 100,
+      "description": "You frequently experience significant mental tension from conflicting beliefs or misaligned actions, which may impact your decision-making and well-being.",
+      "advice": "Consider exploring the root causes of these conflicts. Sometimes high dissonance indicates areas where personal growth or value clarification could be beneficial.",
+      "color": "#EF4444"
+    }
+  ]
+}

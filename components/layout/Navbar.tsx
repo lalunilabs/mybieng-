@@ -19,7 +19,7 @@ export function Navbar() {
   // Keep navbar minimal and consistent across pages
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-[9999] bg-white/95 supports-[backdrop-filter]:backdrop-blur-sm border-b border-gray-200/60 shadow-sm">
+    <nav className="fixed top-0 left-0 right-0 z-[9999] bg-white/90 supports-[backdrop-filter]:backdrop-blur-md border-b border-gray-200/70 shadow-sm">
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -30,7 +30,7 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-6">
             <Link href="/" aria-current={isActive('/') ? 'page' : undefined} className={`text-slate-900 hover:text-primary transition-colors font-medium text-sm relative group ${isActive('/') ? 'text-primary' : ''}`}>
               Home
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-purple-400 transition-all duration-300 group-hover:w-full"></span>

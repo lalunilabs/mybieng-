@@ -2,10 +2,10 @@ import React from 'react';
 
 export default function Head() {
   const base = process.env.NEXT_PUBLIC_DOMAIN || 'https://mybeing.in';
-  const title = 'About Dr N | MyBeing';
-  const description = 'MyBeing is a personal platform by Dr N to help you understand your patterns through research-backed content and self-discovery quizzes. No right/wrong answers.';
+  const title = 'About MyBeing | Mission & Research Approach';
+  const description = 'MyBeing is a research-backed platform for self-discovery through articles and pattern-recognition assessments. No right/wrong answers. Founded by Dr N.';
   const url = `${base}/about`;
-  const og = `${base}/api/og?title=${encodeURIComponent('About Dr N')}&subtitle=${encodeURIComponent('Research‑backed self‑discovery platform')}`;
+  const og = `${base}/api/og?title=${encodeURIComponent('About MyBeing')}&subtitle=${encodeURIComponent('Mission • Research • Assessments')}`;
   return (
     <>
       <title>{title}</title>

@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "functions": [
+    {
+      "function": "___netlify-edge-handler-middleware",
+      "name": "Next.js Middleware Handler",
+      "pattern": "^(?:\\/(_next\\/data\\/[^/]{1,}))?\\/admin(?:\\/((?:[^\\/#\\?]+?)(?:\\/(?:[^\\/#\\?]+?))*))?(.json)?[\\/#\\?]?$",
+      "generator": "@netlify/plugin-nextjs@5.13.3"
+    },
+    {
+      "function": "___netlify-edge-handler-middleware",
+      "name": "Next.js Middleware Handler",
+      "pattern": "^(?:\\/(_next\\/data\\/[^/]{1,}))?\\/api\\/admin(?:\\/((?:[^\\/#\\?]+?)(?:\\/(?:[^\\/#\\?]+?))*))?(.json)?[\\/#\\?]?$",
+      "generator": "@netlify/plugin-nextjs@5.13.3"
+    },
+    {
+      "function": "___netlify-edge-handler-middleware",
+      "name": "Next.js Middleware Handler",
+      "pattern": "^(?:\\/(_next\\/data\\/[^/]{1,}))?\\/api\\/analytics(?:\\/((?:[^\\/#\\?]+?)(?:\\/(?:[^\\/#\\?]+?))*))?(.json)?[\\/#\\?]?$",
+      "generator": "@netlify/plugin-nextjs@5.13.3"
+    },
+    {
+      "function": "___netlify-edge-handler-middleware",
+      "name": "Next.js Middleware Handler",
+      "pattern": "^(?:\\/(_next\\/data\\/[^/]{1,}))?\\/api\\/auth(?:\\/((?:[^\\/#\\?]+?)(?:\\/(?:[^\\/#\\?]+?))*))?(.json)?[\\/#\\?]?$",
+      "generator": "@netlify/plugin-nextjs@5.13.3"
+    },
+    {
+      "function": "___netlify-edge-handler-middleware",
+      "name": "Next.js Middleware Handler",
+      "pattern": "^(?:\\/(_next\\/data\\/[^/]{1,}))?\\/api\\/quiz(?:\\/((?:[^\\/#\\?]+?)(?:\\/(?:[^\\/#\\?]+?))*))?(.json)?[\\/#\\?]?$",
+      "generator": "@netlify/plugin-nextjs@5.13.3"
+    },
+    {
+      "function": "___netlify-edge-handler-middleware",
+      "name": "Next.js Middleware Handler",
+      "pattern": "^(?:\\/(_next\\/data\\/[^/]{1,}))?\\/api\\/newsletter(?:\\/((?:[^\\/#\\?]+?)(?:\\/(?:[^\\/#\\?]+?))*))?(.json)?[\\/#\\?]?$",
+      "generator": "@netlify/plugin-nextjs@5.13.3"
+    },
+    {
+      "function": "___netlify-edge-handler-middleware",
+      "name": "Next.js Middleware Handler",
+      "pattern": "^(?:\\/(_next\\/data\\/[^/]{1,}))?\\/api\\/contact(?:\\/((?:[^\\/#\\?]+?)(?:\\/(?:[^\\/#\\?]+?))*))?(.json)?[\\/#\\?]?$",
+      "generator": "@netlify/plugin-nextjs@5.13.3"
+    },
+    {
+      "function": "___netlify-edge-handler-middleware",
+      "name": "Next.js Middleware Handler",
+      "pattern": "^(?:\\/(_next\\/data\\/[^/]{1,}))?(?:\\/((?!_next\\/static|_next\\/image|favicon.ico|robots.txt|sitemap.xml|manifest.json).*))(.json)?[\\/#\\?]?$",
+      "generator": "@netlify/plugin-nextjs@5.13.3"
+    }
+  ]
+}

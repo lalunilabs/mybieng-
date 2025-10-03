@@ -152,7 +152,7 @@ function displayAdminInfo() {
   log('============================', 'magenta');
   log('Admin Login URL: /admin/login', 'white');
   log('Demo Credentials (Development Only):', 'yellow');
-  log('  Email: admin@mybeing.com', 'white');
+  log('  Email: sainiharika227@gmail.com', 'white');
   log('  Password: admin123', 'white');
   log('\nProduction Access:', 'green');
   log('  Use the email specified in OWNER_EMAIL', 'white');

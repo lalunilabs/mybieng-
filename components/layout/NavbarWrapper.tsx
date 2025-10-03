@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense } from 'react';
-import { Navbar } from './Navbar';
+import { OptimizedNavbar } from './OptimizedNavbar';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 function NavbarFallback() {
@@ -25,7 +25,7 @@ export function NavbarWrapper() {
   return (
     <ErrorBoundary fallback={NavbarFallback}>
       <Suspense fallback={<NavbarFallback />}>
-        <Navbar />
+        <OptimizedNavbar />
       </Suspense>
     </ErrorBoundary>
   );

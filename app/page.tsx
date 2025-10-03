@@ -1,4 +1,4 @@
-import MetaLanding from '@/components/landing/MetaLanding';
+import MagazineLanding from '@/components/landing/MagazineLanding';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -29,5 +29,5 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage() {
-  return <MetaLanding />;
+  return <MagazineLanding />;
 }

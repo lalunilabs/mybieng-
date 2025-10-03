@@ -7,7 +7,7 @@ export default function AdminPage() {
   
   const user = {
     name: 'MyBeing Creator',
-    email: process.env.ADMIN_EMAIL || 'creator@mybeing.in'
+    email: process.env.ADMIN_EMAIL || 'sainiharika227@gmail.com'
   };
 
   return (

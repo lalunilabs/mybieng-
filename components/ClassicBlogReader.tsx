@@ -12,6 +12,7 @@ import { trackBlogView, trackBlogLike, trackBlogReadProgress } from '@/lib/analy
 import { trackSubscription } from '@/lib/analytics/gtag';
 import { Blog } from '@/data/blogs';
 import PrimaryCTA from '@/components/ui/PrimaryCTA';
+import FontSizeControl from '@/components/ui/FontSizeControl';
 
 interface ClassicBlogReaderProps {
   blog: Blog;
@@ -272,8 +273,11 @@ export function ClassicBlogReader({ blog }: ClassicBlogReaderProps) {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white article-root">
       <article className="max-w-3xl mx-auto px-6 py-16 sm:py-20">
+        <div className="flex justify-end mb-6">
+          <FontSizeControl />
+        </div>
         {/* Article Header */}
         <header className="mb-16 border-b border-gray-100 pb-12">
           <div className="flex flex-wrap items-center gap-2 mb-8">
