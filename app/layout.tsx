@@ -115,7 +115,7 @@ export const metadata: Metadata = {
     apple: '/apple-touch-icon.png',
   },
   verification: {
-    google: process.env.GOOGLE_SITE_VERIFICATION,
+    google: process.env.GOOGLE_SITE_VERIFICATION || 'mybeing-site-verification',
   },
 };
 
