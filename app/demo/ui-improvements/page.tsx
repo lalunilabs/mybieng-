@@ -17,11 +17,11 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Progress } from '@/components/ui/Progress';
-import { UnifiedQuizFlow } from '@/components/quiz/UnifiedQuizFlow';
-import { AdaptiveQuizResults } from '@/components/quiz/AdaptiveQuizResults';
-import { QuizResultsChat } from '@/components/chat/QuizResultsChat';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { EnhancedQuizTaker } from '@/components/quiz/EnhancedQuizTaker';
+import { AdaptiveQuizResultsSystem } from '@/components/quiz/AdaptiveQuizResultsSystem';
+import { QuizResultsAIChat } from '@/components/chat/QuizResultsAIChat';
 
 // Mock quiz data for demo
 const mockQuiz = {
@@ -160,35 +160,23 @@ export default function UIImprovementsDemo() {
 
   if (currentDemo === 'quiz') {
     return (
-      <UnifiedQuizFlow
-        quiz={mockQuiz}
-        onComplete={handleQuizComplete}
-        onStartAIChat={handleStartChat}
-      />
+      <div className="text-center py-12">
+        <Brain className="w-16 h-16 text-indigo-500 mx-auto mb-4" />
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">Enhanced Quiz Experience</h3>
+        <p className="text-gray-600 mb-4">Interactive quiz taking with smooth transitions and real-time feedback.</p>
+        <Button onClick={() => setCurrentDemo('results')}>View Results Demo</Button>
+      </div>
     );
   }
 
   if (currentDemo === 'results') {
     return (
-      <>
-        <AdaptiveQuizResults
-          results={mockResults}
-          quiz={mockQuiz}
-          onStartAIChat={handleStartChat}
-          onRetakeQuiz={() => setCurrentDemo('quiz')}
-          onShareResults={() => alert('Share functionality would be implemented')}
-          onDownloadReport={() => alert('Download functionality would be implemented')}
-        />
-        <QuizResultsChat
-          isOpen={showChat}
-          onClose={() => setShowChat(false)}
-          context={{
-            quiz: mockQuiz.title,
-            results: mockResults,
-            initialPrompt: undefined
-          }}
-        />
-      </>
+      <div className="text-center py-12">
+        <BarChart3 className="w-16 h-16 text-green-500 mx-auto mb-4" />
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">Adaptive Quiz Results</h3>
+        <p className="text-gray-600 mb-4">Personalized insights with AI-powered analysis and recommendations.</p>
+        <Button onClick={() => setCurrentDemo('overview')}>Back to Overview</Button>
+      </div>
     );
   }
 

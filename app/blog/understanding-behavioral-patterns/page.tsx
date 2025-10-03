@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { MagazineArticleReader } from '@/components/readers/MagazineArticleReader';
+import { EnhancedArticleReader } from '@/components/articles/EnhancedArticleReader';
 
 export const metadata: Metadata = {
   title: 'Understanding Your Daily Behavioral Patterns | MyBeing',
@@ -131,16 +131,14 @@ const suggestedArticles = [
     author: 'Dr. Niharika',
     publishedAt: '2025-09-15T11:45:00.000Z',
     readTime: 9,
-    tags: ['Decision Making', 'Cognitive Psychology', 'Problem Solving'],
     imageUrl: '/images/decision-making.jpg'
   }
 ];
 
 export default function BehavioralPatternsArticle() {
   return (
-    <MagazineArticleReader 
+    <EnhancedArticleReader 
       article={article}
-      suggestedArticles={suggestedArticles}
     />
   );
 }

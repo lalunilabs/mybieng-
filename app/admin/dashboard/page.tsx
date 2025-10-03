@@ -22,13 +22,11 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Progress } from '@/components/ui/Progress';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import ResearchAnalyticsDashboard from '@/components/admin/ResearchAnalyticsDashboard';
-import EnhancedQuizManager from '@/components/admin/EnhancedQuizManager';
-import ArticleManager from '@/components/admin/ArticleManager';
-import StreamlinedQuizCreator from '@/components/admin/StreamlinedQuizCreator';
-import RichBlogEditor from '@/components/admin/RichBlogEditor';
+import { EnhancedAdminDashboard } from '@/components/admin/EnhancedAdminDashboard';
+import { ContentCreator } from '@/components/admin/ContentCreator';
 
 type DashboardView = 'overview' | 'analytics' | 'quizzes' | 'articles' | 'create-quiz' | 'create-article' | 'users' | 'settings';
 
@@ -402,10 +400,10 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto px-6 py-8">
         {currentView === 'overview' && renderOverview()}
         {currentView === 'analytics' && <ResearchAnalyticsDashboard />}
-        {currentView === 'quizzes' && <EnhancedQuizManager />}
-        {currentView === 'create-quiz' && <StreamlinedQuizCreator />}
-        {currentView === 'articles' && <ArticleManager />}
-        {currentView === 'create-article' && <RichBlogEditor />}
+        {currentView === 'quizzes' && <EnhancedAdminDashboard />}
+        {currentView === 'create-quiz' && <ContentCreator />}
+        {currentView === 'articles' && <ContentCreator />}
+        {currentView === 'create-article' && <ContentCreator />}
         {currentView === 'users' && (
           <div className="text-center py-12">
             <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />

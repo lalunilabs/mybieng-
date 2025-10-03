@@ -16,14 +16,53 @@
   }
 }
 
-/* Prevent horizontal scroll issues */
+/* World-Class Invisible Scrollbars */
+/* Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+  background: transparent;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox */
 html {
+  scrollbar-width: none;
   overflow-x: hidden;
 }
 
 body {
   overflow-x: hidden;
   width: 100%;
+  scrollbar-width: none;
+}
+
+/* Ensure smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Enhanced scrolling for all elements */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 /* Modern CSS Variables for Design System */

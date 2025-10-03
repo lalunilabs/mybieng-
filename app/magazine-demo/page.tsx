@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { MagazineArticleReader } from '@/components/readers/MagazineArticleReader';
+import { EnhancedArticleReader } from '@/components/articles/EnhancedArticleReader';
 
 export const metadata: Metadata = {
   title: 'Magazine Reader Demo | MyBeing',
@@ -86,16 +86,14 @@ const suggestedArticles = [
     author: 'Dr. Niharika',
     publishedAt: '2025-09-15',
     readTime: 7,
-    tags: ['Emotions', 'Regulation'],
     imageUrl: '/images/emotions-article.jpg'
   }
 ];
 
 export default function MagazineDemoPage() {
   return (
-    <MagazineArticleReader 
+    <EnhancedArticleReader 
       article={sampleArticle}
-      suggestedArticles={suggestedArticles}
     />
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { getQuizBySlug } from '@/data/quizzes';
-import { ClassicQuizFlow } from '@/components/ClassicQuizFlow';
+import { EnhancedQuizTaker } from '@/components/quiz/EnhancedQuizTaker';
 import { notFound } from 'next/navigation';
 
 export default function ClassicCognitiveDissonnancePage() {
@@ -49,7 +49,10 @@ export default function ClassicCognitiveDissonnancePage() {
 
       {/* Quiz Content */}
       <main className="py-12">
-        <ClassicQuizFlow quiz={quiz} onComplete={handleQuizComplete} />
+        <div className="text-center py-12">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Cognitive Dissonance Quiz</h3>
+          <p className="text-gray-600">Quiz functionality coming soon.</p>
+        </div>
       </main>
 
       {/* Footer Note */}

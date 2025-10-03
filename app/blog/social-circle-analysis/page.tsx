@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { MagazineArticleReader } from '@/components/readers/MagazineArticleReader';
+import { EnhancedArticleReader } from '@/components/articles/EnhancedArticleReader';
 
 export const metadata: Metadata = {
   title: 'Social Circle Analysis: Who\'s Really Influencing Your Decisions? | MyBeing',
@@ -335,9 +335,8 @@ const suggestedArticles = [
 
 export default function SocialCircleAnalysisArticle() {
   return (
-    <MagazineArticleReader 
+    <EnhancedArticleReader 
       article={article}
-      suggestedArticles={suggestedArticles}
     />
   );
 }
