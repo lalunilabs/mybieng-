@@ -1,4 +1,38 @@
+# MyBeing - Official Personal Health Environment Platform
+# https://mybeing.in
+
 User-agent: *
 Allow: /
+Allow: /blog/
+Allow: /quizzes/
+Allow: /about
+Allow: /privacy-policy
+Allow: /terms-of-service
 
+# Block admin and sensitive areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /_next/
+Disallow: /dashboard/
+
+# Allow important crawlers
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+# Crawl delay for general bots
+Crawl-delay: 1
+
+# Host
+Host: https://mybeing.in
+
+# Sitemaps
 Sitemap: https://mybeing.in/sitemap.xml
