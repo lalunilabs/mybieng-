@@ -1,6 +1,6 @@
-import { MetadataRoute } from 'next'
+import { NextResponse } from 'next/server'
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export async function GET() {
   const baseUrl = 'https://mybeing.in'
   
   // Static pages with high priority
@@ -127,10 +127,27 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ]
 
-  return [
+  const allPages = [
     ...staticPages,
     ...quizPages,
     ...blogPages,
     ...featurePages,
   ]
+
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${allPages.map(page => `  <url>
+    <loc>${page.url}</loc>
+    <lastmod>${page.lastModified.toISOString()}</lastmod>
+    <changefreq>${page.changeFrequency}</changefreq>
+    <priority>${page.priority}</priority>
+  </url>`).join('\n')}
+</urlset>`
+
+  return new NextResponse(sitemap, {
+    headers: {
+      'Content-Type': 'application/xml',
+      'Cache-Control': 'public, max-age=3600, s-maxage=3600'
+    }
+  })
 }

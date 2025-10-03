@@ -1,45 +1,39 @@
-import { MetadataRoute } from 'next'
+import { NextResponse } from 'next/server'
 
-export default function robots(): MetadataRoute.Robots {
+export async function GET() {
   const baseUrl = 'https://mybeing.in'
   
-  return {
-    rules: [
-      {
-        userAgent: '*',
-        allow: '/',
-        disallow: [
-          '/admin/',
-          '/api/',
-          '/private/',
-          '/_next/',
-          '/static/',
-          '*.json',
-          '/dashboard/private/',
-        ],
-      },
-      {
-        userAgent: 'Googlebot',
-        allow: '/',
-        disallow: [
-          '/admin/',
-          '/api/',
-          '/private/',
-          '/dashboard/private/',
-        ],
-      },
-      {
-        userAgent: 'Bingbot',
-        allow: '/',
-        disallow: [
-          '/admin/',
-          '/api/',
-          '/private/',
-          '/dashboard/private/',
-        ],
-      },
-    ],
-    sitemap: `${baseUrl}/sitemap.xml`,
-    host: baseUrl,
-  }
+  const robotsTxt = `User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /private/
+Disallow: /_next/
+Disallow: /static/
+Disallow: *.json
+Disallow: /dashboard/private/
+
+User-agent: Googlebot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /private/
+Disallow: /dashboard/private/
+
+User-agent: Bingbot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /private/
+Disallow: /dashboard/private/
+
+Sitemap: ${baseUrl}/sitemap.xml
+Host: ${baseUrl}`
+
+  return new NextResponse(robotsTxt, {
+    headers: {
+      'Content-Type': 'text/plain',
+      'Cache-Control': 'public, max-age=86400, s-maxage=86400'
+    }
+  })
 }
