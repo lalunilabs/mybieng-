@@ -12,7 +12,11 @@ const subscribeSchema = z.object({
     weeklyInsights: z.boolean().default(true),
     newQuizzes: z.boolean().default(true),
     researchUpdates: z.boolean().default(false)
-  }).default({}),
+  }).default({
+    weeklyInsights: true,
+    newQuizzes: true,
+    researchUpdates: false
+  }),
   source: z.string().optional(),
   leadMagnet: z.string().optional(),
   firstName: z.string().optional(),
