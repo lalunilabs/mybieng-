@@ -610,16 +610,11 @@ var createEdgeHandler = async (ctx, definition) => {
 };
 var getHandlerName = ({ name }) => `${EDGE_HANDLER_NAME}-${name.replace(/\W/g, "-")}`;
 var buildHandlerDefinition = (ctx, def) => {
-  const functionHandlerName = getHandlerName({ name: def.name });
-  const functionName = "Next.js Middleware Handler";
-  const cache = def.name.endsWith("middleware") ? void 0 : "manual";
-  const generator = `${ctx.pluginName}@${ctx.pluginVersion}`;
   return augmentMatchers(def.matchers, ctx).map((matcher) => ({
-    function: functionHandlerName,
-    name: functionName,
+    function: getHandlerName({ name: def.name }),
+    name: "Next.js Middleware Handler",
     pattern: matcher.regexp,
-    cache,
-    generator
+    generator: `${ctx.pluginName}@${ctx.pluginVersion}`
   }));
 };
 var clearStaleEdgeHandlers = async (ctx) => {

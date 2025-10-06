@@ -1,1 +1,0 @@
-self.__REACT_LOADABLE_MANIFEST='{"app/reports/[reportId]/page.tsx -> @/components/ui/QuizReportVisualization":{"id":97611,"files":["static/chunks/5520-90c14d39282ee3a7.js","static/chunks/7611-6578035f978154f7.js","static/chunks/2441.6e54baa80d168522.js"]}}';

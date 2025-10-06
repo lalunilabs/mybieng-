@@ -330,3 +330,46 @@ export async function applyDiscount(discountCode: string): Promise<{ discountPer
     code: discount.code
   };
 }
+
+// Missing functions for blog functionality
+export async function hasUserLikedArticle(userId: string, articleId: string): Promise<boolean> {
+  // For now, return false - implement with database later
+  return false;
+}
+
+export async function likeArticle(userId: string, articleId: string): Promise<boolean> {
+  // For now, return true - implement with database later
+  return true;
+}
+
+export async function unlikeArticle(userId: string, articleId: string): Promise<boolean> {
+  // For now, return true - implement with database later
+  return true;
+}
+
+export async function resetEntitlements(userId: string): Promise<boolean> {
+  const subscription = await getSubscriptionByUserId(userId);
+  if (!subscription) return false;
+  
+  await prisma!.subscription.update({
+    where: { userId },
+    data: {
+      premiumArticlesUsed: 0,
+      freeQuizzesUsed: 0,
+      discountedQuizzesUsed: 0,
+      lastCycleReset: new Date()
+    }
+  });
+  
+  return true;
+}
+
+export async function getItemPriceWithDiscounts(userId: string, itemType: 'quiz' | 'article', basePrice: number): Promise<number> {
+  if (itemType === 'article') {
+    const discountedPrice = await getArticlePriceForSubscriber(userId, basePrice);
+    return discountedPrice || basePrice;
+  } else {
+    const discountedPrice = await getQuizPriceForSubscriber(userId, basePrice);
+    return discountedPrice || basePrice;
+  }
+}
