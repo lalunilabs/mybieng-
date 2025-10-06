@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing email or slug' }, { status: 400 });
     }
 
-    const result = purchaseArticle(email, slug);
+    const result = await purchaseArticle(email, slug);
     if (!result.ok) {
       return NextResponse.json({ error: result.error || 'Purchase failed' }, { status: 400 });
     }

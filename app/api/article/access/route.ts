@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Missing slug' }, { status: 400 });
     }
 
-    const access = getArticleAccess(email, slug);
+    const access = await getArticleAccess(email, slug);
     if (!access.exists) {
       return NextResponse.json({ error: 'Article not found' }, { status: 404 });
     }
