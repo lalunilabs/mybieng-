@@ -12,9 +12,9 @@ export async function POST(request: NextRequest) {
 
     let success = false;
     if (action === 'like') {
-      success = likeArticle(email, articleId);
+      success = await likeArticle(email, articleId);
     } else if (action === 'unlike') {
-      success = unlikeArticle(email, articleId);
+      success = await unlikeArticle(email, articleId);
     }
 
     if (success) {

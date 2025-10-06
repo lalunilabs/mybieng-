@@ -12,9 +12,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing email' }, { status: 400 });
     }
 
-    const ok = resetEntitlements(email);
-    const stats = getSubscriptionStats(email);
-    return NextResponse.json({ success: ok, stats });
+    const success = await resetEntitlements(email);
+    let stats;
+    if (success) {
+      stats = await getSubscriptionStats(email);
+    }
+    return NextResponse.json({ success, stats });
   } catch (error) {
     console.error('Dev reset-entitlements API error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

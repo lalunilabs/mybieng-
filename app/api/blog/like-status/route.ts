@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Missing email or articleId' }, { status: 400 });
     }
 
-    const isLiked = hasUserLikedArticle(email, articleId);
+    const isLiked = await hasUserLikedArticle(email, articleId);
     return NextResponse.json({ isLiked });
   } catch (error) {
     console.error('Like status API error:', error);
