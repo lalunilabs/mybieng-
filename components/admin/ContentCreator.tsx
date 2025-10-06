@@ -32,9 +32,18 @@ export function ContentCreator() {
 
   const handleCreateBlog = async () => {
     try {
+      const token = localStorage.getItem('admin_token');
+      if (!token) {
+        alert('Please log in as admin first');
+        return;
+      }
+
       const response = await fetch('/api/admin/content/blog', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           ...blogData,
           tags: blogData.tags.split(',').map(tag => tag.trim()),
@@ -44,21 +53,33 @@ export function ContentCreator() {
       });
 
       if (response.ok) {
-        alert('Blog post created successfully!');
+        const result = await response.json();
+        alert(`Blog post created successfully! Slug: ${result.blog.slug}`);
         setBlogData({ title: '', excerpt: '', content: '', tags: '', featured: false });
       } else {
-        alert('Failed to create blog post');
+        const error = await response.json();
+        alert(`Failed to create blog post: ${error.error}`);
       }
     } catch (error) {
       alert('Error creating blog post');
+      console.error('Blog creation error:', error);
     }
   };
 
   const handleCreateQuiz = async () => {
     try {
+      const token = localStorage.getItem('admin_token');
+      if (!token) {
+        alert('Please log in as admin first');
+        return;
+      }
+
       const response = await fetch('/api/admin/content/quiz', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           ...quizData,
           author: 'Dr. N',
@@ -68,13 +89,16 @@ export function ContentCreator() {
       });
 
       if (response.ok) {
-        alert('Quiz created successfully!');
+        const result = await response.json();
+        alert(`Quiz structure created successfully! Slug: ${result.quiz.slug}`);
         setQuizData({ title: '', description: '', category: '', estimatedTime: 15, featured: false, questions: [] });
       } else {
-        alert('Failed to create quiz');
+        const error = await response.json();
+        alert(`Failed to create quiz: ${error.error}`);
       }
     } catch (error) {
       alert('Error creating quiz');
+      console.error('Quiz creation error:', error);
     }
   };
 
