@@ -29,6 +29,13 @@ class ErrorBoundaryClass extends React.Component<ErrorBoundaryProps, ErrorBounda
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('Error caught by boundary:', error, errorInfo);
+    
+    // Auto-retry for certain types of errors
+    if (error.message.includes('fetch') || error.message.includes('network')) {
+      setTimeout(() => {
+        this.setState({ hasError: false, error: null });
+      }, 2000);
+    }
   }
 
   render() {

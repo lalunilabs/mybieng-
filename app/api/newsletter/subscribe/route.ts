@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { ipRateLimit } from '@/lib/rate-limit';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/db';
 
 // Validation schema
 const subscribeSchema = z.object({
@@ -139,8 +137,6 @@ export async function POST(req: NextRequest) {
       },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -206,8 +202,6 @@ export async function DELETE(req: NextRequest) {
       { error: 'Failed to unsubscribe' },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
 

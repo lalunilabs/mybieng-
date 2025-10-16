@@ -1,0 +1,199 @@
+/* Enhanced Article Reading Experience */
+
+.article-content {
+  @apply leading-relaxed;
+}
+
+.article-content h1 {
+  @apply text-4xl md:text-5xl font-bold mb-8 leading-tight;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.article-content h2 {
+  @apply text-2xl md:text-3xl font-bold mt-12 mb-6 text-gray-900;
+  position: relative;
+}
+
+.article-content h2::before {
+  content: '';
+  position: absolute;
+  left: -24px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 2px;
+}
+
+.article-content h3 {
+  @apply text-xl md:text-2xl font-semibold mt-8 mb-4 text-gray-800;
+}
+
+.article-content p {
+  @apply text-lg leading-relaxed mb-6 text-gray-700;
+}
+
+.article-content blockquote {
+  @apply border-l-4 border-purple-500 pl-6 py-4 my-8 bg-purple-50 rounded-r-lg;
+  font-style: italic;
+}
+
+.article-content blockquote p {
+  @apply text-purple-800 mb-0;
+}
+
+.article-content ul, .article-content ol {
+  @apply mb-6 pl-6;
+}
+
+.article-content li {
+  @apply mb-2 text-lg text-gray-700;
+}
+
+.article-content ul li {
+  @apply list-disc;
+}
+
+.article-content ol li {
+  @apply list-decimal;
+}
+
+.article-content a {
+  @apply text-purple-600 hover:text-purple-800 underline decoration-purple-300 hover:decoration-purple-500 transition-colors;
+}
+
+.article-content code {
+  @apply bg-gray-100 px-2 py-1 rounded text-sm font-mono text-purple-700;
+}
+
+.article-content pre {
+  @apply bg-gray-900 text-gray-100 p-6 rounded-lg overflow-x-auto my-6;
+}
+
+.article-content pre code {
+  @apply bg-transparent p-0 text-gray-100;
+}
+
+/* Enhanced typography for dark mode */
+.dark .article-content h1 {
+  background: linear-gradient(135deg, #a78bfa 0%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dark .article-content h2 {
+  @apply text-gray-100;
+}
+
+.dark .article-content h2::before {
+  background: linear-gradient(135deg, #a78bfa 0%, #ec4899 100%);
+}
+
+.dark .article-content h3 {
+  @apply text-gray-200;
+}
+
+.dark .article-content p {
+  @apply text-gray-300;
+}
+
+.dark .article-content li {
+  @apply text-gray-300;
+}
+
+.dark .article-content blockquote {
+  @apply bg-purple-900/20 border-purple-400;
+}
+
+.dark .article-content blockquote p {
+  @apply text-purple-200;
+}
+
+/* Floating elements */
+.floating-tools {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.dark .floating-tools {
+  background: rgba(17, 24, 39, 0.9);
+  border: 1px solid rgba(75, 85, 99, 0.3);
+}
+
+/* Smooth transitions */
+.article-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Reading progress animation */
+.progress-glow {
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+}
+
+/* Enhanced focus states for accessibility */
+.article-content a:focus,
+.article-tool:focus {
+  @apply outline-none ring-2 ring-purple-500 ring-offset-2 rounded;
+}
+
+.dark .article-content a:focus,
+.dark .article-tool:focus {
+  @apply ring-purple-400 ring-offset-gray-900;
+}
+
+/* Premium animations */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(139, 92, 246, 0.6);
+  }
+}
+
+/* Utility classes */
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-glow {
+  animation: glow 3s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}

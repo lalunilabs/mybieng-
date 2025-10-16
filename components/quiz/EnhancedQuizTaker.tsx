@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, RotateCcw, Brain, Clock, CheckCircle, Circle, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
-import { Progress } from '@/components/ui/progress';
+import { Progress } from '@/components/ui/Progress';
 
 interface QuizQuestion {
   id: string;

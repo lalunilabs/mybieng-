@@ -88,6 +88,7 @@ export interface UniversalAIChatProps {
   quizResults?: QuizResults;
   userSubscription?: UserSubscription;
   onFeedback?: (feedback: FeedbackData) => void;
+  initialMessage?: string;
   className?: string;
 }
 

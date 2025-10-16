@@ -10,6 +10,7 @@ export async function GET(
   try {
     const { slug } = params;
     const contentDir = path.join(process.cwd(), 'content', 'quizzes');
+    const base = process.env.NEXT_PUBLIC_DOMAIN || 'https://mybeing.in';
     
     // Try both .json and .md extensions
     const jsonPath = path.join(contentDir, `${slug}.json`);
@@ -68,7 +69,7 @@ export async function GET(
           timeRequired: `PT${quizData.estimatedTime || 10}M`,
           educationalLevel: 'Adult',
           assesses: quizData.category || 'Behavioral Patterns',
-          mainEntityOfPage: `${process.env.NEXT_PUBLIC_DOMAIN}/quizzes/${slug}`
+          mainEntityOfPage: `${base}/quizzes/${slug}`
         }
       };
     }

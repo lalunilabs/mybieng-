@@ -175,7 +175,7 @@ export function MobileCheckIn({ onComplete, onSkip, previousData }: MobileCheckI
         </div>
         
         <div className="text-center mt-4">
-          <span className="text-2xl font-bold text-gray-900">{data[field]}/10</span>
+          <span className="text-2xl font-bold text-gray-900">{(data[field] as number)}/10</span>
         </div>
       </div>
     </motion.div>

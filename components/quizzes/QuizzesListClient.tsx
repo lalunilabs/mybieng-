@@ -3,6 +3,7 @@
 import QuizCard from '@/components/QuizCard';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { useMemo } from 'react';
+import { designSystem, getCardClasses } from '@/lib/design-system';
 
 type Quiz = {
   slug: string;
@@ -20,7 +21,7 @@ export default function QuizzesListClient({ quizzes }: { quizzes: Quiz[] }) {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50 py-12 relative overflow-hidden">
+      <div className={`min-h-screen ${designSystem.gradients.page} py-12 relative overflow-hidden`}>
         {/* Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-primary/10 to-purple-500/10 rounded-full blur-3xl animate-float" />
@@ -86,7 +87,7 @@ export default function QuizzesListClient({ quizzes }: { quizzes: Quiz[] }) {
 
             {/* Call to Action */}
             <div className="mt-20 text-center animate-fade-in" style={{ animationDelay: '0.4s' }}>
-              <div className="bg-gradient-to-r from-primary/5 to-purple-500/5 rounded-3xl p-12 border border-primary/10">
+              <div className={getCardClasses('violet')}>
                 <h2 className="text-3xl font-bold text-foreground mb-4">
                   Ready to Start Your Journey?
                 </h2>

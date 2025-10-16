@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
+import { prisma } from '@/lib/db';
+import { validateRequest, withErrorHandling, successResponse, ValidationError, ConflictError } from '@/lib/api-error-handler';
 
 const signupSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(50, 'Name too long'),
@@ -8,97 +10,54 @@ const signupSchema = z.object({
   password: z.string().min(8, 'Password must be at least 8 characters').max(100, 'Password too long'),
 });
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    
-    // Validate input
-    const validationResult = signupSchema.safeParse(body);
-    if (!validationResult.success) {
-      return NextResponse.json(
-        { error: validationResult.error.issues[0].message },
-        { status: 400 }
-      );
-    }
+export const POST = withErrorHandling(async (request: NextRequest) => {
+  const { name, email, password } = await validateRequest(request, signupSchema);
 
-    const { name, email, password } = validationResult.data;
+  // Check if user already exists
+  const existingUser = await prisma.user.findUnique({
+    where: { email: email.toLowerCase() }
+  });
 
-    // Check if user already exists
-    // In a real app, you'd check your database here
-    // For now, we'll simulate this check
-    const existingUser = await checkUserExists(email);
-    if (existingUser) {
-      return NextResponse.json(
-        { error: 'An account with this email already exists' },
-        { status: 409 }
-      );
-    }
+  if (existingUser) {
+    throw new ConflictError('An account with this email already exists');
+  }
 
-    // Hash password
-    const saltRounds = 12;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+  // Hash password
+  const saltRounds = 12;
+  const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // Create user
-    const user = await createUser({
+  // Create user (Note: Prisma schema doesn't have password field - using NextAuth providers)
+  // For credentials-based auth, you'd need to add password field to User model
+  const user = await prisma.user.create({
+    data: {
       name,
       email: email.toLowerCase(),
-      password: hashedPassword,
-    });
+      role: 'user'
+    }
+  });
 
-    // Return success (don't include password)
-    return NextResponse.json({
-      success: true,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        createdAt: user.createdAt,
-      },
-    });
+  // Log analytics
+  await prisma.analytics.create({
+    data: {
+      event: 'user_signup',
+      userId: user.id,
+      data: JSON.stringify({
+        method: 'credentials',
+        emailDomain: email.split('@')[1]
+      })
+    }
+  });
 
-  } catch (error) {
-    console.error('Signup error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
+  // Return success (don't include password)
+  return successResponse({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    createdAt: user.createdAt
+  }, 201);
+});
 
-// Mock functions - replace with your actual database operations
-async function checkUserExists(email: string): Promise<boolean> {
-  // In a real app, query your database
-  // Example with Prisma: await prisma.user.findUnique({ where: { email } })
-  
-  // For now, return false (user doesn't exist)
-  return false;
-}
-
-async function createUser(userData: {
-  name: string;
-  email: string;
-  password: string;
-}): Promise<{
-  id: string;
-  name: string;
-  email: string;
-  createdAt: Date;
-}> {
-  // In a real app, save to your database
-  // Example with Prisma:
-  // return await prisma.user.create({
-  //   data: {
-  //     name: userData.name,
-  //     email: userData.email,
-  //     password: userData.password,
-  //   }
-  // });
-
-  // Mock user creation
-  return {
-    id: `user_${Date.now()}`,
-    name: userData.name,
-    email: userData.email,
-    createdAt: new Date(),
-  };
-}
+// Note: The User model in Prisma doesn't have a password field
+// This is because the app uses NextAuth with OAuth providers (Google)
+// To support email/password signup, add a password field to the User model:
+// password  String?  // Optional for OAuth users

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 
 interface TrackingEvent {
@@ -23,6 +23,32 @@ export function UserJourneyTracker({ userId, sessionId }: UserJourneyTrackerProp
   const startTime = useRef(Date.now());
   const lastActivity = useRef(Date.now());
 
+  const trackEvent = useCallback(async (event: string, properties: Record<string, any> = {}) => {
+    const trackingData: TrackingEvent = {
+      event,
+      properties,
+      timestamp: Date.now(),
+      sessionId,
+      userId,
+      page: pathname || ''
+    };
+
+    try {
+      // Send to analytics API
+      await fetch('/api/analytics/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(trackingData)
+      });
+    } catch (error) {
+      // Fallback to localStorage for offline tracking
+      const stored = localStorage.getItem('pending_analytics') || '[]';
+      const pending = JSON.parse(stored);
+      pending.push(trackingData);
+      localStorage.setItem('pending_analytics', JSON.stringify(pending));
+    }
+  }, [pathname, sessionId, userId]);
+
   // Track page views
   useEffect(() => {
     trackEvent('page_view', {
@@ -37,7 +63,7 @@ export function UserJourneyTracker({ userId, sessionId }: UserJourneyTrackerProp
     });
 
     startTime.current = Date.now();
-  }, [pathname, searchParams]);
+  }, [pathname, searchParams, trackEvent]);
 
   // Track time on page when leaving
   useEffect(() => {
@@ -68,7 +94,7 @@ export function UserJourneyTracker({ userId, sessionId }: UserJourneyTrackerProp
       window.removeEventListener('beforeunload', handleBeforeUnload);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [pathname]);
+  }, [pathname, trackEvent]);
 
   // Track scroll depth
   useEffect(() => {
@@ -96,7 +122,7 @@ export function UserJourneyTracker({ userId, sessionId }: UserJourneyTrackerProp
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [pathname]);
+  }, [pathname, trackEvent]);
 
   // Track user interactions
   useEffect(() => {
@@ -142,33 +168,8 @@ export function UserJourneyTracker({ userId, sessionId }: UserJourneyTrackerProp
 
     document.addEventListener('click', handleClick);
     return () => document.removeEventListener('click', handleClick);
-  }, [pathname]);
+  }, [pathname, trackEvent]);
 
-  const trackEvent = async (event: string, properties: Record<string, any> = {}) => {
-    const trackingData: TrackingEvent = {
-      event,
-      properties,
-      timestamp: Date.now(),
-      sessionId,
-      userId,
-      page: pathname
-    };
-
-    try {
-      // Send to analytics API
-      await fetch('/api/analytics/track', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(trackingData)
-      });
-    } catch (error) {
-      // Fallback to localStorage for offline tracking
-      const stored = localStorage.getItem('pending_analytics') || '[]';
-      const pending = JSON.parse(stored);
-      pending.push(trackingData);
-      localStorage.setItem('pending_analytics', JSON.stringify(pending));
-    }
-  };
 
   const getScrollDepth = (): number => {
     const scrollTop = window.scrollY;
@@ -190,7 +191,7 @@ export function useAnalytics(sessionId: string, userId?: string) {
       timestamp: Date.now(),
       sessionId,
       userId,
-      page: pathname
+      page: pathname || ''
     };
 
     try {

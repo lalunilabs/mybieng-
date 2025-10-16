@@ -236,7 +236,7 @@ export function EnhancedBlogReader({
                 </motion.button>
               </div>
 
-              <ShareButtons url={slug} title={title} variant="enhanced" />
+              <ShareButtons url={slug} title={title} variant="inline" />
             </motion.div>
           </article>
 

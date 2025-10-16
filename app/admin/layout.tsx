@@ -12,7 +12,7 @@ export default async function AdminLayout({
   const user = await getCurrentAdminUser();
   const legacy = cookies().get('admin_auth')?.value === '1';
   if (!user && !legacy) {
-    redirect('/admin/login');
+    redirect('/admin/auth');
   }
   return (
     <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-purple-50">

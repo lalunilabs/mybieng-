@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import './globals.css';
 import '../styles/colors.css';
-import Providers from '@/components/Providers';
+import '../styles/article-enhancements.css';
+import { Providers } from '@/components/Providers';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 // import { EngagementProvider } from '@/components/providers/EngagementProvider';
 // import ScrollAnimations from '@/components/ui/ScrollAnimations';
@@ -109,7 +110,7 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-  manifest: '/manifest.json',
+  manifest: '/manifest.webmanifest',
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon-16x16.png',

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { 
   TrendingUp, 
@@ -63,11 +63,7 @@ export function UserProgressDashboard({ userId }: UserProgressDashboardProps) {
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    loadUserProgress();
-  }, [userId]);
-
-  const loadUserProgress = async () => {
+  const loadUserProgress = useCallback(async () => {
     try {
       const [statsRes, quizzesRes, achievementsRes] = await Promise.all([
         fetch(`/api/user/${userId}/stats`),
@@ -83,7 +79,12 @@ export function UserProgressDashboard({ userId }: UserProgressDashboardProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    loadUserProgress();
+  }, [loadUserProgress]);
+
 
   if (isLoading) {
     return (

@@ -6,7 +6,10 @@ import { v4 as uuidv4 } from 'uuid';
 // Mock the modules
 jest.mock('@/lib/content');
 jest.mock('@/lib/rate-limit');
-jest.mock('@/lib/adminAuth');
+// Mock the actual admin auth module used by the route
+jest.mock('@/lib/auth/admin', () => ({
+  requireAdminAuth: jest.fn(),
+}));
 jest.mock('next/cache', () => ({
   revalidatePath: jest.fn(),
 }));
@@ -59,8 +62,8 @@ describe('Admin Articles API', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     
-    // Mock isAdminRequest to return true by default
-    jest.spyOn(require('@/lib/adminAuth'), 'isAdminRequest').mockReturnValue(true);
+    // By default, authenticate successfully
+    (require('@/lib/auth/admin').requireAdminAuth as jest.Mock).mockResolvedValue({ email: 'owner@example.com' });
     
     // Mock loadAllArticles to return test data
     (loadAllArticles as jest.Mock).mockReturnValue([{
@@ -100,8 +103,8 @@ describe('Admin Articles API', () => {
 
   describe('GET /api/admin/articles', () => {
     it('should return 401 if not authenticated', async () => {
-      // Mock isAdminRequest to return false for this test
-      jest.spyOn(require('@/lib/adminAuth'), 'isAdminRequest').mockReturnValue(false);
+      // Force auth failure for this test
+      (require('@/lib/auth/admin').requireAdminAuth as jest.Mock).mockRejectedValueOnce(new Error('Unauthorized'));
       
       const req = createMockRequest('GET');
       const response = await GET(req);
@@ -112,8 +115,8 @@ describe('Admin Articles API', () => {
       const mockArticles = [mockArticle];
       (loadAllArticles as jest.Mock).mockReturnValue(mockArticles);
       
-      // Mock isAdminRequest to return true
-      jest.spyOn(require('@/lib/adminAuth'), 'isAdminRequest').mockReturnValue(true);
+      // Ensure auth success for this test
+      (require('@/lib/auth/admin').requireAdminAuth as jest.Mock).mockResolvedValueOnce({ email: 'owner@example.com' });
       
       const req = createMockRequest('GET');
       const response = await GET(req);
@@ -129,7 +132,7 @@ describe('Admin Articles API', () => {
   describe('POST /api/admin/articles', () => {
     it('should create a new article', async () => {
       const newArticle = { ...mockArticle, id: undefined };
-      jest.spyOn(require('@/lib/adminAuth'), 'isAdminRequest').mockReturnValue(true);
+      (require('@/lib/auth/admin').requireAdminAuth as jest.Mock).mockResolvedValueOnce({ email: 'owner@example.com' });
       
       const req = createMockRequest('POST', newArticle);
       const response = await POST(req);
@@ -151,6 +154,8 @@ describe('Admin Articles API', () => {
       // Mock the deleteArticle function to return true
       (deleteArticle as jest.Mock).mockResolvedValueOnce(true);
       
+      (require('@/lib/auth/admin').requireAdminAuth as jest.Mock).mockResolvedValueOnce({ email: 'owner@example.com' });
+
       const req = createMockRequest('DELETE', undefined, searchParams);
       
       const response = await DELETE(req);
@@ -164,6 +169,7 @@ describe('Admin Articles API', () => {
     });
     
     it('should return 400 if slug is missing', async () => {
+      (require('@/lib/auth/admin').requireAdminAuth as jest.Mock).mockResolvedValueOnce({ email: 'owner@example.com' });
       const req = createMockRequest('DELETE');
       const response = await DELETE(req);
       const data = await response.json();

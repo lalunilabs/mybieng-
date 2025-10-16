@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
 
 type Article = any;
 
@@ -24,10 +25,11 @@ export default function AdminArticles() {
       const res = await fetch('/api/admin/articles');
       if (!res.ok) throw new Error('Failed to load');
       const j = await res.json();
-      setItems(j.items || []);
-      if (!selectedSlug && (j.items?.length ?? 0) > 0) {
-        setSelectedSlug(j.items[0].slug);
-        setEditor(JSON.stringify(j.items[0], null, 2));
+      const list = (j?.data?.items ?? j?.items ?? []) as Article[];
+      setItems(list);
+      if (!selectedSlug && list.length > 0) {
+        setSelectedSlug(list[0].slug);
+        setEditor(JSON.stringify(list[0], null, 2));
       }
     } catch (e: any) {
       setError(e?.message || 'Failed to load');
@@ -185,16 +187,17 @@ export default function AdminArticles() {
 
   const newArticle = () => {
     const now = new Date().toISOString();
+    const randomId = crypto.randomUUID();
     const tpl = {
-      id: crypto.randomUUID(),
+      id: randomId,
       title: 'New Article',
-      slug: 'new-article',
-      excerpt: 'Short summary...',
-      content: 'Full content here...',
+      slug: `new-article-${Date.now()}`,
+      excerpt: 'Write a compelling excerpt that summarizes your article...',
+      content: '# Your Article Title\n\nStart writing your detailed, research-backed article here. Remember to:\n\n- Use personal examples and stories\n- Include scientific backing where relevant\n- Make it actionable and practical\n- Write in a conversational, human tone\n\n## Section 1\n\nYour content here...\n\n## Section 2\n\nMore content...\n\n## Conclusion\n\nWrap up with key takeaways and next steps.',
       author: 'MyBeing Research',
       publishedAt: now,
-      tags: [],
-      readTime: 5,
+      tags: ['psychology', 'self-discovery'],
+      readTime: 10,
       imageUrl: '',
       published: false,
       relatedQuizzes: [],
@@ -203,7 +206,7 @@ export default function AdminArticles() {
       price: 0,
       metaTitle: '',
       metaDescription: '',
-      keywords: [],
+      keywords: ['psychology', 'self-discovery', 'personal-growth'],
       canonicalUrl: '',
       ogImage: '',
       robots: 'index,follow'
@@ -288,8 +291,8 @@ export default function AdminArticles() {
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div className="md:col-span-1">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-medium">Articles</h2>
-          <button onClick={newArticle} className="px-3 py-1 rounded-md bg-brand-700 text-white">New</button>
+          <h2 className="font-medium text-lg">Articles ({items.length})</h2>
+          <button onClick={newArticle} className="px-4 py-2 rounded-md bg-brand-700 text-white hover:bg-brand-800 font-medium">+ New Article</button>
         </div>
         <div className="border rounded-md divide-y max-h-[60vh] overflow-auto">
           {loading && <div className="p-2 text-sm text-gray-500">Loading...</div>}
@@ -312,29 +315,71 @@ export default function AdminArticles() {
       </div>
       <div className="md:col-span-2">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-medium">Editor</h2>
-          <div className="space-x-2">
-            <button onClick={generateMeta} className="px-3 py-1 rounded-md bg-sky-700 text-white">Generate Meta</button>
-            <button onClick={validateMeta} className="px-3 py-1 rounded-md bg-amber-700 text-white">Validate Meta</button>
-            <button onClick={togglePublish} className="px-3 py-1 rounded-md bg-indigo-700 text-white">Toggle Publish</button>
-            <button onClick={save} disabled={saving} className="px-3 py-1 rounded-md bg-green-700 text-white disabled:opacity-60">{saving ? 'Saving...' : 'Save'}</button>
-            <button onClick={del} className="px-3 py-1 rounded-md bg-red-600 text-white">Delete</button>
+          <h2 className="font-medium text-lg">Article Editor</h2>
+          <div className="flex flex-wrap gap-2">
+            <button onClick={generateMeta} className="px-3 py-2 rounded-md bg-sky-600 text-white hover:bg-sky-700 text-sm font-medium">Generate SEO</button>
+            <button onClick={validateMeta} className="px-3 py-2 rounded-md bg-amber-600 text-white hover:bg-amber-700 text-sm font-medium">Validate</button>
+            <button onClick={togglePublish} className="px-3 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 text-sm font-medium">
+              {selected?.published ? 'Unpublish' : 'Publish'}
+            </button>
+            <button onClick={save} disabled={saving} className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-60 font-medium">
+              {saving ? 'Saving...' : 'Save Changes'}
+            </button>
+            <button onClick={del} className="px-3 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 text-sm font-medium">Delete</button>
           </div>
         </div>
         {error && <div className="text-sm text-red-600 mb-2 whitespace-pre-wrap">{error}</div>}
         {info && <div className="text-sm text-green-700 mb-2">{info}</div>}
-        {/* Image upload helper */}
-        <div className="mb-3 flex items-center gap-3 p-3 rounded-md border bg-white">
-          <label className="text-sm font-medium">Cover image</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => { const f = e.target.files?.[0]; if (f) onUploadImage(f); }}
-            disabled={uploading}
-            className="text-sm"
-          />
-          {uploading && <span className="text-xs text-gray-500">Uploading...</span>}
-          {uploadError && <span className="text-xs text-red-600">{uploadError}</span>}
+        {/* Image and Media Management */}
+        <div className="mb-4 p-4 rounded-lg border bg-gray-50">
+          <h3 className="text-sm font-semibold mb-3 text-gray-700">Media & Assets</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Cover Image</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) onUploadImage(f); }}
+                disabled={uploading}
+                className="w-full text-sm border rounded px-3 py-2"
+              />
+              {uploading && <span className="text-xs text-blue-600 mt-1 block">Uploading image...</span>}
+              {uploadError && <span className="text-xs text-red-600 mt-1 block">{uploadError}</span>}
+              {selected?.imageUrl && (
+                <div className="mt-2">
+                  <Image src={selected.imageUrl} alt="Cover" width={80} height={80} className="object-cover rounded border" />
+                </div>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Quick Actions</label>
+              <div className="space-y-2">
+                <button 
+                  onClick={() => {
+                    const payload = JSON.parse(editor || '{}');
+                    payload.readTime = Math.max(1, Math.ceil((payload.content || '').length / 1000));
+                    setEditor(JSON.stringify(payload, null, 2));
+                  }}
+                  className="block w-full text-left px-3 py-2 text-sm bg-white border rounded hover:bg-gray-50"
+                >
+                  Auto-calculate read time
+                </button>
+                <button 
+                  onClick={() => {
+                    const payload = JSON.parse(editor || '{}');
+                    if (payload.content) {
+                      const words = payload.content.split(/\s+/).length;
+                      payload.readTime = Math.max(1, Math.ceil(words / 200));
+                      setEditor(JSON.stringify(payload, null, 2));
+                    }
+                  }}
+                  className="block w-full text-left px-3 py-2 text-sm bg-white border rounded hover:bg-gray-50"
+                >
+                  Calculate by word count
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
         <div className="mb-3 flex flex-wrap items-center gap-3 p-3 rounded-md border bg-white">
           <label className="text-sm font-medium">Publish at</label>

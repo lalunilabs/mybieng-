@@ -1,0 +1,10 @@
+{
+  "app/reports/[reportId]/page.tsx -> @/components/ui/QuizReportVisualization": {
+    "id": 97611,
+    "files": [
+      "static/chunks/5520-90c14d39282ee3a7.js",
+      "static/chunks/7611-16cf71d6800dfff6.js",
+      "static/chunks/2441.6e54baa80d168522.js"
+    ]
+  }
+}

@@ -8,9 +8,15 @@ export type QuizQuestion = {
   type: 'likert' | 'yes_no' | 'multiple_choice' | 'text_input';
   options?: string[]; // For multiple_choice questions
   optionCategories?: string[]; // Optional mapping for categorical scoring
+  description?: string; // Optional supporting copy for the question
   placeholder?: string; // For text_input questions
   imageUrl?: string; // Optional visual aid
   attachments?: QuizAttachment[]; // Optional related resources
+  required?: boolean; // Whether the question must be answered
+  category?: string; // Category for grouping questions
+  weight?: number; // Weight for scoring (default: 1)
+  explanation?: string; // Explanation shown after answering
+  showInResults?: boolean; // Whether to show in results
 };
 
 export type MotivationProfile = {
@@ -28,13 +34,28 @@ export type Quiz = {
   description: string;
   questions: QuizQuestion[];
   bands: QuizBand[];
-  resultType?: string;
+  resultType?: 'numeric' | 'categorical' | 'narrative' | 'hybrid';
   resultProfiles?: Record<string, MotivationProfile>;
   resultInterpretation?: {
     single: string;
     dual: string;
     multi: string;
   };
+  
+  // Quiz Settings
+  timeLimitMinutes?: number; // Time limit in minutes (0 for no limit)
+  randomizeQuestions?: boolean; // Whether to randomize question order
+  keepFirstNQuestions?: number; // Number of questions to keep at the beginning when randomizing
+  allowSaveAndContinue?: boolean; // Whether users can save and continue later
+  showProgressBar?: boolean; // Whether to show progress bar
+  showQuestionNumbers?: boolean; // Whether to show question numbers
+  requiredAnswers?: 'all' | 'none' | number; // Number of required answers
+  
+  // Navigation
+  allowBackNavigation?: boolean; // Whether to allow going back to previous questions
+  showResultsImmediately?: boolean; // Whether to show results immediately after submission
+  allowRetake?: boolean; // Whether to allow retaking the quiz
+  
   // Admin & SEO metadata
   published?: boolean;
   publishedAt?: string; // ISO timestamp for scheduling
@@ -49,9 +70,26 @@ export type Quiz = {
   robots?: string;
   imageUrl?: string; // optional cover image for listings
   attachments?: QuizAttachment[]; // quiz-level resources
-  // Listing UX
+  
+  // UX Settings
+  autoAdvance?: boolean; // auto-advance to next question after answering
+  estimatedTime?: number; // estimated completion time in minutes
   benefits?: string[]; // what you get
   requirements?: string[]; // what you need
+  
+  // Advanced Settings
+  scoringAlgorithm?: 'sum' | 'weighted' | 'custom'; // How to calculate the final score
+  passPercentage?: number; // Minimum percentage to pass (0-100)
+  showCorrectAnswers?: boolean; // Whether to show correct answers after submission
+  showExplanations?: 'always' | 'after_attempt' | 'never'; // When to show explanations
+  
+  // Integration
+  redirectUrl?: string; // URL to redirect to after quiz completion
+  webhookUrl?: string; // Webhook to call on completion
+  
+  // Analytics
+  trackAnalytics?: boolean; // Whether to track analytics for this quiz
+  requireEmail?: boolean; // Whether to require email before starting
 };
 
 export const quizzes: Quiz[] = [
@@ -190,7 +228,7 @@ export const quizzes: Quiz[] = [
       '10 minutes of honest reflection',
       'Recent examples from work or personal goals',
     ],
-    resultType: 'motivation-language',
+    resultType: 'categorical',
     resultInterpretation: {
       single: 'A dominant score (10+ points) means this motivation language reliably drives you. Design your environment around it.',
       dual: 'Balanced scores (7-9 points in two areas) mean you are bilingual in motivation. Blend both languages depending on context.',

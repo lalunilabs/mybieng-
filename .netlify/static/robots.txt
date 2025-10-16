@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://mybeing.in/sitemap.xml

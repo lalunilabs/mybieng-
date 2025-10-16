@@ -14,11 +14,12 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/Progress';
+import { Badge } from '@/components/ui/Badge';
 import { Quiz, QuizQuestion } from '@/data/quizzes';
 import { AdaptiveQuizResultsSystem, AdaptiveQuizResult } from '@/components/quiz/AdaptiveQuizResultsSystem';
 import { QuizResultsAIChat } from '@/components/chat/QuizResultsAIChat';
+import { AnimatedSection, TextReveal, FloatingElement } from '@/components/animations/PremiumAnimations';
 
 interface QuizAnswer {
   questionId: string;

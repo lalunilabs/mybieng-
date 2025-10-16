@@ -1,21 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Calendar, 
   Clock, 
   User, 
   ArrowRight, 
   BookOpen, 
-  TrendingUp,
-  Filter,
   Search,
   Grid,
   List,
   Star,
-  Eye,
-  Heart
+  Eye
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
@@ -50,8 +46,15 @@ export function EnhancedBlogListing({ articles, featuredArticles = [] }: Enhance
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredArticles, setFilteredArticles] = useState(articles);
 
-  // Get unique categories
-  const categories = ['all', ...Array.from(new Set(articles.map(a => a.category).filter(Boolean)))];
+  // Get unique categories (ensure string[])
+  const categories = useMemo(() => {
+    const catSet = new Set(
+      articles
+        .map((a) => a.category)
+        .filter((c): c is string => typeof c === 'string' && c.length > 0)
+    );
+    return ['all', ...Array.from(catSet)];
+  }, [articles]);
 
   // Filter articles
   useEffect(() => {

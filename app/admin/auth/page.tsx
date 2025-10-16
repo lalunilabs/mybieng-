@@ -23,18 +23,17 @@ export default function AdminLogin() {
     setError('');
     
     try {
-      // Multi-layer authentication check
-      const response = await fetch('/api/admin/auth', {
+      // Use cookie-setting endpoint so server sees admin_token
+      const response = await fetch('/api/admin/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials)
+        credentials: 'include',
+        body: JSON.stringify({ email: credentials.email, password: credentials.password })
       });
       
       if (response.ok) {
-        const { token } = await response.json();
-        // Store secure token
-        localStorage.setItem('admin_token', token);
-        router.push('/admin/dashboard');
+        // Cookie is set by server (admin_token). Redirect to Articles to start adding content.
+        router.push('/admin/articles');
       } else {
         setError('Access denied. Invalid credentials.');
       }
@@ -150,11 +149,10 @@ export default function AdminLogin() {
             >
               <input
                 type="password"
-                placeholder="Secret Access Key"
+                placeholder="Secret Access Key (optional)"
                 value={credentials.secretKey}
                 onChange={(e) => setCredentials({...credentials, secretKey: e.target.value})}
                 className="w-full px-4 py-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 outline-none transition-all"
-                required
               />
             </motion.div>
             

@@ -22,6 +22,12 @@ export interface MarkdownArticle {
   schemaType?: string;
   slug: string;
   wordCount: number;
+  // Structured fields for world-class template
+  tldr?: string[];
+  keyIdeas?: string[];
+  frameworks?: string[];
+  prompts?: string[];
+  citations?: string[];
 }
 
 export function loadMarkdownArticle(slug: string): MarkdownArticle | null {
@@ -60,6 +66,11 @@ export function loadMarkdownArticle(slug: string): MarkdownArticle | null {
         schemaType: 'BlogPosting',
         slug,
         wordCount,
+        tldr: [],
+        keyIdeas: [],
+        frameworks: [],
+        prompts: [],
+        citations: [],
       };
     }
     return null;
@@ -94,5 +105,10 @@ export function loadMarkdownArticle(slug: string): MarkdownArticle | null {
     slug,
     content: body,
     wordCount,
+    tldr: toArray(data.tldr),
+    keyIdeas: toArray(data.keyIdeas || data.key_ideas),
+    frameworks: toArray(data.frameworks),
+    prompts: toArray(data.prompts || data.reflectionPrompts || data.reflection_prompts),
+    citations: toArray(data.citations),
   };
 }

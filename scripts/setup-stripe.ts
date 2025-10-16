@@ -8,8 +8,10 @@ if (!process.env.STRIPE_SECRET_KEY) {
   process.exit(1);
 }
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2024-11-20.acacia',
+const SECRET = process.env.STRIPE_SECRET_KEY as string;
+
+const stripe = new Stripe(SECRET, {
+  apiVersion: '2025-02-24.acacia',
 });
 
 async function setupStripeProducts() {
@@ -54,7 +56,7 @@ async function setupStripeProducts() {
     console.log('✅ Price created:', price.id);
 
     // Create test product and price for development
-    if (process.env.STRIPE_SECRET_KEY.includes('test')) {
+    if (SECRET.includes('test')) {
       console.log('\n🧪 Creating test product for development...');
       const testProduct = await stripe.products.create({
         name: 'MyBeing Premium (Test)',

@@ -17,8 +17,8 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/Badge';
+import { Progress } from '@/components/ui/Progress';
 import { EnhancedQuizTaker } from '@/components/quiz/EnhancedQuizTaker';
 import { AdaptiveQuizResultsSystem } from '@/components/quiz/AdaptiveQuizResultsSystem';
 import { QuizResultsAIChat } from '@/components/chat/QuizResultsAIChat';

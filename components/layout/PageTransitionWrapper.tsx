@@ -10,21 +10,14 @@ interface PageTransitionWrapperProps {
 export function PageTransitionWrapper({ children }: PageTransitionWrapperProps) {
   const pathname = usePathname();
 
-  const variants = {
-    hidden: { opacity: 0, y: 15 },
-    enter: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -15 },
-  };
-
   return (
     <AnimatePresence mode="wait" initial={false}>
       <motion.div
-        key={pathname} // Keying by pathname triggers the animation on route change
-        variants={variants}
-        initial="hidden"
-        animate="enter"
-        exit="exit"
-        transition={{ type: 'linear', duration: 0.3 }}
+        key={pathname}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.15, ease: 'easeInOut' }}
       >
         {children}
       </motion.div>

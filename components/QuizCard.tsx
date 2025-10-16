@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { motion } from 'framer-motion';
 import { Brain, Clock, RotateCcw, ArrowRight } from 'lucide-react';
+import { designSystem } from '@/lib/design-system';
 
 type Props = {
   slug: string;
@@ -24,7 +25,7 @@ export default function QuizCard({ slug, title, description, benefits, requireme
       transition={{ duration: 0.3, ease: "easeOut" }}
     >
       <Link href={`/quizzes/${slug}`} className="block group">
-        <Card variant="elevated" className="h-full overflow-hidden border-2 border-foreground/5 bg-white shadow-brutal hover:shadow-brutal-lg transition-all duration-300">
+        <Card variant="elevated" className={`h-full overflow-hidden ${designSystem.components.card.base} ${designSystem.components.card.hover}`}>
           {/* Header with gradient background */}
           <div className="relative h-32 bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-indigo-500/10 overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-purple-400/20 to-pink-400/20" />
@@ -93,7 +94,7 @@ export default function QuizCard({ slug, title, description, benefits, requireme
               <Button 
                 variant="gradient" 
                 size="lg" 
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 group-hover:shadow-glow-lg transition-all duration-300"
+                className={`${designSystem.components.button.base} w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 group-hover:shadow-glow-lg transition-all duration-300`}
               >
                 <span className="mr-2">Start Quiz</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />

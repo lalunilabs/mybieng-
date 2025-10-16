@@ -1,0 +1,63 @@
+# Global robots.txt for MyBeing
+
+# Default rule for all crawlers
+User-agent: *
+Allow: /
+Disallow: /api/*
+Disallow: /_next/*
+Disallow: /admin/*
+Disallow: /private/*
+Disallow: /dashboard/*
+Disallow: /account/*
+Disallow: /*?*
+
+# Crawl-delay for all crawlers
+Crawl-delay: 10
+
+# Sitemaps
+Sitemap: https://mybeing.co/sitemap.xml
+
+# Specific rules for major search engines
+
+# Google
+User-agent: Googlebot
+Allow: /*.css$
+Allow: /*.js$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.gif$
+Allow: /*.svg$
+Crawl-delay: 5
+
+# Bing
+User-agent: bingbot
+Crawl-delay: 10
+
+# Yandex
+User-agent: Yandex
+Crawl-delay: 5
+
+# Media files
+User-agent: Googlebot-Image
+Disallow: /private-assets/
+Allow: /public-assets/
+
+# Development and staging environments
+User-agent: *
+Disallow: /staging/
+Disallow: /dev/
+
+# Block access to specific file types
+User-agent: *
+Disallow: /*.json$
+Disallow: /*.xml$
+
+# Allow all other pages
+User-agent: *
+Allow: /$
+Allow: /quizzes/$
+Allow: /blog/$
+Allow: /about/$
+Allow: /terms/$
+Allow: /privacy/

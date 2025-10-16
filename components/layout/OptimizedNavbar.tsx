@@ -13,7 +13,6 @@ const navigationItems = [
   { href: '/blog', label: 'Articles' },
   { href: '/quizzes', label: 'Quizzes' },
   { href: '/research', label: 'Research' },
-  { href: '/magazine-demo', label: 'Magazine' },
   { href: '/about', label: 'About' },
 ];
 

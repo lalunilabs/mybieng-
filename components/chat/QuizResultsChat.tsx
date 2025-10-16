@@ -61,53 +61,26 @@ export function QuizResultsChat({ isOpen, onClose, context }: QuizResultsChatPro
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const initializeConversation = useCallback(async () => {
-    const welcomeMessage: Message = {
-      id: `msg_${Date.now()}`,
-      role: 'assistant',
-      content: `Hi! I've reviewed your **${context.quiz}** results. I can see you got "${context.results.band}" - that's really insightful! 
-
-I'm here to help you understand your patterns better, explore what your results mean, and figure out practical next steps.
-
-What would you like to dive into first?`,
-      timestamp: new Date(),
-      suggestions: [
-        `Why did I get "${context.results.band}"?`,
-        "What's my strongest pattern?",
-        "How can I improve?",
-        "What should I do next?"
-      ]
-    };
-
-    setMessages([welcomeMessage]);
-
-    // If there's an initial prompt, send it automatically
-    if (context.initialPrompt) {
-      setTimeout(() => {
-        handleSendMessage(context.initialPrompt!);
-      }, 1000);
+  const generateSuggestions = useCallback((userMessage: string, response: string): string[] => {
+    const suggestions: string[] = [];
+    
+    if (userMessage.toLowerCase().includes('why')) {
+      suggestions.push("Can you give me a specific example?", "How can I change this pattern?");
     }
-  }, [context.quiz, context.results.band, context.initialPrompt]);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  // Initialize conversation when opened
-  useEffect(() => {
-    if (isOpen && messages.length === 0) {
-      initializeConversation();
+    
+    if (userMessage.toLowerCase().includes('improve') || userMessage.toLowerCase().includes('better')) {
+      suggestions.push("What's the first step I should take?", "How long might this take?");
     }
-  }, [isOpen, messages.length, initializeConversation]);
-
-  // Focus input when opened
-  useEffect(() => {
-    if (isOpen) {
-      setTimeout(() => inputRef.current?.focus(), 100);
+    
+    if (response.toLowerCase().includes('pattern') || response.toLowerCase().includes('tendency')) {
+      suggestions.push("Is this pattern common?", "What causes this pattern?");
     }
-  }, [isOpen]);
+    
+    suggestions.push("Tell me more about this", "What else should I know?");
+    return suggestions.slice(0, 3);
+  }, []);
 
-  const handleSendMessage = async (message?: string) => {
+  const handleSendMessage = useCallback(async (message?: string) => {
     const messageText = message || inputValue.trim();
     if (!messageText) return;
 
@@ -149,7 +122,6 @@ What would you like to dive into first?`,
         setConversationId(data.conversationId);
       }
 
-      // Simulate typing effect
       const typingMessage: Message = {
         id: `msg_${Date.now()}_typing`,
         role: 'assistant',
@@ -160,7 +132,6 @@ What would you like to dive into first?`,
 
       setMessages(prev => [...prev, typingMessage]);
 
-      // Replace typing message with actual response after delay
       setTimeout(() => {
         const assistantMessage: Message = {
           id: `msg_${Date.now()}_assistant`,
@@ -185,29 +156,50 @@ What would you like to dive into first?`,
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [conversationId, context.quiz, context.results, generateSuggestions, inputValue]);
 
-  const generateSuggestions = (userMessage: string, response: string): string[] => {
-    // Generate contextual follow-up suggestions based on the conversation
-    const suggestions = [];
-    
-    if (userMessage.toLowerCase().includes('why')) {
-      suggestions.push("Can you give me a specific example?", "How can I change this pattern?");
+  const initializeConversation = useCallback(() => {
+    const welcomeMessage: Message = {
+      id: `msg_${Date.now()}`,
+      role: 'assistant',
+      content: `Hi! I've reviewed your **${context.quiz}** results. I can see you got "${context.results.band}" - that's really insightful!
+
+I'm here to help you understand your patterns better, explore what your results mean, and figure out practical next steps.
+
+What would you like to dive into first?`,
+      timestamp: new Date(),
+      suggestions: [
+        `Why did I get "${context.results.band}"?`,
+        "What's my strongest pattern?",
+        "How can I improve?",
+        "What should I do next?"
+      ]
+    };
+
+    setMessages([welcomeMessage]);
+
+    if (context.initialPrompt) {
+      setTimeout(() => {
+        handleSendMessage(context.initialPrompt!);
+      }, 1000);
     }
-    
-    if (userMessage.toLowerCase().includes('improve') || userMessage.toLowerCase().includes('better')) {
-      suggestions.push("What's the first step I should take?", "How long might this take?");
+  }, [context.initialPrompt, context.quiz, context.results.band, handleSendMessage]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  useEffect(() => {
+    if (isOpen && messages.length === 0) {
+      initializeConversation();
     }
-    
-    if (response.toLowerCase().includes('pattern') || response.toLowerCase().includes('tendency')) {
-      suggestions.push("Is this pattern common?", "What causes this pattern?");
+  }, [isOpen, messages.length, initializeConversation]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => inputRef.current?.focus(), 100);
     }
-    
-    // Add some general follow-ups
-    suggestions.push("Tell me more about this", "What else should I know?");
-    
-    return suggestions.slice(0, 3);
-  };
+  }, [isOpen]);
 
   const handleSuggestionClick = (suggestion: string) => {
     setInputValue(suggestion);

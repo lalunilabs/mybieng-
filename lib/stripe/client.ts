@@ -6,7 +6,7 @@ if (!process.env.STRIPE_SECRET_KEY) {
 }
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2024-11-20.acacia',
+  apiVersion: '2025-02-24.acacia',
   typescript: true,
 });
 
@@ -30,7 +30,7 @@ export async function createCheckoutSession({
   successUrl?: string;
   cancelUrl?: string;
 }) {
-  const session = await stripe.checkout.sessions.create({
+  const payload: Stripe.Checkout.SessionCreateParams = {
     mode: 'subscription',
     payment_method_types: ['card'],
     line_items: [
@@ -52,7 +52,12 @@ export async function createCheckoutSession({
       },
     },
     allow_promotion_codes: true,
-  });
+  };
+
+  // Idempotency key derived from user + price to avoid duplicate sessions on retries
+  const idempotencyKey = `sub_${userId}_${STRIPE_CONFIG.priceId}`;
+
+  const session = await stripe.checkout.sessions.create(payload, { idempotencyKey });
 
   return session;
 }
@@ -110,7 +115,7 @@ export async function createOneTimePaymentSession({
   successUrl: string;
   cancelUrl: string;
 }) {
-  const session = await stripe.checkout.sessions.create({
+  const payload: Stripe.Checkout.SessionCreateParams = {
     mode: 'payment',
     payment_method_types: ['card'],
     line_items: [
@@ -136,7 +141,13 @@ export async function createOneTimePaymentSession({
     },
     success_url: successUrl,
     cancel_url: cancelUrl,
-  });
+  };
+
+  // Idempotency key based on item and user to avoid duplicate charges on retries
+  const idKeyUser = userId || 'anon';
+  const idempotencyKey = `otp_${itemType}_${itemId}_${idKeyUser}_${Math.round(amount * 100)}`;
+
+  const session = await stripe.checkout.sessions.create(payload, { idempotencyKey });
 
   return session;
 }

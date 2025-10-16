@@ -21,8 +21,10 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/Progress';
+import { Badge } from '@/components/ui/Badge';
+import { useReducedMotion } from 'framer-motion';
+import { designSystem } from '@/lib/design-system';
 
 // Enhanced types to support all three result styles
 export type QuizResultStyle = 'numeric' | 'categorical' | 'ai-narrative' | 'hybrid';
@@ -109,9 +111,11 @@ export function AdaptiveQuizResultsSystem({
   onStartChat,
   onGenerateAIAnalysis 
 }: AdaptiveQuizResultsProps) {
+  const shouldReduceMotion = useReducedMotion();
   const [activeView, setActiveView] = useState<'results' | 'insights' | 'actions'>('results');
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState<AIGeneratedResult | null>(result.aiResult || null);
+  const [celebrate, setCelebrate] = useState(true);
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -153,8 +157,30 @@ export function AdaptiveQuizResultsSystem({
     }
   };
 
+  const ResultStyleIcon = getResultStyleIcon();
+
+  useEffect(() => {
+    const t = setTimeout(() => setCelebrate(false), 1400);
+    return () => clearTimeout(t);
+  }, []);
+
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-8">
+    <div className="max-w-6xl mx-auto p-6 space-y-8 relative">
+      {/* Celebration overlay (lightweight confetti-like bubbles) */}
+      {celebrate && !shouldReduceMotion && (
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          {[...Array(18)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-2 h-2 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 opacity-70"
+              initial={{ x: Math.random() * window.innerWidth, y: window.innerHeight + 20, scale: 0.8 + Math.random() * 0.6 }}
+              animate={{ y: -40 - Math.random() * 60, x: "+=" + (Math.random() * 60 - 30), opacity: [0.8, 1, 0] }}
+              transition={{ duration: 1.2 + Math.random() * 0.6, ease: 'easeOut' }}
+              style={{ left: `${Math.random() * 100}%` }}
+            />
+          ))}
+        </div>
+      )}
       {/* Header */}
       <div className="text-center space-y-4">
         <motion.div
@@ -186,7 +212,7 @@ export function AdaptiveQuizResultsSystem({
             <span>Completed in {formatTime(result.totalTime)}</span>
           </div>
           <div className="flex items-center gap-2">
-            {React.createElement(getResultStyleIcon(), { className: "w-4 h-4" })}
+            <ResultStyleIcon className="w-4 h-4" />
             <span>{getResultStyleLabel()}</span>
           </div>
         </motion.div>
@@ -200,7 +226,7 @@ export function AdaptiveQuizResultsSystem({
         className="flex flex-wrap items-center justify-center gap-4"
       >
         {onStartChat && (
-          <Button onClick={onStartChat} className="bg-purple-600 hover:bg-purple-700">
+          <Button onClick={onStartChat} className={`${designSystem.components.button.base} bg-purple-600 hover:bg-purple-700`}>
             <MessageCircle className="w-4 h-4 mr-2" />
             Chat About Results
           </Button>
@@ -211,7 +237,7 @@ export function AdaptiveQuizResultsSystem({
             onClick={handleGenerateAIAnalysis} 
             disabled={isGeneratingAI}
             variant="outline"
-            className="border-purple-200 text-purple-700 hover:bg-purple-50"
+            className={`${designSystem.components.button.base} border-purple-200 text-purple-700 hover:bg-purple-50`}
           >
             <Sparkles className="w-4 h-4 mr-2" />
             {isGeneratingAI ? 'Generating AI Analysis...' : 'Get AI Analysis'}
@@ -219,7 +245,7 @@ export function AdaptiveQuizResultsSystem({
         )}
         
         {onRetake && (
-          <Button variant="outline" onClick={onRetake}>
+          <Button variant="outline" onClick={onRetake} className={designSystem.components.button.base}>
             <RotateCcw className="w-4 h-4 mr-2" />
             Retake Assessment
           </Button>
@@ -280,7 +306,7 @@ function ResultsView({ result, aiAnalysis }: { result: AdaptiveQuizResult; aiAna
     <div className="space-y-8">
       {/* Numeric Results */}
       {result.numericResult && (
-        <Card className="border-0 shadow-lg">
+        <Card className={`${designSystem.components.card.base} ${designSystem.components.card.hover}`}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart3 className="w-5 h-5 text-blue-600" />
@@ -331,7 +357,7 @@ function ResultsView({ result, aiAnalysis }: { result: AdaptiveQuizResult; aiAna
 
       {/* Categorical Results */}
       {result.categoricalResult && (
-        <Card className="border-0 shadow-lg">
+        <Card className={`${designSystem.components.card.base} ${designSystem.components.card.hover}`}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="w-5 h-5 text-purple-600" />
@@ -395,7 +421,7 @@ function ResultsView({ result, aiAnalysis }: { result: AdaptiveQuizResult; aiAna
 
       {/* AI Generated Results */}
       {(result.aiResult || aiAnalysis) && (
-        <Card className="border-0 shadow-lg border-l-4 border-l-purple-500">
+        <Card className={`${designSystem.components.card.base} ${designSystem.components.card.hover} border-l-4 border-l-purple-500`}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-purple-600" />

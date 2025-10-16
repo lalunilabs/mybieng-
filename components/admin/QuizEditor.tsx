@@ -85,7 +85,9 @@ export default function QuizEditor({ value, onChange, onSave, onDelete, onUpload
       a.download = `${draft.slug}-research-${new Date().toISOString().split('T')[0]}.${format}`;
       document.body.appendChild(a);
       a.click();
-      document.body.removeChild(a);
+      try {
+        a.remove();
+      } catch {}
       URL.revokeObjectURL(url);
     } catch {}
   };
@@ -102,7 +104,9 @@ export default function QuizEditor({ value, onChange, onSave, onDelete, onUpload
       a.download = `${draft.slug}-research-report-${new Date().toISOString().split('T')[0]}.md`;
       document.body.appendChild(a);
       a.click();
-      document.body.removeChild(a);
+      try {
+        a.remove();
+      } catch {}
       URL.revokeObjectURL(url);
     } catch {}
   };

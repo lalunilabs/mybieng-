@@ -1,22 +1,26 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useReducedMotion } from 'framer-motion';
 
 /**
  * World-Class Scrolling Enhancement Component
  * Provides premium scrolling experience with invisible scrollbars
  */
 export function WorldClassScroll() {
+  const shouldReduceMotion = useReducedMotion();
+
   useEffect(() => {
     // Enhanced smooth scrolling for anchor links
     const handleAnchorClick = (e: Event) => {
-      const target = e.target as HTMLAnchorElement;
-      if (target.hash && target.hash.startsWith('#')) {
-        e.preventDefault();
-        const element = document.querySelector(target.hash);
+      const el = e.target as HTMLElement | null;
+      const anchor = el?.closest && (el.closest('a') as HTMLAnchorElement | null);
+      if (anchor && anchor.hash && anchor.hash.startsWith('#')) {
+        const element = document.querySelector(anchor.hash);
         if (element) {
+          e.preventDefault();
           element.scrollIntoView({
-            behavior: 'smooth',
+            behavior: shouldReduceMotion ? 'auto' : 'smooth',
             block: 'start',
             inline: 'nearest'
           });
@@ -35,7 +39,7 @@ export function WorldClassScroll() {
         setTimeout(() => {
           window.scrollTo({
             top: parseInt(savedPosition),
-            behavior: 'smooth'
+            behavior: shouldReduceMotion ? 'auto' : 'smooth'
           });
         }, 100);
       }
@@ -45,13 +49,13 @@ export function WorldClassScroll() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Home' && e.ctrlKey) {
         e.preventDefault();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 0, behavior: shouldReduceMotion ? 'auto' : 'smooth' });
       }
       if (e.key === 'End' && e.ctrlKey) {
         e.preventDefault();
         window.scrollTo({ 
           top: document.documentElement.scrollHeight, 
-          behavior: 'smooth' 
+          behavior: shouldReduceMotion ? 'auto' : 'smooth' 
         });
       }
     };
@@ -64,7 +68,7 @@ export function WorldClassScroll() {
         const scrollAmount = window.innerHeight * 0.8 * direction;
         window.scrollBy({
           top: scrollAmount,
-          behavior: 'smooth'
+          behavior: shouldReduceMotion ? 'auto' : 'smooth'
         });
       }
     };
@@ -84,7 +88,7 @@ export function WorldClassScroll() {
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('keydown', handlePageScroll);
     };
-  }, []);
+  }, [shouldReduceMotion]);
 
   return null; // This component only provides behavior
 }
@@ -161,15 +165,25 @@ export function useScrollProgress() {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.pageYOffset;
-      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-      const progress = (scrollTop / docHeight) * 100;
-      setProgress(Math.min(100, Math.max(0, progress)));
+    let ticking = false;
+    const update = () => {
+      const scrollTop = window.scrollY;
+      const docHeight = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      const p = (scrollTop / docHeight) * 100;
+      setProgress(Math.min(100, Math.max(0, p)));
+      ticking = false;
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    update();
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   return progress;

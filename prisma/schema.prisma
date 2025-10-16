@@ -4,54 +4,259 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:./dev.db"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  RESEARCHER
 }
 
 model User {
-  id           String        @id @default(cuid())
-  email        String        @unique
-  name         String?
-  image        String?
-  role         String        @default("user")
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id            String        @id @default(cuid())
+  email         String        @unique
+  name          String?
+  image         String?
+  role          UserRole      @default(USER)
+  emailVerified DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
   
-  quizRuns     QuizRun[]
-  bookmarks    Bookmark[]
-  likes        Like[]
-  subscription Subscription?
+  quizRuns      QuizRun[]
+  quizSessions  QuizSession[]
+  bookmarks     Bookmark[]
+  likes         Like[]
+  subscription  Subscription?
+  articles      Article[]
   
   @@index([email])
+  @@index([role])
 }
 
-model QuizRun {
-  id        String        @id @default(cuid())
-  sessionId String
-  userId    String?
-  user      User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
-  quizSlug  String
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-  answers   QuizAnswer[]
-  total     Int
-  bandLabel String
-  metadata  String?       // Store additional quiz metadata as JSON string
-  completed Boolean       @default(false)
-
-  @@index([sessionId, createdAt(sort: Desc)])
-  @@index([quizSlug, createdAt(sort: Desc)])
-  @@index([userId, createdAt(sort: Desc)])
+enum QuizResultType {
+  NUMERIC
+  CATEGORICAL
+  NARRATIVE
+  HYBRID
 }
 
-model QuizAnswer {
+model Quiz {
+  id                   String         @id @default(cuid())
+  slug                 String         @unique
+  title                String
+  description          String
+  questions            Json           // Array of questions with their configurations
+  resultType           QuizResultType @default(NUMERIC)
+  resultProfiles       Json?          // For CATEGORICAL results
+  resultBands          Json?          // For NUMERIC results
+  timeLimitMinutes     Int?           // Optional time limit
+  randomizeQuestions   Boolean        @default(false)
+  keepFirstNQuestions  Int?           // Keep first N questions in place when randomizing
+  allowSaveAndContinue Boolean        @default(true)
+  showProgressBar      Boolean        @default(true)
+  showQuestionNumbers  Boolean        @default(true)
+  requiredAnswers      String         @default("all") // 'all', 'none', or number
+  allowBackNavigation  Boolean        @default(true)
+  showResultsImmediately Boolean      @default(true)
+  allowRetake          Boolean        @default(true)
+  published            Boolean        @default(false)
+  publishedAt          DateTime?
+  isPaid               Boolean        @default(false)
+  price                Int?           // In cents
+  metaTitle            String?
+  metaDescription      String?
+  keywords             String[]
+  imageUrl             String?
+  attachments          Json?          // Array of attachments
+  estimatedTime        Int?           // In minutes
+  benefits             String[]
+  requirements         String[]
+  scoringAlgorithm     String         @default("sum") // 'sum', 'weighted', 'custom'
+  passPercentage       Int?           // 0-100
+  showCorrectAnswers   Boolean        @default(false)
+  showExplanations     String         @default("after_attempt") // 'always', 'after_attempt', 'never'
+  redirectUrl          String?        // URL to redirect after completion
+  webhookUrl           String?        // Webhook to call on completion
+  trackAnalytics       Boolean        @default(true)
+  requireEmail         Boolean        @default(false)
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  
+  sessions             QuizSession[]
+  
+  @@index([slug])
+  @@index([published, publishedAt])
+  @@index([isPaid, price])
+}
+
+model QuizSession {
+  id             String      @id @default(cuid())
+  userId         String?
+  user           User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  quizId         String
+  quiz           Quiz        @relation(fields: [quizId], references: [id])
+  sessionId      String      @unique
+  answers        Json        // Array of answers
+  currentQuestion Int        @default(0)
+  flaggedQuestions String[]   // Array of question IDs
+  timeSpent      Int?        // Total time spent in seconds
+  timeLeft       Int?        // Time left in seconds (for timed quizzes)
+  isComplete     Boolean     @default(false)
+  result         Json?       // Final result data
+  metadata       Json?       // Additional metadata
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  completedAt    DateTime?
+  
+  @@index([sessionId])
+  @@index([userId, quizId])
+  @@index([quizId, isComplete])
+}
+
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model Article {
+  id              String       @id @default(cuid())
+  slug            String       @unique
+  title           String
+  excerpt         String?
+  content         Json         // Rich text content
+  coverImage      String?
+  status          ArticleStatus @default(DRAFT)
+  publishedAt     DateTime?
+  authorId        String
+  author          User         @relation(fields: [authorId], references: [id])
+  isPaid          Boolean      @default(false)
+  price           Int?         // In cents
+  readingTime     Int?         // In minutes
+  seoTitle        String?
+  seoDescription  String?
+  seoKeywords     String[]
+  canonicalUrl    String?
+  tags            String[]
+  featured        Boolean      @default(false)
+  viewCount       Int          @default(0)
+  likes           Like[]
+  bookmarks       Bookmark[]
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  
+  @@index([slug])
+  @@index([status, publishedAt])
+  @@index([authorId])
+  @@index([isPaid, price])
+  @@index([featured])
+}
+
+model Bookmark {
   id        String   @id @default(cuid())
-  runId     String
-  run       QuizRun  @relation(fields: [runId], references: [id], onDelete: Cascade)
-  question  String
-  value     Int
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  articleId String?
+  article   Article? @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  quizId    String?
+  quiz      Quiz?    @relation(fields: [quizId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   
-  @@index([runId])
+  @@unique([userId, articleId, quizId])
+  @@index([userId])
+  @@index([articleId])
+  @@index([quizId])
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  articleId String?
+  article   Article? @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  quizId    String?
+  quiz      Quiz?    @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  
+  @@unique([userId, articleId, quizId])
+  @@index([userId])
+  @@index([articleId])
+  @@index([quizId])
+}
+
+model Subscription {
+  id                      String   @id @default(cuid())
+  userId                  String   @unique
+  user                    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan                    String   @default("premium")
+  status                  String   @default("active") // 'active', 'canceled', 'past_due', 'unpaid'
+  currentPeriodStart      DateTime
+  currentPeriodEnd        DateTime
+  cancelAtPeriodEnd       Boolean  @default(false)
+  canceledAt              DateTime?
+  latestInvoice           String?
+  defaultPaymentMethod    String?
+  trialStart              DateTime?
+  trialEnd                DateTime?
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([status])
+}
+
+model AnalyticsEvent {
+  id        String   @id @default(cuid())
+  type      String   // Event type (e.g., 'page_view', 'quiz_started', 'quiz_completed', 'article_viewed')
+  name      String   // Event name
+  data      Json?    // Event-specific data
+  url       String?  // URL where the event occurred
+  referrer  String?  // Referrer URL
+  ip        String?  // IP address (anonymized)
+  userAgent String?  // User agent string
+  userId    String?  // If user is logged in
+  sessionId String?  // Anonymous session ID
+  createdAt DateTime @default(now())
+  
+  @@index([type])
+  @@index([name])
+  @@index([userId])
+  @@index([sessionId])
+  @@index([createdAt])
+}
+
+model EmailLog {
+  id              String   @id @default(cuid())
+  userId          String?
+  email           String
+  type            String   // 'welcome', 'quiz_results', 'subscription', 'receipt', etc.
+  subject         String
+  status          String   // 'sent', 'delivered', 'opened', 'clicked', 'bounced', 'complained'
+  messageId       String?
+  error           String?
+  metadata        Json?    // Additional metadata
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([email])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model ApiKey {
+  id          String   @id @default(cuid())
+  name        String
+  key         String   @unique
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lastUsedAt  DateTime?
+  expiresAt   DateTime?
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([key])
 }
 
 model Newsletter {

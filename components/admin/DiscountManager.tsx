@@ -3,7 +3,20 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { ManualDiscount } from '@/lib/subscription';
+// Local type for discount management UI (mirrors database shape used in lib/subscription)
+interface ManualDiscount {
+  id: string;
+  code: string;
+  description: string;
+  discountPercent: number;
+  itemType: 'quiz' | 'article';
+  itemId?: string;
+  validFrom: Date;
+  validUntil: Date;
+  maxUses: number;
+  currentUses: number;
+  isActive: boolean;
+}
 
 interface DiscountManagerProps {
   onCreateDiscount: (discount: Omit<ManualDiscount, 'id' | 'currentUses'>) => void;

@@ -22,7 +22,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/shadcn/input';
-import { Progress } from '@/components/ui/progress';
+import { Progress } from '@/components/ui/Progress';
 
 interface DashboardStats {
   totalUsers: number;

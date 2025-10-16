@@ -1,17 +1,17 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Users, FileText, Brain, DollarSign, TrendingUp, Activity } from 'lucide-react';
+// Removed lucide-react icons to use text-based interface
 import { Card } from '@/components/ui/Card';
 
 export function WorldClassDashboard() {
   const stats = [
-    { title: 'Total Users', value: '2,847', change: '+12.5%', icon: Users, color: 'text-blue-600' },
-    { title: 'Active Subscriptions', value: '1,203', change: '+8.3%', icon: DollarSign, color: 'text-green-600' },
-    { title: 'Total Articles', value: '24', change: '+2', icon: FileText, color: 'text-purple-600' },
-    { title: 'Total Quizzes', value: '8', change: '+1', icon: Brain, color: 'text-orange-600' },
-    { title: 'Monthly Revenue', value: '$38.5k', change: '+15.2%', icon: TrendingUp, color: 'text-emerald-600' },
-    { title: 'AI Conversations', value: '8,924', change: '+23.7%', icon: Activity, color: 'text-indigo-600' }
+    { title: 'Total Users', value: '2,847', change: '+12.5%', color: 'text-blue-600' },
+    { title: 'Active Subscriptions', value: '1,203', change: '+8.3%', color: 'text-green-600' },
+    { title: 'Total Articles', value: '24', change: '+2', color: 'text-purple-600' },
+    { title: 'Total Quizzes', value: '8', change: '+1', color: 'text-orange-600' },
+    { title: 'Monthly Revenue', value: '$38.5k', change: '+15.2%', color: 'text-emerald-600' },
+    { title: 'AI Conversations', value: '8,924', change: '+23.7%', color: 'text-indigo-600' }
   ];
 
   return (
@@ -42,7 +42,9 @@ export function WorldClassDashboard() {
                   <p className="text-2xl font-bold mt-1 numeric-figures">{stat.value}</p>
                   <p className="text-sm text-green-600 mt-1 numeric-figures">{stat.change}</p>
                 </div>
-                <stat.icon className={`h-8 w-8 ${stat.color}`} />
+                <div className={`text-2xl font-bold ${stat.color}`}>
+                  {stat.value.includes('%') ? '%' : stat.value.includes('$') ? '$' : '#'}
+                </div>
               </div>
             </Card>
           </motion.div>
@@ -52,10 +54,10 @@ export function WorldClassDashboard() {
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { title: 'New Article', href: '/admin/articles', icon: FileText, color: 'bg-blue-500' },
-          { title: 'Create Quiz', href: '/admin/quizzes', icon: Brain, color: 'bg-purple-500' },
-          { title: 'View Analytics', href: '/admin/analytics', icon: TrendingUp, color: 'bg-green-500' },
-          { title: 'Research Data', href: '/admin/research', icon: Activity, color: 'bg-orange-500' }
+          { title: 'New Article', href: '/admin/articles', color: 'bg-blue-500', emoji: '📝' },
+          { title: 'Create Quiz', href: '/admin/quizzes', color: 'bg-purple-500', emoji: '🧠' },
+          { title: 'View Analytics', href: '/admin/analytics', color: 'bg-green-500', emoji: '📊' },
+          { title: 'Research Data', href: '/admin/research', color: 'bg-orange-500', emoji: '🔬' }
         ].map((action, index) => (
           <motion.a
             key={action.title}
@@ -63,11 +65,11 @@ export function WorldClassDashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 + index * 0.1 }}
-            className={`${action.color} text-white p-6 rounded-xl hover:shadow-lg transition-all text-center`}
+            className={`${action.color} text-white p-6 rounded-xl hover:shadow-lg transition-all text-center block`}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <action.icon className="h-8 w-8 mx-auto mb-2" />
+            <div className="text-2xl mb-2">{action.emoji}</div>
             <p className="font-medium">{action.title}</p>
           </motion.a>
         ))}

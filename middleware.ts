@@ -76,26 +76,6 @@ export async function middleware(request: NextRequest) {
   }
 
   const response = NextResponse.next();
-  
-  // Security headers
-  response.headers.set('X-Content-Type-Options', 'nosniff');
-  response.headers.set('X-Frame-Options', 'DENY');
-  response.headers.set('X-XSS-Protection', '1; mode=block');
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-  response.headers.set('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
-  
-  // CSP for production
-  if (process.env.NODE_ENV === 'production') {
-    response.headers.set('Content-Security-Policy', 
-      "default-src 'self'; " +
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com; " +
-      "style-src 'self' 'unsafe-inline'; " +
-      "img-src 'self' data: https: blob:; " +
-      "font-src 'self' data:; " +
-      "connect-src 'self' https://api.openai.com https://api.stripe.com; " +
-      "frame-src 'self' https://js.stripe.com;"
-    );
-  }
 
   // Apply rate limiting based on route
   let rateLimitConfig = RATE_LIMITS.api; // Default
@@ -154,17 +134,27 @@ export async function middleware(request: NextRequest) {
   response.headers.set('X-XSS-Protection', '1; mode=block');
   // Tighter CSP for production - remove 'unsafe-eval' in production
   const isDev = process.env.NODE_ENV === 'development';
-  const scriptSrc = isDev 
+  let scriptSrc = isDev 
     ? "'self' 'unsafe-eval' 'unsafe-inline' https://va.vercel-scripts.com https://www.googletagmanager.com"
     : "'self' 'unsafe-inline' https://va.vercel-scripts.com https://www.googletagmanager.com";
+
+  // Allow AdSense when explicitly enabled
+  const adsEnabled = process.env.NEXT_PUBLIC_ENABLE_ADS === 'true';
+  const adsScriptHosts = " https://pagead2.googlesyndication.com";
+  const adsFrameHosts = " https://googleads.g.doubleclick.net https://tpc.googlesyndication.com";
+  if (adsEnabled) {
+    scriptSrc += adsScriptHosts;
+  }
+
+  const frameSrc = `'self'${adsEnabled ? adsFrameHosts : ''}`;
   
   response.headers.set(
     'Content-Security-Policy',
-    `default-src 'self'; script-src ${scriptSrc}; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https: wss:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';`
+    `default-src 'self'; script-src ${scriptSrc}; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https: wss:; frame-src ${frameSrc}; frame-ancestors 'none'; base-uri 'self'; form-action 'self';`
   );
 
   // Protect admin routes (skip login page)
-  if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
+  if (pathname.startsWith('/admin') && pathname !== '/admin/auth') {
     try {
       // Check for admin JWT token in cookies
       const adminToken = request.cookies.get('admin_token')?.value;
@@ -176,13 +166,13 @@ export async function middleware(request: NextRequest) {
           pathname,
           ip: request.ip || request.headers.get('x-forwarded-for') || 'unknown'
         });
-        return NextResponse.redirect(new URL('/admin/login', request.url));
+        return NextResponse.redirect(new URL('/admin/auth', request.url));
       }
 
       // Presence is sufficient for page-level guard; API routes validate token
     } catch (error) {
       logger.error('Error in admin route protection', { pathname, error: error as Error });
-      return NextResponse.redirect(new URL('/admin/login', request.url));
+      return NextResponse.redirect(new URL('/admin/auth', request.url));
     }
   }
 

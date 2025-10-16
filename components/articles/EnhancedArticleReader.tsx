@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useSmoothScroll } from '@/hooks/useSmoothScroll';
+import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { 
   ArrowLeft, 
@@ -53,6 +55,14 @@ interface EnhancedArticleReaderProps {
 }
 
 export function EnhancedArticleReader({ article, relatedArticles = [] }: EnhancedArticleReaderProps) {
+  // Enhanced hooks for premium experience
+  useSmoothScroll();
+  useKeyboardNavigation({
+    enableArrowKeys: true,
+    enableTabNavigation: true,
+    enableEscapeKey: true
+  });
+  
   const [readingProgress, setReadingProgress] = useState(0);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
@@ -147,16 +157,18 @@ export function EnhancedArticleReader({ article, relatedArticles = [] }: Enhance
       return Math.max(14, Math.min(24, newSize));
     });
   };
-
   return (
     <div className={`min-h-screen transition-colors duration-300 ${
       darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'
     }`}>
       {/* Reading Progress Bar */}
-      <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-gray-200">
-        <motion.div
-          className="h-full bg-gradient-to-r from-purple-600 to-blue-600"
+      <div className="fixed top-0 left-0 w-full h-1 bg-gray-200/50 backdrop-blur-sm z-50">
+        <motion.div 
+          className="h-full bg-gradient-to-r from-purple-600 via-pink-500 to-blue-600 shadow-lg shadow-purple-500/20"
           style={{ width: progressWidth }}
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
         />
       </div>
 

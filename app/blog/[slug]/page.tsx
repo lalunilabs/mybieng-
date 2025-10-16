@@ -1,8 +1,10 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { MagazineLayout } from '@/components/layout/PageLayout';
-import { MagazineArticle } from '@/components/articles/MagazineArticle';
+import { ConsistentMagazineArticle, type SidebarArticleCard, type SidebarQuizCard } from '@/components/articles/ConsistentMagazineArticle';
 import { SecondaryNav } from '@/components/layout/SecondaryNav';
+import { loadAllArticles } from '@/lib/content';
+import AdSlot from '@/components/ads/AdSlot';
 
 export const revalidate = 300; // Revalidate every 5 minutes
 
@@ -15,7 +17,7 @@ interface BlogPageProps {
 // Load article data from our new API
 async function getArticle(slug: string) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_DOMAIN || 'http://localhost:3000';
+    const baseUrl = process.env.NEXT_PUBLIC_DOMAIN || (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://mybeing.in');
     const response = await fetch(`${baseUrl}/api/content/articles/${slug}`, {
       next: { revalidate: 300 }
     });
@@ -34,17 +36,9 @@ async function getArticle(slug: string) {
 
 export async function generateStaticParams() {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_DOMAIN || 'http://localhost:3000';
-    const response = await fetch(`${baseUrl}/api/content/articles`);
-    
-    if (!response.ok) {
-      return [];
-    }
-    
-    const { articles } = await response.json();
-    return articles.map((article: any) => ({
-      slug: article.slug
-    }));
+    // Use filesystem/seed directly for robust pre-rendering
+    const articles = loadAllArticles();
+    return articles.map((article) => ({ slug: article.slug }));
   } catch (error) {
     console.error('Error generating static params:', error);
     return [];
@@ -119,6 +113,110 @@ export default async function BlogPage({ params }: BlogPageProps) {
   }
 
   const { article, relatedArticles } = data;
+  const baseUrl = process.env.NEXT_PUBLIC_DOMAIN || (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://mybeing.in');
+
+  const relatedQuizSlugs = Array.isArray(article.relatedQuizzes) ? article.relatedQuizzes : [];
+  let relatedQuizzes: SidebarQuizCard[] = [];
+
+  if (relatedQuizSlugs.length) {
+    const quizResponses = await Promise.all(
+      relatedQuizSlugs.slice(0, 4).map(async (quizSlug: string) => {
+        try {
+          const quizRes = await fetch(`${baseUrl}/api/content/quizzes/${quizSlug}`, {
+            next: { revalidate: 300 }
+          });
+
+          if (!quizRes.ok) {
+            return null;
+          }
+
+          const quizData = await quizRes.json();
+          if (!quizData?.quiz) {
+            return null;
+          }
+
+          const quiz = quizData.quiz;
+
+          const quizCard: SidebarQuizCard = {
+            slug: quizSlug,
+            title: quiz.title,
+            description: quiz.description || quiz.longDescription || quiz.excerpt,
+            estimatedTime: quiz.estimatedTime,
+            category: quiz.category,
+            image: quiz.image || quiz.ogImage
+          };
+
+          return quizCard;
+        } catch (error) {
+          console.error('Quiz recommendation fetch failed:', quizSlug, error);
+          return null;
+        }
+      })
+    );
+
+    relatedQuizzes = quizResponses.filter(Boolean) as SidebarQuizCard[];
+  }
+
+  let recommendedArticles: SidebarArticleCard[] = [];
+  const primaryQuizSlug = relatedQuizSlugs[0] || article.primaryQuizSlug || article.primaryQuiz;
+
+  if (primaryQuizSlug) {
+    try {
+      const recommendationsRes = await fetch(
+        `${baseUrl}/api/content/recommendations?quiz=${encodeURIComponent(primaryQuizSlug)}&limit=4`,
+        { next: { revalidate: 300 } }
+      );
+
+      if (recommendationsRes.ok) {
+        const recommendationsData = await recommendationsRes.json();
+        if (Array.isArray(recommendationsData?.articles)) {
+          const uniqueRecommendations = new Map<string, SidebarArticleCard>();
+
+          recommendationsData.articles.forEach((item: any) => {
+            const card: SidebarArticleCard = {
+              slug: item.slug,
+              title: item.title,
+              excerpt: item.excerpt,
+              image: item.image || item.imageUrl,
+              imageUrl: item.imageUrl,
+              readTime: item.readTime,
+              publishedAt: item.publishedAt,
+              category: item.category,
+              tags: item.tags,
+              author: item.author,
+              isPremium: item.isPremium
+            };
+
+            uniqueRecommendations.set(card.slug, card);
+          });
+
+          recommendedArticles = Array.from(uniqueRecommendations.values());
+        }
+      }
+    } catch (error) {
+      console.error('Article recommendation fetch failed:', primaryQuizSlug, error);
+    }
+  }
+
+  const relatedArticleCards: SidebarArticleCard[] = Array.isArray(relatedArticles)
+    ? (relatedArticles as any[]).map((item) => ({
+        slug: item.slug || item.id,
+        title: item.title,
+        excerpt: item.excerpt,
+        image: item.image || item.imageUrl,
+        imageUrl: item.imageUrl,
+        readTime: item.readTime,
+        publishedAt: item.publishedAt,
+        category: item.category,
+        tags: item.tags,
+        author: item.author,
+        isPremium: item.isPremium
+      }))
+    : [];
+
+  if (!recommendedArticles.length) {
+    recommendedArticles = relatedArticleCards.slice(0, 4);
+  }
 
   // Convert to our MagazineArticle format
   const magazineArticle = {
@@ -131,7 +229,12 @@ export default async function BlogPage({ params }: BlogPageProps) {
     readTime: article.readTime || Math.ceil(article.wordCount / 200),
     tags: article.tags || [],
     imageUrl: article.image,
-    category: article.category
+    category: article.category,
+    tldr: Array.isArray(article.tldr) ? article.tldr : (article.tldr ? [article.tldr] : []),
+    keyIdeas: Array.isArray(article.keyIdeas) ? article.keyIdeas : (article.keyIdeas ? [article.keyIdeas] : []),
+    frameworks: Array.isArray(article.frameworks) ? article.frameworks : (article.frameworks ? [article.frameworks] : []),
+    prompts: Array.isArray(article.prompts) ? article.prompts : (article.prompts ? [article.prompts] : []),
+    citations: Array.isArray(article.citations) ? article.citations : (article.citations ? [article.citations] : []),
   };
 
   return (
@@ -146,14 +249,21 @@ export default async function BlogPage({ params }: BlogPageProps) {
       
       {/* Secondary Navigation */}
       <SecondaryNav />
+      {/* Ad: Top inline placement (hidden for premium users or when ads disabled) */}
+      <AdSlot id="article_top_inline" label="Advertisement" reserve={{ mobile: { w: 300, h: 250 }, desktop: { w: 728, h: 90 } }} />
       
       {/* Magazine Article Display */}
       <MagazineLayout>
-        <MagazineArticle 
+        <ConsistentMagazineArticle 
           article={magazineArticle}
-          relatedArticles={relatedArticles || []}
+          relatedArticles={relatedArticleCards}
+          recommendedArticles={recommendedArticles}
+          relatedQuizzes={relatedQuizzes}
         />
       </MagazineLayout>
+
+      {/* Ad: Bottom inline placement */}
+      <AdSlot id="article_bottom_inline" label="Advertisement" reserve={{ mobile: { w: 300, h: 250 }, desktop: { w: 728, h: 90 } }} />
     </>
   );
 }

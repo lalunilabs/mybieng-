@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { getQuizBySlug } from '@/data/quizzes';
 import { generateAIAnalysis } from '@/lib/quiz-processing';
 import { ipRateLimit } from '@/lib/rate-limit';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/db';
 
 // Validation schema for AI analysis request
 const aiAnalysisSchema = z.object({
@@ -177,8 +175,6 @@ export async function POST(req: NextRequest) {
       },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
 

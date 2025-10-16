@@ -20,6 +20,7 @@ export function UniversalAIChat({
   quizResults, 
   userSubscription = { isSubscribed: false, plan: 'free' },
   onFeedback,
+  initialMessage,
   className = ''
 }: UniversalAIChatProps) {
   const { state, actions } = useAIChat({
@@ -41,10 +42,17 @@ export function UniversalAIChat({
 
   // Initial context setup based on mode
   useEffect(() => {
-    let initialMessage: Message;
+    let assistantInitial: Message;
 
-    if (mode === 'quiz-results' && quizResults) {
-      initialMessage = {
+    if (typeof initialMessage === 'string' && initialMessage.trim().length > 0) {
+      assistantInitial = {
+        id: generateMessageId(),
+        role: 'assistant',
+        content: initialMessage,
+        timestamp: new Date()
+      };
+    } else if (mode === 'quiz-results' && quizResults) {
+      assistantInitial = {
         id: generateMessageId(),
         role: 'assistant',
         content: `🎉 Great job completing the **${quizResults.quizTitle}**!\n\nYou scored ${quizResults.score}/${quizResults.maxScore}, placing you in the "${quizResults.band.label}" category.\n\n${quizResults.band.description}\n\nI'm here to help you understand your results better. Feel free to ask:\n• "What does this mean for my daily life?"\n• "How can I work on this pattern?"\n• "Can you recommend related content?"\n• "What should I focus on this week?"`,
@@ -53,14 +61,14 @@ export function UniversalAIChat({
     } else if (mode === 'subscription' && userSubscription.isSubscribed) {
       const limits = calculateSubscriptionLimits(userSubscription);
       
-      initialMessage = {
+      assistantInitial = {
         id: generateMessageId(),
         role: 'assistant',
         content: `✨ Welcome back! As a **Premium** subscriber ($32/month), you have access to enhanced features:\n\n**This Month:**\n🎯 Free quizzes remaining: ${limits.freeQuizzesRemaining}/2 (under $50 value)\n📚 Premium articles remaining: ${limits.premiumArticlesRemaining}/3\n💬 Unlimited AI conversations\n\nWhat would you like to explore today?\n• Get personalized quiz recommendations\n• Read premium articles with advanced insights\n• Create a custom learning plan\n• Explore patterns from your previous results`,
         timestamp: new Date()
       };
     } else {
-      initialMessage = {
+      assistantInitial = {
         id: generateMessageId(),
         role: 'assistant',
         content: `👋 Hi! I'm your MyBeing AI assistant. I can help you:\n\n**Free Features:**\n• Understand quiz results\n• Get basic content recommendations\n• Answer questions about self-discovery\n\n**Premium Features** ($32/month):\n• 2 free quizzes monthly (under $50 value)\n• 3 premium articles with advanced research\n• Unlimited AI conversations\n• Personalized content curation\n• Custom learning plans\n• Subscriber discounts on additional content\n\nWhat can I help you with today?`,
@@ -68,8 +76,8 @@ export function UniversalAIChat({
       };
     }
 
-    actions.setInitialMessage(initialMessage);
-  }, [mode, quizResults, userSubscription, actions]);
+    actions.setInitialMessage(assistantInitial);
+  }, [mode, quizResults, userSubscription, initialMessage, actions]);
 
   const handleSend = async () => {
     await actions.sendMessage(state.input);

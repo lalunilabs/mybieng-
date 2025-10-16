@@ -204,10 +204,19 @@ async function processCategoricalResults(
     profile: {
       title: profile.title,
       subtitle: profile.subtitle,
-      description: profile.dna?.[0] || profile.description || 'Your behavioral profile analysis.',
-      strengths: profile.lights || profile.strengths || [],
-      challenges: profile.kills || profile.challenges || [],
-      recommendations: profile.support || profile.recommendations || []
+      // Safely access optional legacy fields (dna/lights/kills/support) when available
+      description: (Array.isArray((profile as any).dna) && (profile as any).dna[0])
+        || (profile as any).description
+        || 'Your behavioral profile analysis.',
+      strengths: (Array.isArray((profile as any).lights) && (profile as any).lights)
+        || (profile as any).strengths
+        || [],
+      challenges: (Array.isArray((profile as any).kills) && (profile as any).kills)
+        || (profile as any).challenges
+        || [],
+      recommendations: (Array.isArray((profile as any).support) && (profile as any).support)
+        || (profile as any).recommendations
+        || []
     }
   };
 }

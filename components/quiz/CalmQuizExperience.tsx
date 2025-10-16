@@ -17,6 +17,7 @@ import { Card, CardContent } from '@/components/ui/Card';
 import { Quiz, QuizQuestion } from '@/data/quizzes';
 import { AdaptiveQuizResultsSystem, AdaptiveQuizResult } from '@/components/quiz/AdaptiveQuizResultsSystem';
 import { QuizResultsAIChat } from '@/components/chat/QuizResultsAIChat';
+import { designSystem } from '@/lib/design-system';
 
 interface QuizAnswer {
   questionId: string;
@@ -142,7 +143,7 @@ export function CalmQuizExperience({ quiz, sessionId, userId }: CalmQuizExperien
   // Intro State - Calm and inviting
   if (state === 'intro') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-6">
+      <div className={`min-h-screen ${designSystem.gradients.page} flex items-center justify-center p-6`}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -190,7 +191,7 @@ export function CalmQuizExperience({ quiz, sessionId, userId }: CalmQuizExperien
             <Button 
               onClick={handleStartQuiz}
               size="lg"
-              className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-4 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+              className={`${designSystem.components.button.base} bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-4 text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-300`}
             >
               Begin Your Journey
               <ArrowRight className="w-5 h-5 ml-2" />
@@ -204,7 +205,7 @@ export function CalmQuizExperience({ quiz, sessionId, userId }: CalmQuizExperien
   // Pause State
   if (state === 'pause') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-6">
+      <div className={`min-h-screen ${designSystem.gradients.page} flex items-center justify-center p-6`}>
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -232,7 +233,7 @@ export function CalmQuizExperience({ quiz, sessionId, userId }: CalmQuizExperien
           <Button 
             onClick={handlePause}
             size="lg"
-            className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-3 rounded-full"
+            className={`${designSystem.components.button.base} bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-3 rounded-full`}
           >
             <Play className="w-5 h-5 mr-2" />
             Continue
@@ -245,7 +246,7 @@ export function CalmQuizExperience({ quiz, sessionId, userId }: CalmQuizExperien
   // Taking Quiz State - One question at a time, calm design
   if (state === 'taking') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-6">
+      <div className={`min-h-screen ${designSystem.gradients.page} flex items-center justify-center p-6`}>
         <div className="w-full max-w-3xl">
           {/* Progress and Controls */}
           <div className="mb-8">
@@ -314,7 +315,7 @@ export function CalmQuizExperience({ quiz, sessionId, userId }: CalmQuizExperien
             <Button
               onClick={handleNext}
               disabled={!isAnswered()}
-              className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-3 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`${designSystem.components.button.base} bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-3 rounded-full disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {isLastQuestion ? 'Complete Journey' : 'Continue'}
               <ArrowRight className="w-4 h-4 ml-2" />
@@ -328,7 +329,7 @@ export function CalmQuizExperience({ quiz, sessionId, userId }: CalmQuizExperien
   // Submitting State
   if (state === 'submitting') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-6">
+      <div className={`min-h-screen ${designSystem.gradients.page} flex items-center justify-center p-6`}>
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}

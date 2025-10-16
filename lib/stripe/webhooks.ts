@@ -11,10 +11,16 @@ import { prisma } from '@/lib/db';
 import { sendEmail, EmailType } from '@/lib/email/service';
 
 export async function handleStripeWebhook(event: Stripe.Event) {
-  // Log webhook event
-  await logWebhookEvent(event);
-
   try {
+    // Skip if already processed
+    const existing = await prisma!.webhookEvent.findUnique({ where: { eventId: event.id } });
+    if (existing?.processed) {
+      console.log(`Skipping already processed webhook ${event.id}`);
+      return;
+    }
+
+    // Log or update webhook event record idempotently
+    await upsertWebhookEvent(event);
     switch (event.type) {
       case 'checkout.session.completed':
         await handleCheckoutSessionCompleted(event.data.object as Stripe.Checkout.Session);
@@ -218,10 +224,15 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
   }
 }
 
-// Helper functions for webhook logging
-async function logWebhookEvent(event: Stripe.Event) {
-  await prisma!.webhookEvent.create({
-    data: {
+// Helper functions for webhook logging (idempotent)
+async function upsertWebhookEvent(event: Stripe.Event) {
+  await prisma!.webhookEvent.upsert({
+    where: { eventId: event.id },
+    update: {
+      payload: JSON.stringify(event),
+      retryCount: { increment: 1 },
+    },
+    create: {
       provider: 'stripe',
       eventType: event.type,
       eventId: event.id,

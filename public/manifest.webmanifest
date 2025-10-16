@@ -1,0 +1,20 @@
+{
+  "name": "MyBeing - Self-Discovery Platform",
+  "short_name": "MyBeing",
+  "description": "Discover patterns in your thoughts, behaviors, and personal growth through scientifically-backed psychological assessments.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#6366f1",
+  "orientation": "portrait-primary",
+  "categories": ["health", "lifestyle", "education"],
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon",
+      "purpose": "any"
+    }
+  ]
+}

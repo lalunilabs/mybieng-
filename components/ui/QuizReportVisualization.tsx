@@ -73,7 +73,9 @@ export function QuizReportVisualization({
     a.download = `${quizSlug}-report-${Date.now()}.json`;
     document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
+    try {
+      a.remove();
+    } catch {}
     URL.revokeObjectURL(url);
   };
 

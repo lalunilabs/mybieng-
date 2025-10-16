@@ -74,13 +74,11 @@ export function PageLayout({
 export function MagazineLayout({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
     <PageLayout 
-      maxWidth="4xl"
+      maxWidth="6xl"
       background="white"
       className={`py-12 ${className}`}
     >
-      <div className="prose prose-lg prose-slate max-w-none">
-        {children}
-      </div>
+      {children}
     </PageLayout>
   );
 }

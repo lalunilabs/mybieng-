@@ -72,11 +72,11 @@ export default function Footer() {
               </div>
               <div>
                 <h3 className="text-2xl font-bold text-white">MyBeing</h3>
-                <p className="text-purple-200 text-sm">by Dr. Niharika, MBBS</p>
+                <p className="text-purple-200 text-sm">by Dr N</p>
               </div>
             </div>
             <p className="text-gray-300 text-sm leading-relaxed mb-6 max-w-md">
-              Evidence-based self-discovery platform combining medical expertise with psychological research to help you understand yourself and your environment through scientifically-backed assessments.
+              Evidence-based self-discovery platform combining research-backed assessments with behavioral psychology to help you understand yourself and your patterns.
             </p>
             <div className="flex space-x-4">
               <a href="#" className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-lg flex items-center justify-center transition-colors">
@@ -170,7 +170,7 @@ export default function Footer() {
               © {year} MyBeing. All rights reserved.
             </p>
             <p className="text-gray-400 text-sm">
-              Developed by Dr. Niharika, MBBS - Medical Doctor & Behavioral Research Specialist
+              Developed by Dr N - Behavioral Research Specialist
             </p>
           </div>
           <div className="flex items-center space-x-4 mt-4 md:mt-0">
